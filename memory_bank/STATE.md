@@ -1,51 +1,46 @@
-# Project State: Term-Paper
+# Project State
 
-> Note: This file tracks compact DS operational status. Keep it under 150 lines; compress old details into concise summaries.
-
----
-
-## 1. Best Model Tracker
-
-> Purpose: Track the current best performing model for quick reference.
-
-| Attribute | Value |
-|-----------|-------|
-| **Experiment ID** | [e.g., EXP-003] |
-| **Model Type** | [e.g., XGBoost] |
-| **Primary Metric** | [e.g., F1 = 0.82] |
-| **Secondary Metric** | [e.g., AUC = 0.91] |
-| **Model Path** | [e.g., models/model_exp003_f1_0.82.pkl] |
-| **Key Features** | [Top 3-5 important features] |
-| **Evaluation Date** | [YYYY-MM-DD] |
+> Compact operational status. Keep under 100 lines.
 
 ---
 
-## 2. Experiment History
+## Current Phase
 
-> Purpose: Recent experiment outcomes. Keep only the most relevant runs in this file.
+**Phase:** Wave 1 — Foundation
+**Blocker:** None
+**Next action:** EXP-002 (S1 Classical RAG baseline)
 
-| ID | Date | Task | Approach | Primary | Result | Notes |
-|----|------|------|----------|---------|--------|-------|
-| EXP-002 | YYYY-MM-DD | [W1A] | [Brief approach] | [value] | [+/-] | [Key insight] |
-| EXP-001 | YYYY-MM-DD | [W1A] | [Brief approach] | [value] | [+/-] | [Key insight] |
-| Baseline | YYYY-MM-DD | [W1A] | [Naive/Simple model] | [value] | - | Reference point |
+## Key Decisions Log
 
-**Legend:** Result column: + = improvement, - = regression
+| Date | Decision | Rationale |
+|------|----------|-----------|
+| 2026-03-26 | Backbone: Gemma-2-2b-it | Only model with released Doc-to-LoRA hypernetwork |
+| 2026-03-26 | No CV; 3 seeds for S2 | S1/S3/S4 don't benefit from CV; seeds sufficient for variance |
+| 2026-03-26 | Judge: gpt-5.4-mini (OpenAI API) | Cheap, reliable, version-pinnable |
+| 2026-03-26 | RAFT-style for S2 | Open-book training more realistic than closed-book |
+| 2026-03-26 | Doc-to-LoRA not retrained | Hardware constraint; use pre-trained hypernetwork as-is |
+| 2026-03-26 | Document-level clustering for S4 | Simpler, more interpretable than chunk-level |
 
----
+## System Readiness
 
-## 3. Known Issues / Technical Debt
+| System | Status | Notes |
+|--------|--------|-------|
+| S1 Classical RAG | Not started | Need retriever setup on Gemma-2-2b-it |
+| S2 QLoRA | Not started | Need RAFT-style data formatting |
+| S3 Doc-to-LoRA mono | Not started | Need packaging feasibility (merge strategy) |
+| S4 Cluster-routed D2L | Not started | Depends on S3 feasibility + clustering |
+| S5 Hybrid | Not started | Depends on S2-S4 best adapter selection |
 
-> Purpose: Track unresolved blockers and debt.
+## Experiment History
 
-| Date | Issue | Status |
-|------|-------|--------|
-| YYYY-MM-DD | [Issue summary] | [Open / Mitigated / Closed] |
+| ID | Date | Result | Notes |
+|----|------|--------|-------|
+| EXP-001 | 2026-03-26 | Done | 65 docs, ~1.27M tokens, 40x D2L limit. Split frozen 120/30. 6 dupe pairs grouped. |
 
----
+## Known Issues
 
-## 4. Accumulated Context
-
-> Compact archive for older experiment context after compression.
-
-[No accumulated context yet.]
+| Issue | Status |
+|-------|--------|
+| Doc-to-LoRA merge strategy undefined | Open — resolve at EXP-004 |
+| Gemma-2-2b-it quality on legal domain unknown | Open — resolve at EXP-002 |
+| 65 docs may exceed single D2L pass (~32K limit) | Expected — S3/S4 design accounts for this |

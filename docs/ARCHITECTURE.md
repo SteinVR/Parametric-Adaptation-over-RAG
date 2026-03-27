@@ -1,12 +1,12 @@
-# Project Architecture: Parameter-Efficient Knowledge Injection for Document-Grounded QA on Consumer Hardware
+# Project Architecture: Nonparametric, Supervised Parametric, Downstream Supervision-Free Parametric, and Hybrid Knowledge Injection for Document-Grounded QA on Consumer Hardware
 
 **Status:** SSOT (single source of truth)  
-**Version:** 1.0  
-**Last updated:** 2026-03-24  
-**Project shorthand:** `lora-rag-knowledge-injection`  
+**Version:** 2.0  
+**Last updated:** 2026-03-26  
+**Project shorthand:** `knowledge-injection-consumer-hardware`  
 **Primary practical setting:** domain-specific / legal-style document-grounded QA on a fixed corpus  
 
-> This document is the authoritative source for scope, experiment design, evaluation logic, and repository structure. If a concrete experiment diverges from this document, the deviation must be explicitly documented in the corresponding `experiments/EXP-XXX_*/REPORT.md` and, if the deviation is strategic rather than incidental, this file must be updated first.
+> This document is the authoritative source for project scope, experiment design, evaluation logic, repository structure, and terminology. If any concrete experiment diverges from this document, the deviation must be documented in the corresponding `experiments/EXP-XXX_*/REPORT.md`. If the divergence is strategic rather than incidental, this file must be updated first.
 
 ---
 
@@ -17,129 +17,171 @@
 ### Problem Definition
 
 The project studies **knowledge injection into a frozen LLM under consumer-hardware constraints**.
-The practical task is **document-grounded QA** over a **fixed corpus of 30 documents** and a **human-authored goldset of 150 question-answer pairs**. The domain is legal / legal-style QA, but the research focus is **not legal QA as such**; the corpus is a controlled case study for comparing knowledge-injection strategies.
+The practical task is **document-grounded QA** over a **fixed domain corpus** and a **human-authored goldset of 150 question-answer pairs**.
+The domain is legal / legal-style QA, but the research focus is **not legal QA itself**. The domain corpus is only a controlled case study for comparing different ways of providing external knowledge to an LLM.
 
-The central comparison is between three families of approaches:
+The project intentionally compares methods that operate under **different natural informational constraints**:
 
-1. **Nonparametric knowledge injection** — Classical RAG over a fixed retrieval/indexing stack.
-2. **Parametric knowledge injection** — LoRA-based adaptation of a fixed backbone model.
-3. **Hybrid knowledge injection** — retrieval + the best parametric adapter, with HyDE used only through an adapter already adapted to the corpus.
+- **Nonparametric retrieval** has access to the full corpus through an index, but depends on retrieval quality.
+- **Supervised parametric adaptation** sees human-authored QA supervision, but only where such supervision exists.
+- **Downstream supervision-free hypernetwork-based parametric adaptation** sees raw documents through a pre-trained hypernetwork, but is constrained by adapter quality, context packing, and adapter capacity.
+- **Hybrid systems** combine external retrieval with an adapted generator, but incur added latency and engineering complexity.
 
-The core scientific question is:
+This informational asymmetry is **not a flaw in the design**. It is the main research subject. The project asks what each family can achieve **under its own natural regime**, rather than forcing artificial symmetry by crippling methods until they all use the exact same channel.
 
-**Under a fixed trainable-parameter budget and on consumer hardware, which strategy yields the best trade-off between answer quality, grounding, and latency for document-grounded QA: Classical RAG, single-head LoRA, 4-branch MH-LoRA, cluster-routed single-head LoRA, or a hybrid RAG + best-adapter + HyDE system?**
+#### Main Research Question (RQ1)
 
-### Research Scope (Frozen)
+**How do four knowledge-injection paradigms compare on consumer hardware for document-grounded QA over a fixed corpus: nonparametric retrieval, supervised parametric adaptation, downstream supervision-free hypernetwork-based parametric adaptation, and hybrid retrieval + adaptation, when each paradigm operates under its natural informational and computational constraints?**
 
-#### In scope
+Short form for writing:
 
-- Controlled comparison of **five systems** on the same corpus, goldset, backbone, prompt family, and evaluation protocol.
-- Comparison of **single-head LoRA** vs **4-branch MH-LoRA** vs **cluster-routed single-head LoRA** under a matched trainable-parameter budget.
-- Analysis of whether **implicit specialization** inside a decomposed adapter differs from **explicit specialization** via routed adapters.
-- Final hybrid system where **HyDE is generated only by the best corpus-adapted adapter** and is used as the retrieval query representation.
-- Measurement of **quality**, **grounding**, **TTFT**, **end-to-end latency**, **VRAM**, and **specialization behavior**.
+**Nonparametric, Supervised Parametric, Downstream Supervision-Free Parametric, and Hybrid Knowledge Injection for Document-Grounded QA on Consumer Hardware**
 
-#### Out of scope
+#### Inner Study / Secondary Research Question (RQ2)
 
-- Benchmarking multiple retriever architectures, rerankers, chunking strategies, or vector databases as primary research axes.
-- Large-scale synthetic QA generation as a core data source.
-- Full MoE training, hypernetwork LoRA, or token-level routing as main systems.
-- Comparing many backbone models. Backbone choice is a feasibility gate; after selection, it is frozen.
-- Claiming universal conclusions beyond the setting of a **small fixed corpus**, **small human goldset**, and **consumer hardware**.
+Inside the downstream supervision-free parametric branch, the project also runs a narrower controlled study:
 
-### System Inventory (Frozen)
+**Does cluster-routed Doc-to-LoRA outperform monolithic Doc-to-LoRA on the same corpus under consumer-hardware constraints, and if yes, is the gain better explained by memory sharding / capacity relief than by simple adapter count increase?**
 
-| ID | System | Family | Definition | Parameter Budget Logic | Role |
-|----|--------|--------|------------|------------------------|------|
-| S1 | Classical RAG | Nonparametric | Existing vector-base RAG pipeline over the fixed corpus | No trainable adapter parameters | Main nonparametric baseline |
-| S2 | Single-head LoRA | Parametric | One LoRA adapter, rank 32 | Reference parametric budget | Main parametric baseline |
-| S3 | 4-branch MH-LoRA | Parametric | Four independent branches with their own `(A_i, B_i)`, each rank 8; contributions are summed | `4 x rank-8 = rank-32` total trainable budget | Tests decomposed rank under equal budget |
-| S4 | Cluster-routed single-head LoRA | Parametric | Four separate single-head LoRA adapters, rank 8 each, one adapter selected by router | Total stored trainable budget comparable to S2/S3 | Tests explicit specialization via routing |
-| S5 | Hybrid RAG + best adapter + HyDE | Hybrid | Best adapter from S2-S4 generates HyDE text for retrieval and answers with retrieved context | Uses selected best adapter only | Practical top-line |
+RQ2 is **not** the top-level project framing. It is an inner study inside RQ1.
 
-### Architectural Clarifications (Mandatory)
+#### Terminology Rules (Mandatory)
 
-1. **MH-LoRA definition in this project:**
-   - Multi-head means **four independent LoRA branches with their own `A_i` and `B_i`**.
-   - This is **not** HydraLoRA-style shared-`A`, multi-`B`.
-   - All four branches are active simultaneously in S3.
+1. **“Unsupervised parametric”** is acceptable as shorthand only in tables and diagrams.
+   In precise prose, use one of:
+   - **downstream supervision-free hypernetwork-based parametric adaptation**
+   - **amortized parametric knowledge injection**
+   - **Doc-to-LoRA-based parametric injection**
 
-2. **Implication for interpretation:**
-   - S3 does **not** primarily test higher expressive power than rank-32 LoRA.
-   - Since `sum_i B_i A_i` is still a low-rank update, S3 is treated as a study of **parameter decomposition, optimization dynamics, and potential specialization**, not as a claim of a larger effective parameter budget.
+2. The project must **not** claim that Doc-to-LoRA is fully supervision-free in an absolute sense.
+   The correct interpretation is that **downstream adaptation to the project corpus does not require task-specific QA supervision**, because the hypernetwork is already pre-trained upstream.
 
-3. **Cluster-routed design in this project:**
-   - S4 means **4 clusters -> 4 separate single-head LoRA adapters**.
-   - It does **not** mean “4-head LoRA inside each cluster”.
-   - The core comparison is:
-     - **implicit specialization inside one decomposed adapter** (S3)
-     - vs **explicit specialization by routing between four separate adapters** (S4)
+3. The supervised LoRA baseline must **not** be described as “the model learned the whole corpus”.
+   The correct interpretation is that it learns to answer in a domain-specific setting from **goldset-style supervision**, ideally in a context-aware RAFT-style format.
 
-4. **HyDE usage is deliberately restricted:**
-   - HyDE is **not** treated as a standalone retrieval toggle for vanilla RAG.
-   - Rationale: a non-adapted model is expected to generate low-value / noisy hypothetical texts on this corpus, which can degrade retrieval.
-   - Therefore HyDE is only used in **S5**, where the hypothetical document is produced by the **best corpus-adapted adapter**.
+4. The project must **not** claim full corpus internalization.
+   All conclusions are limited to the benchmark slice represented by the corpus, the goldset, the prompt protocol, the chosen model backbone, and the consumer-hardware setting.
 
-### Working Hypotheses
+#### System Inventory (Frozen Project-Level Matrix)
 
-**H1.** The best overall practical system will be **hybrid** (S5), because retrieval supplies explicit evidence while the selected adapter improves domain alignment of both HyDE generation and final answer generation.
+| ID | System | Family | Informational input | What is adapted / built | Primary role |
+|----|--------|--------|---------------------|-------------------------|--------------|
+| S1 | Classical RAG | Nonparametric | Full corpus through retrieval index | Index only, no model adaptation | Main nonparametric baseline |
+| S2 | QLoRA fine-tuned (RAFT-style) | Supervised parametric | 150 human-authored QA pairs, formatted as question + support chunks + answer | One LoRA adapter on fixed backbone | Main supervised parametric baseline |
+| S3 | Doc-to-LoRA (monolithic) | Downstream supervision-free parametric | Full corpus through Doc-to-LoRA hypernetwork | One merged LoRA adapter built from corpus chunks | Main hypernetwork-based parametric baseline |
+| S4 | Cluster-routed Doc-to-LoRA | Downstream supervision-free parametric + routing | Full corpus split into semantic clusters | One merged adapter per cluster + router | Main inner-study system |
+| S5 | Hybrid: RAG + best adapter | Hybrid | Retrieval + best adapter from S2-S4 | Best adapter + retrieval pipeline | Practical top-line |
 
-**H2.** Plain 4-branch MH-LoRA (S3) may not strongly outperform single-head LoRA (S2) under equal parameter budget unless branch diversity is encouraged; if improvement appears, it should be interpreted as an optimization / decomposition effect rather than a simple capacity increase.
+#### Family-Specific Clarifications
 
-**H3.** Cluster-routed single-head LoRA (S4) can outperform S2 and S3 if the four clusters capture stable substructures of the task space (e.g., question types, reasoning modes, or document subdomains).
+- **S1 Classical RAG** uses the existing ingestion, indexing, and retrieval stack as the reference nonparametric pipeline.
+- **S2 QLoRA fine-tuned** is trained in a **RAFT-style open-book format** whenever feasible: question + gold evidence chunks + answer, optionally with distractors. This keeps S2 aligned with document-grounded QA rather than pure closed-book memorization.
+- **S3 Doc-to-LoRA (monolithic)** is the baseline for corpus-to-adapter internalization. Because the corpus is larger than one direct Doc-to-LoRA pass can safely absorb, S3 uses a fixed chunking and adapter-merging procedure to produce one global adapter.
+- **S4 Cluster-routed Doc-to-LoRA** is the project’s own main technical extension. Documents are clustered, one Doc-to-LoRA-derived adapter is built per cluster, and a router selects which adapter to activate for a query.
+- **S5 Hybrid** combines retrieval with the best adapter selected from S2-S4.
+  - **HyDE is evaluated only inside S5**, not as a standalone toggle for vanilla RAG.
+  - Within S5, HyDE is treated as a **retrieval ablation / enhancement** generated only by the chosen best adapter.
 
-**H4.** If routing quality is weak or clusters are imbalanced, S4 may underperform S2 despite stronger specialization intuition.
+#### Primary Scientific Value
 
-**H5.** In this setting, the final research value is not only “which system wins”, but also **how specialization emerges or collapses** under equal budget.
+The main project contribution is **not** “inventing a new LoRA architecture”.
+The main contribution is a controlled comparison of **four families of knowledge injection** on one task and one hardware regime, with an embedded study of **monolithic vs routed hypernetwork-based parametric memory**.
 
-### Anchor Literature (Design Rationale)
+In one sentence:
 
-| Work | Role in this architecture |
-|------|---------------------------|
-| LoRA — *Low-Rank Adaptation of Large Language Models* | Base PEFT method and parameter-budget reference |
-| QLoRA — *Efficient Finetuning of Quantized LLMs* | Training recipe that makes the project feasible on consumer hardware |
-| HyDE — *Precise Zero-Shot Dense Retrieval without Relevance Labels* | Retrieval-time hypothetical document generation, adapted here into a domain-aware hybrid variant |
-| RAFT — *Adapting Language Model to Domain Specific RAG* | Background for document-grounded adaptation and evidence-aware evaluation; not a core training recipe here |
-| HydraLoRA — *An Asymmetric LoRA Architecture for Efficient Fine-Tuning* | Important contrast case showing what this project explicitly does **not** mean by MH-LoRA |
-| MELoRA — *Mini-Ensemble Low-Rank Adapters for Parameter-Efficient Fine-Tuning* | Parallel-adapter intuition and decomposition motivation |
-| Multi-Head Adapter Routing for Cross-Task Generalization | Adapter-routing rationale for modular specialization |
-| R-LoRA — *Randomized Multi-Head LoRA for Efficient Multi-Task Learning* | Strong motivation for branch diversification and anti-collapse analysis |
-| Poly-PRAG — *Parametric Retrieval-Augmented Generation using Latent Routing of LoRA Adapters* | Literature bridge between routed adapters and parametric retrieval ideas |
+**The project compares external retrieval, supervised PEFT, downstream supervision-free corpus-to-adapter internalization, and hybrid composition on the same document-grounded QA benchmark, then asks whether routing improves hypernetwork-based parametric memory under capacity constraints.**
+
+#### Working Hypotheses (Project-Level)
+
+**H1.** The best overall practical trade-off will come from **S5 Hybrid**, because retrieval supplies explicit evidence while the selected adapter improves domain alignment of query reformulation and answer generation.
+
+**H2.** **S2 Supervised QLoRA** will likely show stronger output formatting discipline and better behavior on highly represented supervised patterns, but its factual coverage will remain bounded by the supervision slice.
+
+**H3.** **S3/S4 Doc-to-LoRA-based systems** may be more competitive than S2 on facts not densely covered by supervised training, because they ingest raw corpus content rather than only annotated QA examples.
+
+**H4.** **S4 Cluster-routed Doc-to-LoRA** should outperform **S3 Monolithic Doc-to-LoRA** if cluster-level sharding preserves information better than a single global merge and if the router is sufficiently aligned with corpus structure.
+
+**H5.** **S1 Classical RAG** will remain strongest on deterministic lookup-heavy questions that depend on exact extraction, attribution, and grounding.
+
+**H6.** Even if S3/S4 do not beat S1, the project still yields a meaningful result by quantifying the practical limits of parametric injection on a small consumer-hardware stack.
+
+#### Inner Study Focus (RQ2 Operationalization)
+
+The inner study concerns only **S3 vs S4**.
+Its purpose is to disentangle two explanations:
+
+1. **Capacity / packaging bottleneck** — a single adapter built from many chunk-level internalizations loses information when merged.
+2. **Routing benefit** — multiple smaller semantically localized adapters preserve useful specialization and can be selected at inference time.
+
+The inner study is successful if it can answer at least one of the following cleanly:
+
+- Does cluster routing beat a monolithic merged adapter?
+- If yes, is the gain consistent across answer types or concentrated in certain regions of the benchmark?
+- If not, is the failure due to weak routing, weak clustering, or adapter merge instability?
 
 ### Success Criteria
 
 #### Primary selection logic
 
-The architecture uses a **two-level evaluation policy**:
+The project uses a **three-layer evaluation policy**:
 
-1. **Universal cross-system comparison** (applies to S1-S5):
-   - Primary metric: `Q_main = 0.7 * S_det + 0.3 * S_asst`
-2. **Retrieval-aware comparison** (applies to S1 and S5 only):
-   - Secondary metric: grounding `G = F_beta(beta=2.5)`
-   - Optional appendix metric: `Q_grounded = Q_main * G`
+1. **Universal cross-system comparison** for S1-S5:
+   - `Q_main = 0.7 * S_det + 0.3 * S_asst`
+2. **Retrieval-aware evaluation** for systems with retrieval (S1 and S5):
+   - `G = F_beta(beta = 2.5)` for grounding / evidence coverage
+   - retrieval recall-style metrics (`Recall@k`, evidence hit-rate)
+3. **Systems-cost evaluation** for all systems:
+   - TTFT
+   - end-to-end latency
+   - peak VRAM
+   - offline packaging cost (index build, training time, or adapter-generation time)
+   - storage footprint of artifacts
 
-This avoids unfairly penalizing pure parametric systems for not emitting retrieval telemetry while preserving grounding as a critical axis for retrieval-based systems.
+This structure preserves fairness:
+
+- Pure parametric systems are **not penalized** for lacking retrieval telemetry.
+- Retrieval systems are still judged on grounding, which is central to document-grounded QA.
+- Consumer-hardware practicality is treated as a first-class result, not an appendix-only consideration.
 
 #### Success Criteria Table
 
-| Metric | Baseline | Target | Rationale |
-|--------|----------|--------|-----------|
-| `Q_main` on locked test | S1 Classical RAG | Best final system improves over S1 by at least a practically meaningful margin (`>= 3` percentage points preferred) or shows clearly better trade-off at equal quality | Primary thesis result |
-| `Q_main` among S2-S4 | S2 Single-head LoRA | Either S3 or S4 should beat S2 on development means, or the study must clearly explain why decomposition / routing failed | Parametric comparison is the scientific core |
-| Grounding `G` (S1, S5) | S1 Classical RAG | S5 should not degrade grounding materially; target is `>= S1` or within `2` points if compensated by a clear `Q_main` gain | Hybrid must stay evidence-aware |
-| TTFT | S1 Classical RAG and S2 Single-head | Parametric systems should remain faster than retrieval-heavy systems; S5 should stay within a practical latency envelope (`<= 1.5x` S1 median TTFT preferred) | Consumer-hardware realism |
-| Peak VRAM | Hardware limit | All training runs must fit RTX 4060 8GB + 32GB RAM using quantization / grad accumulation | Hard operational constraint |
-| Stability | Single run can be noisy | Mean/std over seeds must be reported for development experiments; preferred `std <= 3` pp on `Q_main` | Small-data robustness |
-| Interpretability | No baseline | At least one of the two specialization analyses must show non-trivial structure rather than uniform collapse | Scientific value beyond benchmarking |
+| Metric | Baseline | Target / decision rule | Rationale |
+|--------|----------|------------------------|-----------|
+| `Q_main` on locked test | S1 Classical RAG | Preferred winning system beats S1 by a practically meaningful margin, or matches it with clearly better cost / simplicity | Main thesis result |
+| `Q_main` among S2-S4 | S2 Supervised QLoRA | At least one of S3 or S4 should either exceed S2 or clearly justify why supervised adaptation remains stronger | Core parametric comparison |
+| `Q_main` S4 vs S3 | S3 Monolithic D2L | S4 should improve mean quality or reduce failure concentration under same hardware envelope | Main inner-study result |
+| Grounding `G` | S1 Classical RAG | S5 should preserve strong grounding even when the adapter changes generator behavior | Hybrid must not break citation value |
+| TTFT | S1 Classical RAG | Any hybrid or parametric benefit must be interpreted against added latency | Practicality on consumer hardware |
+| Peak VRAM | Feasible local run | All reported main systems must fit the local hardware regime or be explicitly marked infeasible | Hard feasibility gate |
+| Offline packaging cost | N/A | Must be measured and reported for every family | Fair comparison across paradigms |
+| Malformed answer rate | Existing prompt baseline | Lower is better; used as robustness metric, not headline ranking metric | Format reliability |
+
+#### Reporting Rules
+
+- Every main result must be reported **both as an aggregate and by answer type**:
+  - `number`
+  - `boolean`
+  - `name`
+  - `names`
+  - `date`
+  - `free_text`
+  - `null / unanswerable`
+- Every retrieval-based result must include both answer quality and grounding.
+- Every parametric result must include at least one cost metric beyond quality.
+- Claims about “better knowledge injection” require discussion of **quality + cost + grounding trade-off**, not quality alone.
 
 ### Constraints (if applicable)
 
-- **Latency:** TTFT and end-to-end latency must be measured on local consumer hardware; latency is a first-class metric, not an afterthought.
-- **Interpretability:** The work must include at least two compact but defensible analyses of head / adapter specialization.
-- **Resources:** Training and inference must fit **RTX 4060 8GB + 32GB RAM**. Quantization and QLoRA-style training are expected by default.
-- **Data:** The core dataset is limited to **30 fixed documents** and **150 human-authored QA pairs**.
-- **Fairness:** Retriever, prompt family, backbone, target modules, and parameter budget are fixed across comparative runs unless the deviation is explicitly logged.
-- **HyDE restriction:** HyDE is only evaluated through the selected best adapter; no standalone vanilla-HyDE baseline is part of the core scope.
+- **Hardware:** RTX 4060 8GB VRAM, 32GB RAM, local consumer machine.
+- **Training recipe constraint:** QLoRA-style quantized PEFT is the default path for supervised adaptation.
+- **Backbone constraint:** one primary backbone is selected during feasibility and then frozen. A second backbone may be used only for a very small confirmatory run if time permits.
+- **Corpus constraint:** the corpus is fixed before the final experiment campaign. Any corpus-count discrepancy must be resolved through a frozen `data/manifests/corpus_manifest.csv` before final runs.
+- **Goldset constraint:** the final goldset size is **150 human-authored QA pairs**.
+- **Annotation constraint:** no large synthetic QA generation is part of the core project scope.
+- **Doc-to-LoRA constraint:** the hypernetwork is **not retrained** in this project. Only downstream use of the available method is in scope.
+- **Research-scope constraint:** the project does not attempt to invent a new hypernetwork architecture. Its original contribution is the comparison framework and the routed Doc-to-LoRA study.
+- **Evaluation constraint:** no method may see the locked final test questions during training, routing calibration, prompt tuning, or system selection.
+- **Claim constraint:** conclusions must remain bounded to this corpus, this benchmark, this backbone, and this hardware regime.
 
 ---
 
@@ -148,350 +190,236 @@ This avoids unfairly penalizing pure parametric systems for not emitting retriev
 > Context: The iterative workflow for running experiments. Unlike product development, this is a cycle, not a linear flow.
 
 ```
-[Corpus + Goldset Audit] -> [Backbone Feasibility Freeze] -> [Classical RAG Baseline] -> [Parametric Experiments S2-S4] -> [Select Best Adapter] -> [Hybrid S5]
-            ^                                                                                                                                    |
-            |____________________________________________________________________________________________________________________________________|
-                                                  [Error Analysis, Specialization Analysis, Split Revision only if leakage/bias is found]
+[Data Preparation] -> [EDA] -> [Deep Feature Engineering] -> [Baseline] -> [Hypothesis] -> [Experiment] -> [Evaluate]
+                                                                       ^                                  |
+                                                                       |__________________________________|
+                                                                              (iterate until target met)
 ```
 
 ### Pipeline Stages
 
 #### 1. Data Preparation
 
-- **Load from `data/raw/`**
-  - `documents/`: 30 fixed source documents
-  - `goldset/`: 150 human-authored question-answer pairs
-- **Normalize and preprocess**
-  - preserve document/page mappings
-  - unify document identifiers
-  - normalize answer formats for deterministic types
-  - attach evidence page metadata where available
-- **Save to `data/processed/`**
-  - normalized documents
-  - normalized goldset
-  - split manifests
-  - clustering features / embeddings cache
-- **Goldset expansion policy**
-  - the goldset is expanded from 100 to **150** QA pairs by adding **50 additional human-authored QA pairs**
-  - the added examples must follow the same answer-type schema and evidence annotation style
-  - no synthetic QA generation is part of the core SSOT scope
+- **Corpus freeze**
+  - Build `data/manifests/corpus_manifest.csv` with one row per source document.
+  - Freeze corpus membership, source identifiers, page mapping, and document-level metadata before main runs.
+  - All subsequent preprocessing must be reproducible from manifest + scripts.
+
+- **Goldset freeze**
+  - Expand the human-authored goldset to **150 QA pairs**.
+  - Standardize schema:
+    - `question_id`
+    - `question`
+    - `answer`
+    - `answer_type`
+    - `evidence_doc_ids`
+    - `evidence_page_ids` or equivalent span/page mapping
+    - `is_unanswerable`
+  - Keep answer formatting rules explicit for deterministic scoring.
+
 - **Split protocol**
-  - Create a **locked final test set of 30 questions** (20%)
-  - Keep **120 questions** for development / model selection
+  - Create a **locked final test set of 30 questions**.
+  - Keep the remaining **120 questions** for development.
   - Stratify by:
-    - answer type (`number`, `boolean`, `name`, `names`, `date`, `free_text`, `null/unanswerable`)
-    - approximate difficulty
+    - answer type
+    - rough difficulty
     - document coverage
     - single-document vs multi-document reasoning when identifiable
+    - unanswerable presence
+
 - **Development protocol**
-  - On the 120-question development pool, run **5-fold cross-validation**
-  - Each fold recomputes all train-time artifacts using train split only:
-    - cluster centroids
-    - routed-adapter assignments
-    - tuned hyperparameters if nested search is used
+  - On the 120-question development pool, run **5-fold cross-validation**.
+  - Each fold recomputes all train-time artifacts from the train split only for systems that require them.
+
+- **S2 data formatting**
+  - Convert supervised examples into **RAFT-style open-book training format** whenever feasible:
+    - question
+    - supporting chunk(s)
+    - optional distractors
+    - answer
+  - This format is the default for S2.
+  - A pure QA-only S2 variant is allowed only as an appendix ablation if needed.
+
 - **Leakage rules**
-  - No cluster fitting, centroid estimation, or routing calibration may see validation/test examples
-  - If paraphrase duplicates are found, they must be grouped before splitting
+  - No test example may influence:
+    - prompt tuning
+    - hyperparameter selection
+    - adapter choice for S5
+    - routing calibration using labeled outcomes
+  - Near-duplicate or paraphrase pairs must be grouped before splitting.
 
 #### 2. Exploratory Data Analysis (EDA)
 
-- Distribution analysis:
+- **Goldset EDA**
   - answer-type balance
-  - question length
-  - answer length
+  - question length distribution
+  - answer length distribution
   - evidence-page count
   - document coverage frequency
-- Retrieval sanity checks:
-  - current Classical RAG hit-rate / recall at `k`
-  - failure modes on raw-question retrieval
-  - unanswerable handling
-- Leakage and quality checks:
-  - duplicate / paraphrase detection
-  - ambiguous questions
-  - inconsistent evidence mapping
-  - malformed deterministic answers
-- Clustering sanity for S4:
-  - question-embedding visualization
-  - rough balance of 4 clusters
-  - silhouette / separability only as diagnostics, not as optimization target
-- Document EDA artifacts in `eda/reports/EDA-Report.md`
+  - unanswerable share
+
+- **Retrieval sanity checks**
+  - baseline hit-rate / recall at `k`
+  - failure cases for raw-question retrieval
+  - document coverage skew
+  - deterministic lookup vs reasoning-heavy failure split
+
+- **Corpus capacity audit**
+  - document lengths
+  - page counts
+  - approximate token counts
+  - chunk-length distribution after preprocessing
+  - whether the corpus or its subsets fit direct Doc-to-LoRA input assumptions
+
+- **Clustering diagnostics for S4**
+  - document-embedding visualization
+  - cluster balance at `k = 4`
+  - rough semantic coherence of clusters
+  - note: silhouette-like statistics are diagnostics only, not optimization targets
+
+- **EDA deliverables**
+  - `eda/reports/EDA-Report.md`
+  - `eda/reports/EDA-Insights.md`
 
 #### 3. Deep Feature Engineering
 
-> For this project, “feature engineering” means **task / representation engineering**, not tabular features.
+> For this project, “feature engineering” means representation and packaging engineering, not tabular feature crafting.
 
-- Analyze candidate representations after EDA findings are stable
-- Prioritize high-signal candidates by expected quality impact and runtime cost:
-  - question embeddings for clustering / routing
-  - prompt templates for parametric QA
-  - prompt template for HyDE generation
-  - evidence formatting for hybrid answering
-- Frozen choices after feasibility stage:
-  - one backbone model family
+- **Retrieval-side representation decisions**
+  - final retriever embedding model
+  - chunking strategy
+  - top-k retrieval depth
+  - reranking usage if already present in the existing stack
+
+- **Supervised parametric representation decisions (S2)**
+  - prompt template for RAFT-style training
+  - chunk ordering inside open-book context
+  - distractor policy
+  - answer format template
+
+- **Doc-to-LoRA packaging decisions (S3 / S4)**
+  - corpus segmentation window for Doc-to-LoRA ingestion
+  - chunk-to-adapter conversion workflow
+  - adapter merge rule in delta-weight space or equivalent implementation space
+  - cluster granularity for routed variant
+  - routing input representation
+
+- **Frozen decisions after feasibility**
+  - one primary backbone model
   - one tokenizer
-  - one set of LoRA target modules
-  - one retriever pipeline
-- Recommended representation strategy:
-  - Use the **same dense embedding model as the retriever** for cluster construction in S4 unless a strong reason exists to separate them
-- Document feature / representation strategy in `eda/reports/EDA-Insights.md`
+  - one set of LoRA target modules for S2
+  - one retrieval pipeline for S1 / S5
+  - one primary Doc-to-LoRA packaging strategy for S3 / S4
 
 #### 4. Baseline Establishment
 
-- **System S1: Classical RAG**
-  - fixed ingestion/indexing/retrieval pipeline
-  - no adapter training
-  - serves as main nonparametric baseline
-- **Internal sanity baseline (optional, not headline)**
-  - prompt-only no-RAG answer generation on the frozen backbone
-  - used only to quantify the value of retrieval itself
-- **System S2: Single-head LoRA**
-  - first parametric baseline
-  - rank 32 under the frozen target-module set
-- Save benchmark artifacts, cached retrieval results, and logs for comparison
+##### S1 — Classical RAG baseline
+
+- Use the existing ingestion, indexing, and retrieval pipeline.
+- Freeze retriever / index configuration before the main comparison campaign.
+- Evaluate with the same answer-formatting prompt protocol used elsewhere when possible.
+
+##### S2 — Supervised QLoRA baseline
+
+- Train one LoRA adapter on the frozen backbone.
+- Default format: **RAFT-style open-book supervision**.
+- QLoRA is the default training recipe due to hardware limits.
+- S2 is interpreted as **context-use adaptation under human supervision**, not whole-corpus internalization.
+
+##### S3 — Monolithic Doc-to-LoRA baseline
+
+- Build one corpus-wide adapter through a fixed pipeline:
+  1. segment corpus into Doc-to-LoRA-compatible windows
+  2. generate one intermediate adapter per segment or segment batch
+  3. merge intermediates into one final adapter using a fixed merge rule
+- S3 is explicitly acknowledged as an **approximate packaging baseline**, not a perfect one-shot internalization of the whole corpus.
+- The primary purpose of S3 is to establish whether corpus-to-adapter memory is viable at all in this setting.
+
+##### S4 — Cluster-routed Doc-to-LoRA baseline
+
+- Primary design:
+  1. embed documents using the frozen corpus representation
+  2. cluster the corpus into **4 semantic clusters**
+  3. build one merged Doc-to-LoRA adapter per cluster
+  4. route each query to one cluster adapter at inference time
+- Default clustering granularity is **document-level** for interpretability and simplicity.
+- Chunk-level clustering may be used only as an appendix ablation if document-level clustering proves clearly inadequate.
+- Default router:
+  - embed the user question
+  - compute cosine similarity to cluster centroids
+  - activate top-1 cluster adapter
+- Learned routers are out of the core scope unless they are trivial to add after the main campaign.
+
+##### S5 — Hybrid baseline
+
+- S5 combines retrieval with the best adapter selected from S2-S4.
+- The best adapter is selected on development performance, not on the locked test set.
+- S5 must be evaluated in at least two retrieval variants if feasible:
+  - **S5a:** raw-question retrieval + best adapter
+  - **S5b:** best-adapter-generated HyDE + retrieval + best adapter
+- In headline reporting, S5 refers to the best-performing hybrid configuration.
+- HyDE is therefore a **sub-ablation inside the hybrid family**, not a standalone global toggle.
 
 #### 5. Experimentation Cycle
 
-- Formulate hypothesis/task in `memory_bank/TASKS.md`
-- Keep working notes in `memory_bank/tasks/{TASK_ID}.md`
-- Implement each experiment in `experiments/EXP-XXX_*/`
-- Train and evaluate using `main_exp.py`
-- Log metrics, latency, GPU memory, judge outputs, and specialization artifacts in the experiment report
+- Formulate each concrete experiment in `memory_bank/tasks/TASKS.md`.
+- Keep one working note per experiment in `memory_bank/tasks/{TASK_ID}.md`.
+- Implement isolated experiment runs in `experiments/EXP-XXX_{description}/`.
+- Use config-driven runs with frozen seeds and explicit artifact paths.
+- Report every run in `REPORT.md` with:
+  - hypothesis
+  - exact config
+  - data split / fold
+  - metrics
+  - failure modes
+  - interpretation
 
-##### 5.1 Experiment Phases (Frozen Order)
+Recommended experiment ordering:
 
-| EXP ID | Goal | Core Output |
-|--------|------|-------------|
-| EXP-000_data_audit | Validate goldset v150, evidence pages, answer-type consistency | Clean processed dataset + split manifest |
-| EXP-010_backbone_feasibility | Choose and freeze one backbone that fits the hardware and provides acceptable baseline quality | Frozen backbone choice |
-| EXP-020_classical_rag | Measure S1 and retrieval diagnostics | Nonparametric baseline report |
-| EXP-030_single_head_lora | Train and evaluate S2 | Main parametric baseline |
-| EXP-040_mh_lora_4branch | Train and evaluate S3 | Decomposed-rank comparison |
-| EXP-050_cluster_routed_lora | Train and evaluate S4 | Explicit-routing comparison |
-| EXP-060_select_best_adapter | Choose best parametric adapter based on development results | Frozen adapter choice for S5 |
-| EXP-070_hybrid_best_adapter_hyde | Build and evaluate S5 | Hybrid top-line |
-| EXP-080_specialization_analysis | Generate the two analysis artifacts | Interpretability section figures |
-| EXP-090_locked_test | Final retrain on dev pool and evaluate once on locked test | Final thesis tables |
-
-##### 5.2 Core System Definitions
-
-###### S2 — Single-head LoRA
-
-- One adapter
-- Rank = 32
-- Same target modules across all parametric systems
-- Same optimizer family, same scheduler family, same prompt format as S3/S4
-
-###### S3 — 4-branch MH-LoRA
-
-- Four independent branches
-- Each branch rank = 8
-- Final update is the sum of branch updates
-- Default anti-collapse policy:
-  - independent random seeds per branch
-  - branch dropout during training is allowed and recommended
-- Interpretation rule:
-  - any gain over S2 is interpreted as **decomposition / optimization / specialization benefit**, not naive capacity gain
-
-###### S4 — Cluster-routed single-head LoRA
-
-- Four separate single-head adapters
-- Each adapter rank = 8
-- Training data is partitioned by cluster assignment
-- Only one adapter is active per query at inference
-- Router design (default, frozen unless explicitly revised):
-  - encode questions into dense embeddings
-  - fit `k-means` with `k=4` on **train split only**
-  - use nearest centroid by cosine similarity at inference
-- Router simplicity principle:
-  - no learned router in the core scope
-  - learned routing is appendix-only if time remains
-- Cluster health rule:
-  - if any cluster gets too few samples to train meaningfully, rerun clustering with a different seed or rebalance before training; do not silently accept pathological clusters
-
-###### S5 — Hybrid RAG + Best Adapter + HyDE
-
-- Select the best adapter from S2-S4 using development results
-- Use this adapter to generate a **hypothetical document / answer-like text** for the user question
-- Feed the resulting HyDE text into the retriever instead of the raw question
-- Retrieve real corpus evidence
-- Generate the final answer with the same selected best adapter conditioned on retrieved evidence
-- This is the **only** core use of HyDE in the project
-
-##### 5.3 Parameter Budget Policy
-
-To keep comparisons as fair as possible:
-
-- S2 uses rank 32
-- S3 uses `4 x rank 8`
-- S4 uses `4 adapters x rank 8`
-
-This equalizes the **stored trainable-parameter budget at the system level** as closely as possible under the chosen architecture definitions.
-
-##### 5.4 Backbone & Training Policy
-
-- One backbone only after feasibility freeze
-- Preferred model class: **instruction-tuned open model in the 1B-3B range**
-- Default decision rule:
-  - choose the strongest model that reliably fits training/inference on RTX 4060 8GB with 4-bit quantization
-- Quantization / PEFT policy:
-  - QLoRA-style 4-bit training is the default
-- Recommended default training settings (subject to feasibility confirmation):
-  - optimizer: AdamW / paged AdamW
-  - quantization: NF4 4-bit
-  - precision: bf16 if available, otherwise fp16
-  - max sequence length: 1024-2048 depending corpus chunk format and hardware
-  - effective batch size: achieved via gradient accumulation
-- Hyperparameter sweep (minimum required):
-  - learning rate: `5e-5`, `1e-4`, `2e-4`, `4e-4`
-  - LoRA alpha: `16`, `32`, `64`
-  - adapter dropout: `0.0`, `0.05`, `0.1`
-  - epochs / max steps: tune with early stopping on development metric
-- Fixed target modules after feasibility:
-  - default recommendation: `q_proj`, `v_proj`
-  - `o_proj` may be included only if done consistently across S2-S4 and parameter accounting is updated in this file
-
-##### 5.5 Evaluation Protocol
-
-###### Universal metrics (all systems)
-
-**Primary cross-system metric**
-
-`Q_main = 0.7 * S_det + 0.3 * S_asst`
-
-Where:
-- `S_det` = deterministic score across deterministic answer types
-- `S_asst` = LLM-judge score for free-text answers
-
-###### Deterministic scoring rules
-
-- `number` -> exact numeric comparison with tolerance where appropriate
-- `boolean` -> exact boolean match
-- `name` -> normalized exact string match
-- `names` -> set-based overlap / Jaccard-style scoring
-- `date` -> exact ISO date match
-- `null` -> valid answer when information is absent and should not be inferred
-
-###### Free-text scoring (`S_asst`)
-
-A fixed judge rubric with five binary criteria:
-- correctness
-- completeness
-- grounding / support
-- confidence calibration
-- clarity & relevance
-
-Judge policy:
-- same judge prompt for all runs
-- version-pinned judge model
-- no self-judging by the evaluated model
-- manual audit on a small subset is required before final conclusions
-
-###### Retrieval-aware metrics (S1 and S5 only)
-
-**Grounding metric**
-
-`G = F_beta(beta=2.5)` on retrieved page references.
-
-Grounding is not used as a universal cross-system multiplier because pure parametric systems do not expose retrieval telemetry in the same way.
-
-**Optional retrieval appendix metrics**
-- Recall@k
-- Hit@k
-- MRR / nDCG if already available in the pipeline
-
-###### Systems metrics
-
-- TTFT (median, p95)
-- end-to-end latency (median, p95)
-- tokens/sec during generation
-- peak VRAM for training and inference
-- wall-clock training time per epoch / run
-- malformed output rate
-
-###### Challenge-style metric adaptation
-
-The original challenge-style formula is **not** the main thesis selector.
-
-Use it as follows:
-- keep `S_det` and `S_asst` as the universal quality core
-- keep grounding `G` as a retrieval-only metric
-- track telemetry failures as a **malformed output rate**, not as a headline multiplicative factor
-- track TTFT buckets separately; if needed, reproduce bucketized TTFT as an appendix metric only
-
-##### 5.6 Aggregation & Statistical Reporting
-
-- Development results are reported as **mean +/- std** over seeds and folds where applicable
-- Locked test is run once per final chosen configuration after retraining on the full 120-question development pool
-- Report both:
-  - aggregate metrics
-  - breakdown by answer type
-- Mandatory breakdowns:
-  - `number`
-  - `boolean`
-  - `name` / `names`
-  - `date`
-  - `free_text`
-  - `null / unanswerable`
-
-##### 5.7 Adapter Selection Rule for S5
-
-The best adapter from S2-S4 is selected using the following priority order:
-
-1. Highest development `Q_main`
-2. Better latency / TTFT if `Q_main` is within a small margin
-3. Lower variance across seeds
-4. Simpler system preferred if quality is effectively tied
-
-This selected adapter is then frozen and used inside S5.
-
-##### 5.8 Specialization / Scientific Analysis (Exactly Two Core Analyses)
-
-**A1. Heatmap: head or adapter usage vs question type**
-
-Purpose:
-- detect whether certain branches / routed adapters are disproportionately associated with certain answer or reasoning types
-
-Implementation:
-- for S3: quantify per-branch contribution norm or activation contribution by question type
-- for S4: visualize routing frequency by cluster/adapter vs question type
-
-**A2. Pairwise similarity matrix between heads / adapters**
-
-Purpose:
-- check whether branches / adapters genuinely diverged or effectively collapsed
-
-Implementation options:
-- cosine similarity between flattened adapter updates
-- similarity of head contributions on a fixed probe set
-
-Only these two analyses are mandatory in the core thesis scope.
+1. **EXP-001** — Lock S1 Classical RAG baseline.
+2. **EXP-002** — Feasibility run for S2 supervised QLoRA on smallest practical setup.
+3. **EXP-003** — Feasibility run for S3 monolithic Doc-to-LoRA packaging.
+4. **EXP-004** — Corpus clustering study for S4.
+5. **EXP-005** — Main comparison S1 vs S2 vs S3 vs S4 on development folds.
+6. **EXP-006** — Hybrid study S5a vs S5b.
+7. **EXP-007** — Locked test evaluation.
+8. **EXP-008** — Error analysis and interpretability.
 
 #### 6. Final Evaluation
 
-- Final locked test evaluation is performed only after:
-  - backbone is frozen
-  - hyperparameters are selected
-  - best adapter is selected
-  - all core systems S1-S5 are implemented and validated
-- Deliverables:
-  - final comparison table
-  - per-answer-type table
-  - latency / VRAM table
-  - two specialization figures
-  - explicit discussion of failure modes and threats to validity
-- Model documentation in `models/model_<metric>_<value>/MODEL_REPORT.md`
-- Model architecture and validation strategy are documented in model reports, not here
+- **Locked test execution**
+  - Run only after the main system designs are frozen.
+  - Use the locked 30-question test set once for headline results.
 
-### Risks & Mitigations
+- **Universal metrics for S1-S5**
+  - `S_det` for deterministic answer types
+  - `S_asst` for free-text judged answers
+  - `Q_main = 0.7 * S_det + 0.3 * S_asst`
+  - malformed answer rate
+  - TTFT
+  - end-to-end latency
+  - peak VRAM
+  - offline preparation cost:
+    - index build time for S1
+    - QLoRA training time for S2
+    - Doc-to-LoRA adapter generation / merge time for S3-S4
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Small dataset causes noisy conclusions | High | Locked test + dev CV + multiple seeds + error analysis |
-| Cluster imbalance in S4 | High | Stratified clustering diagnostics, rerun if pathological |
-| S3 heads collapse to similar updates | Medium | Independent branch seeds, dropout, similarity analysis |
-| HyDE harms retrieval | High | HyDE only through selected adapted adapter; compare against S1 on grounding and latency |
-| Hardware OOM | High | QLoRA, 4-bit quantization, conservative target modules, gradient accumulation |
-| Judge instability | Medium | Version-pin judge, manual audit subset, keep deterministic metrics separate |
+- **Retrieval-aware metrics for S1 and S5**
+  - grounding `G = F_beta(beta = 2.5)`
+  - retrieval `Recall@k`
+  - evidence hit-rate / page overlap where available
+
+- **Interpretation rules**
+  - A system is not “better” based on `Q_main` alone if its cost or grounding profile is materially worse.
+  - Hybrid wins must be discussed in terms of both accuracy and retrieval dependence.
+  - Strong performance by S2 must be interpreted as success of supervised adaptation, not evidence that the whole corpus was internalized.
+  - Strong performance by S3/S4 must be interpreted as success of corpus-to-adapter packaging within this benchmark, not universal replacement of retrieval.
+
+- **Inner-study reporting for RQ2**
+  - Compare S3 vs S4 overall and by answer type.
+  - Report routing distribution across clusters.
+  - Report cluster size balance and cluster-level failure concentration.
+  - Diagnose whether gains, if any, come from better specialization or simply from avoiding destructive global merge.
 
 ---
 
@@ -501,46 +429,32 @@ Only these two analyses are mandatory in the core thesis scope.
 
 - **Language:** Python 3.11+
 - **Core Libraries:**
-  - **Data:** `pandas`, `numpy`, `pyarrow`
-  - **ML / Eval:** `scikit-learn`, `scipy`, `rapidfuzz`, `pydantic`
-  - **DL / LLM:** `torch`, `transformers`, `peft`, `accelerate`, `bitsandbytes`
-  - **Retrieval / Embeddings:** existing project retriever stack, plus `sentence-transformers` / vector DB client as required by the reused pipeline
-  - **Visualization:** `matplotlib`, `seaborn`, `plotly` (optional interactive diagnostics)
-- **Environment:** `uv` + local virtual environment; optional Docker only if it does not slow iteration
-- **Compute:** local workstation, **RTX 4060 8GB**, **32GB RAM**
-- **Tracking / Logging:** local filesystem first; `wandb` or `mlflow` optional but not required by SSOT
-- **Model Storage:** local `models/` directory; adapters stored separately from merged checkpoints whenever possible
-- **Judge Execution:** fixed external or local stronger model, version-pinned and logged
+  - Data: `pandas`, `numpy`, `pyarrow`
+  - ML / utilities: `scikit-learn`, `scipy`
+  - DL: `torch`, `transformers`, `accelerate`
+  - PEFT: `peft`, `bitsandbytes`
+  - Retrieval / embeddings: `sentence-transformers`, `faiss` or existing vector DB stack
+  - Evaluation: custom project metrics, optional `datasets` utilities, optional LLM-judge client wrappers
+  - Visualization: `matplotlib`, optional `plotly`
+- **External method integration:**
+  - Doc-to-LoRA repository / package integration is allowed as a dependency or submodule.
+  - The project does **not** retrain the Doc-to-LoRA hypernetwork.
+- **Environment:** `uv` preferred; separate environment allowed for Doc-to-LoRA integration if dependency conflicts occur.
+- **Compute:** local machine with RTX 4060 8GB + 32GB RAM.
+- **Storage note:** sufficient disk must be reserved for adapters, embeddings, logs, and experiment artifacts.
+- **Setup Commands:**
+  ```bash
+  uv sync                    # Install dependencies
+  source .venv/bin/activate  # Linux/macOS
+  .venv\Scripts\activate     # Windows
+  ```
 
-### Backbone Policy
+Recommended practical stack defaults:
 
-- The project uses **one frozen backbone after EXP-010**.
-- Candidate backbones should come from the **1B-3B instruct** range.
-- Selection criteria:
-  1. fits RTX 4060 8GB with QLoRA-style training
-  2. adequate baseline reasoning quality on the corpus
-  3. stable generation format for deterministic answers
-
-### Setup Commands
-
-```bash
-uv sync                    # Install dependencies
-source .venv/bin/activate  # Linux/macOS
-.venv\Scripts\activate     # Windows
-```
-
-### Reproducibility Requirements
-
-- All experiment configs are file-based and versioned
-- Random seeds must be fixed and logged
-- Every run must log:
-  - git commit hash or equivalent code version
-  - dataset split version
-  - backbone name
-  - quantization mode
-  - adapter config
-  - router config (if any)
-  - judge version
+- **Backbone default:** one small instruct model feasible under QLoRA on 8GB VRAM.
+- **Precision / quantization default:** 4-bit where needed for supervised PEFT.
+- **Embedding default:** use the same dense embedding family for retrieval and document clustering unless there is a compelling reason to decouple them.
+- **Plotting default:** use `matplotlib` for all final charts.
 
 ---
 
@@ -549,67 +463,47 @@ source .venv/bin/activate  # Linux/macOS
 ### Project Structure
 
 ```text
-data/
-├── raw/
-│   ├── documents/                 # 30 source documents
-│   └── goldset/                   # 150 human-authored QA pairs
-├── processed/
-│   ├── corpus/                    # normalized docs, page mapping, chunk ids
-│   ├── goldset/                   # normalized QA and answer types
-│   ├── splits/                    # locked test + dev CV manifests
-│   ├── retrieval/                 # cached retrieval outputs / diagnostics
-│   └── clustering/                # cached embeddings, centroids, assignments
-└── interim/                       # optional temporary artifacts, never SSOT
-
-src/
+src/                                      # Reusable typed functions (DRY principle)
 ├── __init__.py
+├── config.py                             # Global configuration / dataclasses
 ├── data/
-│   ├── documents.py               # corpus loading / normalization
-│   ├── goldset.py                 # QA loading / validation / answer normalization
-│   ├── splits.py                  # split generation and CV utilities
-│   └── validation.py              # schema and leakage checks
+│   ├── io.py                             # Load corpus, goldset, manifests
+│   ├── preprocessing.py                  # Chunking, normalization, schema validation
+│   └── splits.py                         # Split and CV utilities
 ├── rag/
-│   ├── ingestion.py               # existing ingestion wrappers
-│   ├── indexing.py                # index build / reuse wrappers
-│   ├── retrieval.py               # retriever calls and telemetry
-│   ├── hyde.py                    # HyDE generation + retrieval glue for S5
-│   └── prompts.py                 # RAG / HyDE prompts
-├── adapters/
-│   ├── single_lora.py             # S2 definition
-│   ├── mh_lora.py                 # S3 definition
-│   ├── routed_lora.py             # S4 orchestration
-│   ├── routing.py                 # clustering, centroid selection, routing logic
-│   └── config.py                  # adapter config schemas
-├── training/
-│   ├── dataset.py                 # parametric training datasets
-│   ├── collators.py               # batching logic
-│   ├── trainer.py                 # shared train/eval loops
-│   ├── checkpoints.py             # adapter save/load helpers
-│   └── prompts.py                 # training prompt templates
+│   ├── indexing.py                       # Index build / load
+│   ├── retrieval.py                      # Retrieval and reranking wrappers
+│   └── prompting.py                      # RAG answer prompts
+├── qlora/
+│   ├── dataset.py                        # RAFT-style supervised dataset builders
+│   ├── training.py                       # QLoRA training loop / trainer wrappers
+│   ├── inference.py                      # Adapter loading and generation
+│   └── prompts.py                        # Supervised training / inference templates
+├── doc2lora/
+│   ├── packaging.py                      # Corpus segmentation for Doc-to-LoRA
+│   ├── internalize.py                    # Adapter generation wrappers
+│   ├── merge.py                          # Adapter merge logic
+│   └── inference.py                      # Adapter loading and generation
+├── routing/
+│   ├── clustering.py                     # Document clustering
+│   ├── centroids.py                      # Cluster summary artifacts
+│   └── router.py                         # Query-to-cluster routing
 ├── evaluation/
-│   ├── deterministic.py           # S_det metrics
-│   ├── judge.py                   # S_asst rubric and scoring wrapper
-│   ├── grounding.py               # page-level F_beta grounding
-│   ├── latency.py                 # TTFT and E2E latency
-│   ├── telemetry.py               # malformed output and format checks
-│   └── reports.py                 # summary table generation
-├── analysis/
-│   ├── specialization.py          # heatmap and usage analysis
-│   ├── similarity.py              # pairwise head/adapter similarity
-│   └── visualization.py           # plot helpers
-└── utils/
-    ├── io.py
-    ├── logging.py
-    ├── seeding.py
-    └── types.py
+│   ├── deterministic.py                  # Deterministic answer scoring
+│   ├── judge.py                          # Free-text scoring / LLM judge wrapper
+│   ├── grounding.py                      # Retrieval grounding metrics
+│   ├── systems.py                        # TTFT, latency, VRAM, storage metrics
+│   └── reports.py                        # Aggregation and result tables
+├── visualization.py                      # Plots, heatmaps, summary figures
+└── utils.py                              # Shared helpers
 
-main.py                            # Main pipeline (cell-like blocks with # %% separators)
-config.py                          # Global configuration and hyperparameters
+main.py                                   # Main orchestration script (cell-like blocks)
+config.py                                 # Top-level config entrypoint if needed
 
 eda/
 ├── src/
-│   ├── eda.py                     # EDA analysis and visualizations
-│   └── deep_eda.py                # Representation / routing diagnostics
+│   ├── eda.py                            # EDA analysis
+│   └── deep_eda.py                       # Representation / clustering analysis
 ├── results/
 │   ├── figures/
 │   └── tables/
@@ -618,102 +512,92 @@ eda/
     └── EDA-Insights.md
 
 experiments/
-├── EXP-000_data_audit/
-├── EXP-010_backbone_feasibility/
-├── EXP-020_classical_rag/
-├── EXP-030_single_head_lora/
-├── EXP-040_mh_lora_4branch/
-├── EXP-050_cluster_routed_lora/
-├── EXP-060_select_best_adapter/
-├── EXP-070_hybrid_best_adapter_hyde/
-├── EXP-080_specialization_analysis/
-└── EXP-090_locked_test/
-    ├── main_exp.py                # Experiment pipeline (cell-like blocks)
-    ├── config.py                  # Experiment-specific config
-    └── REPORT.md                  # Experiment report
-
-models/
-├── base/
-├── adapters/
-│   ├── single_head/
-│   ├── mh4/
-│   ├── routed_cluster/
-│   └── hybrid_selected/
-└── merged/                        # only if merged checkpoints are needed
-
-logs/
-└── [experiment_id]/
+└── EXP-XXX_{description}/
+    ├── main_exp.py                       # Experiment pipeline (cell-like blocks)
+    ├── config.py                         # Experiment-specific config
+    ├── artifacts/                        # Saved adapters, caches, tables
+    └── REPORT.md                         # Experiment report
 
 memory_bank/
-├── ARCHITECTURE.md                # canonical project architecture (this file)
-├── STATE.md                       # current project state
+├── ARCHITECTURE.md                       # This SSOT
+├── STATE.md                              # Current state / decisions
 └── tasks/
     ├── TASKS.md
     └── {TASK_ID}.md
+
+data/
+├── raw/
+├── processed/
+├── manifests/
+│   └── corpus_manifest.csv
+└── splits/
+
+logs/
+models/
+results/
 ```
 
 ### Code Style
 
-- **Cell-like execution:** Use `# %% [Block Name]` separators in `main.py` and `main_exp.py` for block-by-block execution
-- **Typed functions:** All functions should have type hints
-- **Reusability:** Functions in `src/` should be reusable across experiments (DRY)
-- **Docstrings:** All public functions must have docstrings
-- **Config-first design:** Hard-coded experiment values inside scripts are discouraged; configs must live in `config.py` or experiment configs
-- **Evaluation isolation:** Metric code must not depend on training code side effects
-- **No silent defaults:** Any fallback behavior that changes model, data split, router, or metric logic must be logged explicitly
+- **Cell-like execution:** use `# %% [Block Name]` separators in `main.py` and `main_exp.py` for block-by-block execution.
+- **Typed functions:** all reusable functions must have type hints.
+- **Config-first design:** experiment behavior must be driven by configs, not hidden constants.
+- **Reusability:** code in `src/` must be reusable across experiments and not tightly coupled to a single run.
+- **Docstrings:** all public functions must have docstrings.
+- **No silent fallback behavior:** any fallback logic for missing adapters, empty retrieval, or routing failure must be logged explicitly.
+- **Prompt versioning:** prompts used in S1-S5 must be stored as versioned strings or files, not only inline in notebooks.
 
 ### Naming Conventions
 
 - **Scripts:** `main.py`, `main_exp.py`, `config.py`
-- **Modules:** lowercase with underscores (`single_lora.py`, `routed_lora.py`, `grounding.py`)
-- **Experiments:** `EXP-{number}_{description}/`
-- **Adapters:** `adapter_{method}_r{rank}_seed{seed}`
-- **Routers / centroids:** `router_k{K}_seed{seed}`
-- **Models:** `model_{experiment_id}_{metric}_{value}.pkl` or adapter-native format
-- **Reports:** `REPORT.md`, `MODEL_REPORT.md`, `ERROR_ANALYSIS.md`
-- **Splits:** `split_v{version}_{name}.json`
+- **Modules:** lowercase with underscores (`routing.py`, `grounding.py`)
+- **Experiments:** `EXP-001_baseline_rag/`, `EXP-005_main_family_comparison/`
+- **Adapters:**
+  - `adapter_s2_qlora_fold{n}`
+  - `adapter_s3_doc2lora_global`
+  - `adapter_s4_cluster{c}`
+- **Reports:** `REPORT.md`, `MODEL_REPORT.md`, `EVAL_SUMMARY.md`
+- **Figures:** `fig_{topic}_{split}.png`
+- **Tables:** `tbl_{topic}_{split}.csv`
 
 ### Logging
 
-- Training logs in `logs/`, format `[YYYY-MM-DD HH:MM:SS] [LEVEL] - Message`
-- Additionally store machine-readable metrics in JSON / JSONL
-- Random seeds: always set and document for reproducibility
-- Every experiment report must include:
-  - goal / hypothesis
-  - exact config
-  - dataset split version
-  - backbone and quantization mode
-  - metrics table
-  - latency table
-  - failure cases
-  - decision: continue / revise / stop
+- Training / generation logs must follow the format:
+  `[YYYY-MM-DD HH:MM:SS] [LEVEL] - Message`
+- Every experiment log must record:
+  - random seed(s)
+  - git commit hash if available
+  - hardware summary
+  - backbone identifier
+  - adapter identifier
+  - retrieval configuration
+  - prompt version hash
+  - split / fold identifier
+- Per-query inference logs should capture, where relevant:
+  - question ID
+  - selected system ID
+  - selected adapter / cluster
+  - retrieved doc IDs / pages for retrieval systems
+  - latency breakdown
+  - raw and normalized answers
+- Routing logs for S4 must include:
+  - question embedding routing target
+  - similarity scores to cluster centroids
+  - fallback decision if any
+- Final reporting must preserve enough metadata to reproduce any headline number.
 
-### SSOT Rules
+---
 
-- `memory_bank/ARCHITECTURE.md` is the authoritative definition of:
-  - core systems
-  - split strategy
-  - primary metrics
-  - parameter-budget logic
-  - final evaluation protocol
-- `STATE.md` tracks current progress but does not override architecture
-- Experiment reports may propose deviations, but they are not canonical until this file is updated
-- Any change to the following requires updating this file first:
-  - backbone family
-  - number of systems in the core comparison
-  - rank / parameter-budget policy
-  - primary metric
-  - split protocol
-  - HyDE usage policy
+## Change Control
 
-### Definition of Done
+Any change to the following requires a SSOT update before new headline experiments are run:
 
-The project is considered architecturally complete when all of the following are true:
+- main research question
+- system inventory S1-S5
+- backbone model
+- goldset size / split policy
+- Doc-to-LoRA packaging strategy
+- routing protocol
+- primary evaluation metric definition
 
-1. S1-S5 are implemented and evaluated under the frozen protocol
-2. Best adapter from S2-S4 is selected transparently
-3. Locked test results are produced
-4. `Q_main`, grounding, latency, and VRAM tables are available
-5. Two specialization analyses are generated
-6. Threats to validity and failure modes are explicitly documented
-
+Minor implementation changes that do not alter scientific interpretation may remain documented only in experiment reports.

@@ -1,153 +1,144 @@
-# Project Architecture: Term-Paper
+# SSOT: Knowledge Injection for Document-Grounded QA on Consumer Hardware
 
-## 1. Problem Statement & Success Criteria
+**Version:** 3.0 | **Updated:** 2026-03-26 | **Shorthand:** `knowledge-injection-consumer-hw`
 
-> Context: Define the problem clearly, what success looks like.
-
-### Problem Definition
-
-
-### Success Criteria
-
-| Metric | Baseline | Target | Rationale |
-|--------|----------|--------|-----------|
-| [Primary metric, e.g., F1-Score] | [Current/naive baseline] | [Target value] | [Why this target?] |
-| [Secondary metric, e.g., AUC-ROC] | [Baseline] | [Target] | [Rationale] |
-
-### Constraints (if applicable)
-
-- **Latency:** [e.g., Inference must be < 100ms]
-- **Interpretability:** [e.g., Model must be explainable for regulatory reasons]
-- **Resources:** [e.g., Training must fit in 16GB GPU memory]
+> Authoritative source for scope, systems, metrics, and frozen decisions.
+> Detail specs live in `memory_bank/tasks/SPEC-*.md`.
+> Deviations require updating this file first.
 
 ---
 
-## 2. Experiment Pipeline
+## 1. Research Questions
 
-> Context: The iterative workflow for running experiments. Unlike product development, this is a cycle, not a linear flow.
+**RQ1 (main):** How do four knowledge-injection paradigms compare on consumer hardware for document-grounded QA over a fixed corpus — nonparametric retrieval, supervised parametric adaptation, downstream supervision-free hypernetwork-based parametric adaptation, and hybrid — when each paradigm operates under its natural informational and computational constraints?
 
-```
-[Data Collection] -> [EDA] -> [Deep Feature Engineering] -> [Baseline] -> [Hypothesis] -> [Experiment] -> [Evaluate]
-                                                                       ^                                  |
-                                                                       |__________________________________|
-                                                                              (iterate until target met)
-```
-
-### Pipeline Stages
-
-1. **Data Preparation**
-   - Load from `data/raw/`
-   - Clean and preprocess -> save to `data/processed/`
-   - Split: train/validation/test (with stratification if needed)
-
-2. **Exploratory Data Analysis (EDA)**
-   - Distribution analysis
-   - Correlation analysis
-   - Leakage and quality checks
-   - Document data architecture in `eda/reports/EDA-Report.md`
-
-3. **Deep Feature Engineering**
-   - Analyze candidate features after EDA findings are stable
-   - Prioritize high-signal candidates by expected metric impact and runtime cost
-   - Document feature strategy in `eda/reports/EDA-Insights.md`
-
-4. **Baseline Establishment**
-   - Simple model (e.g., LogisticRegression, RandomForest with defaults)
-   - Naive baseline (e.g., predict majority class)
-   - Save benchmark artifacts and logs for comparison
-
-5. **Experimentation Cycle**
-   - Formulate hypothesis/task in `memory_bank/TASKS.md`
-   - Keep working notes in `memory_bank/tasks/{TASK_ID}.md`
-   - Implement experiment in `experiments/EXP-XXX/`
-   - Train and evaluate using `main_exp.py`
-   - Log results in experiment report
-
-6. **Final Evaluation**
-   - Test set evaluation (only when confident)
-   - Error analysis
-   - Model documentation in `models/model_<metric>_<value>/MODEL_REPORT.md`
-   - Model architecture and validation strategy are documented in model reports, not here
+**RQ2 (inner study, S3 vs S4):** Does cluster-routed Doc-to-LoRA outperform monolithic Doc-to-LoRA, and is the gain better explained by capacity relief / specialization than by simple adapter count increase?
 
 ---
 
-## 3. Technology Stack
+## 2. System Inventory (Frozen)
 
-> Context: Tools, libraries, and infrastructure for the project.
+| ID | System | Family | Info input | What is adapted |
+|----|--------|--------|------------|-----------------|
+| S1 | Classical RAG | Nonparametric | Full corpus via index | Nothing (retrieval only) |
+| S2 | QLoRA (RAFT-style) | Supervised parametric | 150 QA pairs + gold chunks | One LoRA adapter on backbone |
+| S3 | Doc-to-LoRA (monolithic) | Supervision-free parametric | Full corpus via hypernetwork | One merged LoRA from chunk passes |
+| S4 | Cluster-routed Doc-to-LoRA | Supervision-free parametric + routing | Corpus clusters via hypernetwork | Per-cluster LoRA + router |
+| S5 | Hybrid: RAG + best adapter | Hybrid | Retrieval + best adapter (S2-S4) | Best adapter + retrieval pipeline |
 
-- **Language:** [e.g., Python 3.10+]
-- **Core Libraries:** 
-  - Data: [e.g., pandas, numpy, polars]
-  - ML: [e.g., scikit-learn, XGBoost, LightGBM]
-  - DL: [e.g., PyTorch, TensorFlow] (if applicable)
-  - Visualization: [e.g., matplotlib, seaborn, plotly]
-- **Environment:** [e.g., uv, Docker]
-- **Compute:** [e.g., Local, Cloud GPU, Colab]
-- **Setup Commands:**
-  ```bash
-  uv sync                    # Install dependencies
-  source .venv/bin/activate  # Linux/macOS
-  .venv\Scripts\activate     # Windows
-  ```
+S5 sub-variants: **S5a** (raw-query retrieval + adapter), **S5b** (adapter-generated HyDE + retrieval + adapter). HyDE is only evaluated inside S5.
+
+See `SPEC-systems.md` for detailed system definitions, packaging strategies, and merge rules.
+
 ---
 
-## 4. Code Organization & Conventions
+## 3. Working Hypotheses
 
-### Project Structure
+- **H1.** S5 Hybrid gives best practical trade-off (retrieval evidence + adapted generation).
+- **H2.** S2 QLoRA shows best format discipline but is bounded by goldset coverage (~150 facts).
+- **H3.** S3/S4 Doc-to-LoRA competitive on facts outside goldset scope; limited by hypernetwork capacity.
+- **H4.** S4 cluster-routed beats S3 monolithic via capacity relief and specialization.
+- **H5.** S1 RAG dominates on deterministic lookup (date, number, name).
+- **H6.** Even if parametric systems don't beat RAG, quantifying their limits is a valid result.
 
-```
-src/                          # Reusable typed functions (DRY principle)
-├── __init__.py
-├── data.py                   # Data loading, cleaning, transformations
-├── features.py               # Feature engineering functions
-├── eda.py                    # EDA analysis and visualizations
-├── models.py                 # Model initialization, training, inference
-├── evaluation.py             # Metrics, validation, error analysis
-└── visualization.py          # Plotting functions
+---
 
-main.py                       # Main pipeline (cell-like blocks with # %% separators)
-config.py                     # Global configuration and hyperparameters
+## 4. Frozen Decisions
 
-eda/
-├── src/
-│   ├── eda.py                # EDA analysis and visualizations
-│   └── deep_eda.py           # Deep feature engineering analysis
-├── results/
-│   ├── figures/
-│   └── tables/
-└── reports/
-    ├── EDA-Report.md
-    └── EDA-Insights.md
+| Decision | Value | Rationale |
+|----------|-------|-----------|
+| Backbone | **Gemma-2-2b-it** | Only backbone with released Doc-to-LoRA hypernetwork checkpoint; used by all S1-S5 for fairness |
+| Hypernetwork | **SakanaAI Doc-to-LoRA** (checkpoint-80000) | Pre-trained, not retrained in this project |
+| Corpus | **65 PDF documents** (DIFC legal domain) | Fixed, frozen before experiments |
+| Goldset | **150 human-authored QA pairs** (Warmup 100 + Full 50) | No synthetic expansion |
+| Split | **120 dev / 30 locked test**, stratified by answer_type + difficulty | Single fixed split, no CV |
+| S2 variance | **3 random seeds**, report mean ± std | Replaces CV for supervised system |
+| S2 training format | **RAFT-style open-book** (question + gold chunks → answer) | Context-aware, not closed-book |
+| Judge model | **gpt-5.4-mini** (OpenAI API, medium reasoning), version-pinned | External, not self-judging |
+| Hardware | **RTX 4060 8GB VRAM, 32GB RAM** | Hard constraint; QLoRA 4-bit default |
+| Quantization | **4-bit NF4** for QLoRA training | Standard QLoRA recipe |
+| Embedding model | Same for retrieval index and document clustering | Unless strong reason to decouple |
+| Clustering (S4) | **k=4, document-level, k-means, cosine nearest centroid** | Simple, interpretable, no learned router |
 
-experiments/                  # Isolated experiments
-└── EXP-XXX_{description}/
-    ├── main_exp.py           # Experiment pipeline (cell-like blocks)
-    ├── config.py             # Experiment-specific config
-    └── REPORT.md             # Experiment report
+---
 
-memory_bank/
-├── ARCHITECTURE.md
-├── STATE.md
-└── tasks/
-    ├── TASKS.md
-    └── {TASK_ID}.md
-```
+## 5. Evaluation Protocol (Compact)
 
-### Code Style
+**Primary metric (all systems):**
+`Q_main = 0.7 × S_det + 0.3 × S_asst`
 
-- **Cell-like execution**: Use `# %% [Block Name]` separators in `main.py` and `main_exp.py` for block-by-block execution
-- **Typed functions**: All functions should have type hints
-- **Reusability**: Functions in `src/` should be reusable across experiments (DRY)
-- **Docstrings**: All public functions must have docstrings
+- `S_det`: deterministic accuracy (number, boolean, name, names, date, null)
+- `S_asst`: LLM-judge score on free_text (5 binary criteria, gpt-5.4-mini)
 
-### Naming Conventions
+**Retrieval-aware (S1, S5 only):**
+`G = F_β(β=2.5)` on page-level grounding
 
-- **Scripts**: `main.py`, `main_exp.py`, `config.py`
-- **Modules**: lowercase with underscores (`data.py`, `feature_engineering.py`)
-- **Models**: `model_{experiment_id}_{metric}_{value}.pkl`
-- **Experiments**: `EXP-{number}_{description}/`
+**Systems metrics (all):**
+TTFT, end-to-end latency, peak VRAM, offline packaging cost (index build / training / adapter generation time)
 
-### Logging
+**Breakdowns:** every metric reported aggregate + by answer_type.
 
-- Training logs in `logs/`, format `[YYYY-MM-DD HH:MM:SS] [LEVEL] - Message`
-- Random seeds: Always set and document for reproducibility
+**Interpretation guidelines** (not targets):
+- Quality claims require discussing cost + grounding trade-off, not quality alone.
+- S2 performance reflects supervised adaptation quality, not whole-corpus knowledge.
+- S3/S4 performance reflects hypernetwork packaging quality within this benchmark.
+- S1 grounding is the reference; S5 must not degrade grounding materially.
+
+See `SPEC-evaluation.md` for scoring rules, judge rubric, and reporting format.
+
+---
+
+## 6. Terminology Rules
+
+1. In precise prose use **"downstream supervision-free"** not "unsupervised" (hypernetwork is pre-trained upstream).
+2. S2 learns from **goldset-style supervision**, not "the whole corpus."
+3. No claim of **full corpus internalization** — conclusions bounded to this benchmark, backbone, and hardware.
+4. "Unsupervised parametric" acceptable only in tables/diagrams as shorthand.
+
+---
+
+## 7. Data Summary
+
+| Attribute | Value |
+|-----------|-------|
+| Documents | 65 PDFs, DIFC legal domain |
+| QA pairs | 150 (100 warmup + 50 full) |
+| Answer types | free_text: 44, boolean: 42, number: 25, name: 21, names: 11, date: 7 |
+| Difficulty | easy: 101, medium: 43, hard: 6 |
+| Multi-doc questions | 47 (31%) |
+| Negative/unanswerable | 33 (22%) |
+
+See `SPEC-data.md` for split protocol, schema, leakage rules.
+
+---
+
+## 8. Experiment Phases
+
+| Phase | Goal | Key output |
+|-------|------|------------|
+| EXP-001 | Data audit + corpus manifest + split freeze | `data/manifests/`, `data/splits/` |
+| EXP-002 | S1 Classical RAG baseline | Nonparametric baseline metrics |
+| EXP-003 | S2 QLoRA feasibility + baseline (3 seeds) | Supervised parametric baseline |
+| EXP-004 | S3 Doc-to-LoRA monolithic feasibility + packaging | Hypernetwork baseline |
+| EXP-005 | S4 Clustering study + routed Doc-to-LoRA | Routed parametric system |
+| EXP-006 | Main comparison S1-S4 on dev | Cross-paradigm results |
+| EXP-007 | S5 Hybrid (S5a + S5b) | Hybrid top-line |
+| EXP-008 | Locked test + error analysis | Final thesis tables |
+
+---
+
+## 9. Technology Stack
+
+- **Python 3.11+**, `uv` for env management
+- **DL:** `torch`, `transformers`, `peft`, `accelerate`, `bitsandbytes`
+- **Retrieval:** `sentence-transformers`, `faiss` or existing vector DB
+- **Doc-to-LoRA:** SakanaAI repo as dependency/submodule
+- **Evaluation:** custom metrics + OpenAI API client for judge
+- **Viz:** `matplotlib`
+
+---
+
+## 10. Change Control
+
+Updates to this file required before new experiments if changing:
+research questions, system inventory, backbone, goldset size/split, Doc-to-LoRA packaging strategy, routing protocol, primary metric definition.

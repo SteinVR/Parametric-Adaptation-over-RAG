@@ -1,52 +1,32 @@
-# Task Board (DS): Term-Paper
+# Task Board
 
-> Keep this file concise (max 150 lines). Store only grouped high-level tasks. Detailed plans, specs, and notes live in `memory_bank/tasks/{TASK_ID}.md`.
+> Ordered task list. Details in `memory_bank/tasks/{TASK_ID}.md`.
 
-## Wave Protocol
-
-Tasks are organized in **waves**. Waves execute sequentially; tasks within a wave execute in parallel.
-
-- **Naming:** `W1A`, `W1B`, `W1C` (Wave 1, tasks A–C), `W2A` (Wave 2, task A), etc.
-- **Backlog items:** `BL-001`, `BL-002`, etc.
-- A wave is complete when all its tasks pass the quality gate and are integrated.
-- The next wave starts only after the current wave is fully integrated.
-- New tasks discovered mid-wave go into the next wave or backlog — never into the active wave.
-
-## 1. Active Plan (Ordered)
+## Active Queue
 
 ### Wave 1: Foundation
-- [ ] [W1A](./tasks/W1A.md) Setup reproducible baseline and evaluator: establish first trusted benchmark and artifact contract.
-- [ ] [W1B] Complete EDA package: finalize `EDA-Report.md`, charts, and core risk findings.
+- [x] [EXP-001](./tasks/EXP-001.md) Data audit: corpus manifest, goldset validation, split freeze, capacity audit
+- [ ] [EXP-002](./tasks/EXP-002.md) S1 Classical RAG baseline on Gemma-2-2b-it
 
-### Wave 2: Deep Feature Engineering
-- [ ] [W2A] Produce deep feature candidates: rank feature ideas by expected impact, leakage risk, and runtime cost.
-- [ ] [W2B] Select production-safe feature subset: confirm top candidates for baseline and experiment loops.
+### Wave 2: Parametric Feasibility
+- [ ] [EXP-003](./tasks/EXP-003.md) S2 QLoRA feasibility + baseline (3 seeds, RAFT-style)
+- [ ] [EXP-004](./tasks/EXP-004.md) S3 Doc-to-LoRA monolithic feasibility + merge strategy selection
 
-### Wave 3: Experimentation
-- [ ] [W3A] Run first hypothesis cycle: implement and evaluate one controlled experiment against baseline.
+### Wave 3: Routing + Comparison
+- [ ] [EXP-005](./tasks/EXP-005.md) S4 Clustering study + cluster-routed Doc-to-LoRA
+- [ ] [EXP-006](./tasks/EXP-006.md) Main cross-paradigm comparison S1-S4 on dev
 
-## 2. Low Priority / Ideas
-- [ ] [BL-001] [Idea title]: [1-2 line description]
+### Wave 4: Hybrid + Final
+- [ ] [EXP-007](./tasks/EXP-007.md) S5 Hybrid (S5a raw + S5b HyDE)
+- [ ] [EXP-008](./tasks/EXP-008.md) Locked test evaluation + error analysis + final tables
 
-## 3. Review Findings (Cross-Module)
+## Specs (Reference)
+- [SPEC-systems](./tasks/SPEC-systems.md) — Detailed system definitions
+- [SPEC-evaluation](./tasks/SPEC-evaluation.md) — Evaluation protocol, judge config, scoring rules
+- [SPEC-data](./tasks/SPEC-data.md) — Corpus, goldset, splits, leakage rules
 
-> Findings from quality gate reviews that span multiple tasks or affect shared architecture. Task-specific findings stay in `{TASK_ID}.md`. Resolved entries are compressed during sync — only open items and patterns remain here.
-
-| ID | Source | Severity | Summary | Status |
-|----|--------|----------|---------|--------|
-
-### Error Patterns
-
-> Recurring issues identified across multiple reviews. Agents must proactively check for these patterns during implementation and review.
-
-| Pattern | Occurrences | Example Tasks | Guidance |
-|---------|-------------|---------------|----------|
-
-## 4. Quick Reference: Metrics Progress
-
-| Run | Date | Primary Metric | Notes |
-|-----|------|----------------|-------|
-| Baseline | YYYY-MM-DD | [value] | [Reference benchmark] |
-
-**Target:** [Primary metric target]
-**Best so far:** [Run ID and value]
+## Backlog
+- [ ] [BL-001] Chunk-level clustering ablation for S4 (if document-level proves inadequate)
+- [ ] [BL-002] Learned router for S4 (appendix only)
+- [ ] [BL-003] Second backbone confirmatory run (if time permits)
+- [ ] [BL-004] RAFT open-book vs closed-book ablation for S2 (appendix)
