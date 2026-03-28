@@ -49,7 +49,7 @@ Per answer_type:
 - `names`: try JSON parse; fallback: split by commas/newlines
 - `date`: regex `\d{4}-\d{2}-\d{2}`, take first match
 - `free_text`: take full output, truncate at 280 chars
-- If parsing fails → `null`
+- If parsing fails → `_malformed_` (distinct from intentional `[]` abstention; scored as 0)
 
 ## Frozen Decisions
 
