@@ -1,9 +1,9 @@
 # SSOT: Knowledge Injection for Document-Grounded QA on Consumer Hardware
 
-**Version:** 4.0 | **Updated:** 2026-03-27 | **Shorthand:** `knowledge-injection-consumer-hw`
+**Version:** 5.0 | **Updated:** 2026-03-28 | **Shorthand:** `knowledge-injection-consumer-hw`
 
 > Authoritative source for scope, systems, metrics, and frozen decisions.
-> Detail specs live in `memory_bank/tasks/SPEC-*.md`.
+> Detail specs live in `memory_bank/SPEC-*.md`.
 > Deviations require updating this file first.
 
 ---
@@ -21,14 +21,15 @@
 | ID | System | Family | Info input | What is adapted |
 |----|--------|--------|------------|-----------------|
 | S1 | Classical RAG | Nonparametric | Full corpus via index | Nothing (retrieval only) |
-| S2 | QLoRA (RAFT-style) | Supervised parametric | 200 QA pairs + gold chunks | One LoRA adapter on backbone |
-| S3 | Doc-to-LoRA (monolithic) | Supervision-free parametric | 8 docs via hypernetwork (per-doc → merge) | One merged LoRA from per-doc passes |
-| S4 | Cluster-routed Doc-to-LoRA | Supervision-free parametric + routing | 8 docs via hypernetwork (per-cluster) | Per-cluster LoRA + router |
-| S5 | Hybrid: RAG + best adapter | Hybrid | Retrieval + best adapter (S2-S4) | Best adapter + retrieval pipeline |
+| S2 | QLoRA (RAFT-style) | Supervised parametric | 150 train QA + gold chunks | One LoRA adapter on backbone |
+| S3 | Doc-to-LoRA (monolithic) | Supervision-free parametric | 8 docs via hypernetwork → merge all | One merged LoRA (8 → 1) |
+| S4-doc | Doc-to-LoRA per-doc routed | Supervision-free parametric + routing | 8 docs → 8 adapters, hard top-1 routing | Per-doc adapter, zero merge |
+| S4-cluster | Doc-to-LoRA cluster-routed | Supervision-free parametric + routing | 8 docs → 4 clusters, merge 2 per cluster, route | Per-cluster adapter (k=4) |
+| S5 | Hybrid: RAG + best single adapter | Hybrid | Retrieval + best of S2 or S3 | Single adapter + retrieval pipeline |
 
 S5 sub-variants: **S5a** (raw-query retrieval + adapter), **S5b** (adapter-generated HyDE + retrieval + adapter). HyDE is only evaluated inside S5.
 
-See `SPEC-systems.md` for detailed system definitions, packaging strategies, and merge rules.
+See `memory_bank/SPEC-systems.md` for detailed system definitions, packaging strategies, and merge rules.
 
 ---
 
@@ -37,7 +38,8 @@ See `SPEC-systems.md` for detailed system definitions, packaging strategies, and
 - **H1.** S5 Hybrid gives best practical trade-off (retrieval evidence + adapted generation).
 - **H2.** S2 QLoRA shows best format discipline but is bounded by goldset coverage (~200 QA over 8 docs).
 - **H3.** S3/S4 Doc-to-LoRA competitive on facts outside goldset scope; each doc fits one D2L pass cleanly.
-- **H4.** S4 cluster-routed beats S3 monolithic via capacity relief and specialization.
+- **H4.** S4-doc (per-doc routing) beats S3 (full merge) on single-doc questions; S3 may win on multi-doc.
+- **H4b.** S4-cluster sits between S3 and S4-doc — tests whether partial merge + routing is the sweet spot.
 - **H5.** S1 RAG dominates on deterministic lookup (date, number, name).
 - **H6.** Even if parametric systems don't beat RAG, quantifying their limits is a valid result.
 
@@ -51,14 +53,15 @@ See `SPEC-systems.md` for detailed system definitions, packaging strategies, and
 | Hypernetwork | **SakanaAI Doc-to-LoRA** (checkpoint-80000) | Pre-trained, not retrained in this project |
 | Corpus | **8 PDF documents** (DIFC legal, ~141K tokens total) | Each fits D2L single pass; frozen before experiments |
 | Goldset | **200 human-authored QA pairs** (100 per batch of 4 docs) | `data/goldset/goldset.benchmark.json` |
-| Split | **160 dev / 40 locked test**, stratified by answer_type + difficulty | Single fixed split, no CV; split needed for S2 leakage prevention |
+| Split | **150 S2-train / 50 eval**, stratified by answer_type + difficulty | All systems evaluated on same 50. S2 trains on 150. No CV. |
 | S2 variance | **3 random seeds**, report mean ± std | Replaces CV for supervised system |
 | S2 training format | **RAFT-style open-book** (question + gold chunks → answer) | Context-aware, not closed-book |
 | Judge model | **gpt-5.4-mini** (OpenAI API, medium reasoning), version-pinned | External, not self-judging |
 | Hardware | **RTX 4060 8GB VRAM, 32GB RAM** | Hard constraint; QLoRA 4-bit default |
 | Quantization | **4-bit NF4** for QLoRA training | Standard QLoRA recipe |
-| Embedding model | Same for retrieval index and document clustering | Unless strong reason to decouple |
-| Clustering (S4) | **k=4, document-level, k-means, cosine nearest centroid** | Simple, interpretable, no learned router |
+| Embedding model | **Qwen3-Embedding-0.6B** for retrieval index and document routing | Shared across S1/S4 |
+| Routing (S4-doc) | **Hard top-1, cosine similarity to document embeddings** | Simplest per-doc routing |
+| Clustering (S4-cluster) | **k=4, document-level, k-means, cosine nearest centroid** | Simple, interpretable, no learned router |
 
 ---
 
@@ -67,11 +70,11 @@ See `SPEC-systems.md` for detailed system definitions, packaging strategies, and
 **Primary metric (all systems):**
 `Q_main = 0.7 × S_det + 0.3 × S_asst`
 
-- `S_det`: deterministic accuracy (number, boolean, name, names, date, null)
+- `S_det`: deterministic accuracy (number, boolean, name, names, date). Unanswerable: expected `[]`, system returns `[]` → 1.0.
 - `S_asst`: LLM-judge score on free_text (5 binary criteria, gpt-5.4-mini)
 
-**Retrieval-aware (S1, S5 only):**
-`G = F_β(β=2.5)` on page-level grounding
+**Retrieval-aware (S1, S2, S5):**
+`G = F_β(β=2.5)` on page-level grounding. P = deduplicated union of (doc_id, page_number) from top-k retrieved chunks.
 
 **Systems metrics (all):**
 TTFT, end-to-end latency, peak VRAM, offline packaging cost (index build / training / adapter generation time)
@@ -84,7 +87,7 @@ TTFT, end-to-end latency, peak VRAM, offline packaging cost (index build / train
 - S3/S4 performance reflects hypernetwork packaging quality within this benchmark.
 - S1 grounding is the reference; S5 must not degrade grounding materially.
 
-See `SPEC-evaluation.md` for scoring rules, judge rubric, and reporting format.
+See `memory_bank/SPEC-evaluation.md` for scoring rules, judge rubric, and reporting format.
 
 ---
 
@@ -106,9 +109,9 @@ See `SPEC-evaluation.md` for scoring rules, judge rubric, and reporting format.
 | Answer types | free_text: 53, boolean: 48, number: 36, name: 30, names: 17, date: 16 |
 | Difficulty | easy: 98, medium: 71, hard: 31 |
 | Multi-doc questions | 26 (13%) — all within same-batch doc pairs |
-| Negative/unanswerable | 17 (8.5%) — 9 deterministic null + 8 free_text negative |
+| Unanswerable | 17 (8.5%) — 9 with answer=`null` (expected response `[]`) + 8 free_text negative (expected response: text stating info absent) |
 
-See `SPEC-data.md` for split protocol, schema, leakage rules.
+See `memory_bank/SPEC-data.md` for split protocol, schema, leakage rules.
 
 ---
 
@@ -121,7 +124,7 @@ See `SPEC-data.md` for split protocol, schema, leakage rules.
 | EXP-003 | S2 QLoRA feasibility + baseline (3 seeds) | Supervised parametric baseline |
 | EXP-004 | S3 Doc-to-LoRA monolithic feasibility + packaging | Hypernetwork baseline |
 | EXP-005 | S4 Clustering study + routed Doc-to-LoRA | Routed parametric system |
-| EXP-006 | Main comparison S1-S4 on dev | Cross-paradigm results |
+| EXP-006 | Main comparison S1-S4 on 50 eval | Cross-paradigm results |
 | EXP-007 | S5 Hybrid (S5a + S5b) | Hybrid top-line |
 | EXP-008 | Locked test + error analysis | Final thesis tables |
 

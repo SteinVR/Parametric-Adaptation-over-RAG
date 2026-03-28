@@ -36,7 +36,7 @@
   - free_text: 53, boolean: 48, number: 36, name: 30, names: 17, date: 16
 - **Difficulty:** easy: 98, medium: 71, hard: 31
 - **Multi-document:** 26 questions (13%), all within same-batch doc pairs
-- **Negative/unanswerable:** 17 (9 deterministic null + 8 free_text negative)
+- **Unanswerable:** 17 total. 9 deterministic (goldset `answer=null`, expected system response `[]`) + 8 free_text negative (expected: text stating info absent). `is_unanswerable` flag, not a separate answer_type.
 - **Near-duplicates:** 1 pair (grouped at split)
 - **No cross-batch multi-doc questions** (limitation noted)
 
@@ -44,30 +44,30 @@
 
 ## Split Protocol
 
-- **Locked test:** 40 questions (20%)
-- **Development:** 160 questions (80%)
+- **S2-train:** 150 questions — used exclusively for S2 QLoRA training
+- **Eval:** 50 questions — ALL systems evaluated on these same 50
 - **Stratification:** by answer_type + difficulty + single/multi-doc
 - **Near-duplicate pair grouped** in same split
 - **Split is created once and frozen** in `data/splits/split_v1.json`
 - **No cross-validation.** S2 uses 3 random seeds for variance estimation.
-- **Split needed because:** S2 trains on QA pairs → must not evaluate on training data. All systems evaluated on same test set for fairness.
+- **Split needed because:** S2 trains on QA pairs → must not evaluate on training data. Single eval set for all systems eliminates selection bias.
 
 ---
 
 ## S2 Training Data Format (RAFT-style)
 
-From the 160 dev questions (train portion per seed):
+From 150 S2-train questions:
 
 ```
-System prompt: [domain context]
-User: [question]
-Context: [gold evidence chunk(s)] [optional distractor chunk(s)]
-Assistant: [answer]
+Input:  RAG prompt template(question, [gold_chunk, distractor_1, distractor_2])
+Output: answer
 ```
 
 - Gold chunks extracted from `gold_retrieval` page references
-- Distractor policy: 1-2 random non-gold chunks from corpus (TBD at EXP-003)
-- Answer formatted according to answer_type rules
+- Distractors: exactly 2 random pages from documents OTHER than the gold document
+- Distractors sampled once, frozen in training set
+- All examples oracle (no distractor-only)
+- Answer formatted per answer_type: true/false, number, date ISO, `[]` for unanswerable
 
 ---
 
@@ -82,8 +82,8 @@ Assistant: [answer]
 
 ## Leakage Rules
 
-1. No locked test question may influence: prompt tuning, hyperparameter selection, adapter choice for S5, routing calibration
+1. No eval question (50) may influence: prompt tuning, hyperparameter selection, adapter choice for S5, routing calibration
 2. Clustering (S4) uses document embeddings only — no QA-derived features
 3. Near-duplicate questions grouped before splitting
-4. S2 trains only on the dev split's train portion for each seed
+4. S2 trains only on 150 S2-train questions, never on 50 eval
 5. Doc-to-LoRA (S3/S4) ingests documents, not QA pairs — no QA leakage by design

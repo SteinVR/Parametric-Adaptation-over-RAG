@@ -51,26 +51,40 @@ QUESTIONS_PATH = DATA_GOLDSET / "goldset.questions.json"
 
 N_DOCUMENTS = 8
 GOLDSET_SIZE = 200
-DEV_SIZE = 160
-TEST_SIZE = 40
+S2_TRAIN_SIZE = 150
+EVAL_SIZE = 50
 
 # =============================================================================
 # S2 QLoRA Defaults
 # =============================================================================
 
 QLORA_RANK = 32
+QLORA_ALPHA = 32
+QLORA_DROPOUT = 0.05
 QLORA_TARGET_MODULES = ["q_proj", "v_proj"]
-QLORA_ALPHA_CANDIDATES = [16, 32, 64]
-QLORA_DROPOUT_CANDIDATES = [0.0, 0.05, 0.1]
-QLORA_LR_CANDIDATES = [5e-5, 1e-4, 2e-4, 4e-4]
+QLORA_LR = 2e-4
+QLORA_EPOCHS = 3
+QLORA_MAX_SEQ_LEN = 4096
+QLORA_BATCH_SIZE = 4
+QLORA_WARMUP_RATIO = 0.03
+QLORA_WEIGHT_DECAY = 0.01
+RAFT_N_DISTRACTORS = 2  # all examples are oracle (gold + distractors), no distractor-only
 
 # =============================================================================
-# S4 Clustering
+# Retrieval & Embedding
+# =============================================================================
+
+EMBEDDING_MODEL = "Qwen/Qwen3-Embedding-0.6B"
+RETRIEVAL_TOP_K = 5
+
+# =============================================================================
+# S4 Clustering & Routing
 # =============================================================================
 
 N_CLUSTERS = 4
 CLUSTERING_METHOD = "kmeans"
 ROUTING_METRIC = "cosine"
+ROUTING_STRATEGY = "hard_top1"
 
 # =============================================================================
 # Evaluation

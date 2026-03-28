@@ -23,7 +23,7 @@ Per-question score ∈ {0, 1} (or continuous for set-based types):
 | `name` | Normalized exact string match (lowercased, stripped) |
 | `names` | Jaccard similarity over normalized string sets |
 | `date` | Exact ISO 8601 match (YYYY-MM-DD) |
-| `null` | Both null → 1.0; one null → 0.0 |
+| unanswerable | Gold answer is `null` → expected system response is `[]` (empty). Both `[]` → 1.0; one `[]` one non-empty → 0.0 |
 
 `S_det` = mean of per-question deterministic scores across all deterministic questions.
 
@@ -44,17 +44,43 @@ Per-question score ∈ {0, 1} (or continuous for set-based types):
 Each criterion → {0, 1}. Per-question S_asst = mean of 5 criteria.
 Submission S_asst = mean across all free_text questions.
 
+**Judge prompt (frozen):**
+
+```
+System: You are an impartial judge evaluating a legal QA system's response.
+Score each criterion as 1 (met) or 0 (not met). Return ONLY a JSON object.
+
+User:
+Question: {question}
+Reference answer: {reference_answer}
+System response: {system_response}
+
+Criteria:
+1. correctness: Does the response contain the key information from the reference and no factual errors?
+2. completeness: Does the response address all aspects of the question?
+3. grounding: Is every claim supported by plausible legal reasoning (no hallucinated specifics)?
+4. calibration: Does the response appropriately express uncertainty when information is missing?
+5. clarity: Is the answer clear, concise, and directly addresses the question?
+
+Return JSON: {"correctness": 0|1, "completeness": 0|1, "grounding": 0|1, "calibration": 0|1, "clarity": 0|1}
+```
+
 **Judge rules:**
 - Same prompt for all systems
 - No self-judging (judge ≠ evaluated model)
+- Parse JSON response; if malformed, retry once, then score 0 for all criteria
 - Manual audit on ~10% of judged answers before final conclusions
 
 ---
 
-## Retrieval-Aware Metrics (S1, S5 only)
+## Retrieval-Aware Metrics (S1, S2, S5 — systems using retrieval)
+
+S3, S4-doc, S4-cluster: G = N/A (no retrieval).
 
 **Grounding:**
 `G = F_β(β=2.5)` on `(doc_id, page_number)` pairs.
+
+**Building predicted set P:** deduplicated union of all `(doc_id, page_number)` from metadata of top-k retrieved chunks. Each chunk carries its source page metadata through the indexing pipeline.
 
 - precision = |P ∩ G_ref| / |P|
 - recall = |P ∩ G_ref| / |G_ref|
@@ -73,7 +99,7 @@ Submission S_asst = mean across all free_text questions.
 | Peak VRAM (inference) | MB | All |
 | Peak VRAM (training/generation) | MB | S2-S4 |
 | Offline packaging cost | seconds | All (index build / train time / adapter gen time) |
-| Malformed output rate | % | All |
+| Malformed output rate | % | All (parser fails to extract valid answer → `_malformed_` marker, scored as 0) |
 | Storage footprint | MB | Adapter / index size |
 
 ---
@@ -82,7 +108,7 @@ Submission S_asst = mean across all free_text questions.
 
 Every result reported as:
 1. **Aggregate** Q_main, S_det, S_asst, G (where applicable), latency, VRAM
-2. **By answer_type** breakdown: number, boolean, name, names, date, free_text, null
+2. **By answer_type** breakdown: number, boolean, name, names, date, free_text (6 types). Unanswerable is a cross-cutting flag (`is_unanswerable`), not a separate answer_type — report separately.
 
 Tables saved as CSV in experiment artifacts + rendered in REPORT.md.
 

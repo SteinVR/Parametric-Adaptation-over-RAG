@@ -5,28 +5,34 @@
 ## Active Queue
 
 ### Wave 1: Foundation
-- [x] [EXP-001](./tasks/EXP-001.md) Data audit: corpus manifest, goldset validation, split freeze, capacity audit
-- [ ] [EXP-002](./tasks/EXP-002.md) S1 Classical RAG baseline on Gemma-2-2b-it
+- [x] EXP-001 — Data audit, goldset merge, split freeze ([spec](./specs/SPEC_EXP-001.md) | [task](./tasks/EXP-001.md))
+- [ ] EXP-002 — S1 Classical RAG baseline ([spec](./specs/SPEC_EXP-002.md))
 
 ### Wave 2: Parametric Feasibility
-- [ ] [EXP-003](./tasks/EXP-003.md) S2 QLoRA feasibility + baseline (3 seeds, RAFT-style)
-- [ ] [EXP-004](./tasks/EXP-004.md) S3 Doc-to-LoRA monolithic feasibility + merge strategy selection
+- [ ] EXP-003 — S2 QLoRA RAFT-style baseline, 3 seeds ([spec](./specs/SPEC_EXP-003.md))
+- [ ] EXP-004 — S3 Doc-to-LoRA per-doc generation + monolithic merge ([spec](./specs/SPEC_EXP-004.md))
 
-### Wave 3: Routing + Comparison
-- [ ] [EXP-005](./tasks/EXP-005.md) S4 Clustering study + cluster-routed Doc-to-LoRA
-- [ ] [EXP-006](./tasks/EXP-006.md) Main cross-paradigm comparison S1-S4 on dev
+### Wave 3: Routing
+- [ ] EXP-005a — S4-doc: per-document routing, hard top-1 ([spec](./specs/SPEC_EXP-005a.md))
+- [ ] EXP-005b — S4-cluster: cluster routing, k=4 ([spec](./specs/SPEC_EXP-005b.md))
 
-### Wave 4: Hybrid + Final
-- [ ] [EXP-007](./tasks/EXP-007.md) S5 Hybrid (S5a raw + S5b HyDE)
-- [ ] [EXP-008](./tasks/EXP-008.md) Locked test evaluation + error analysis + final tables
+### Wave 4: Comparison
+- [ ] EXP-006 — Main cross-paradigm comparison S1–S4 on dev ([spec](./specs/SPEC_EXP-006.md))
 
-## Specs (Reference)
-- [SPEC-systems](./tasks/SPEC-systems.md) — Detailed system definitions
-- [SPEC-evaluation](./tasks/SPEC-evaluation.md) — Evaluation protocol, judge config, scoring rules
-- [SPEC-data](./tasks/SPEC-data.md) — Corpus, goldset, splits, leakage rules
+### Wave 5: Hybrid + Final
+- [ ] EXP-007 — S5 Hybrid: RAG + best adapter + HyDE ([spec](./specs/SPEC_EXP-007.md))
+- [ ] EXP-008 — Locked test + error analysis + final tables ([spec](./specs/SPEC_EXP-008.md))
+
+## Reference Docs (in memory_bank/)
+- [SPEC-systems](../SPEC-systems.md) — Detailed system definitions
+- [SPEC-evaluation](../SPEC-evaluation.md) — Evaluation protocol, judge config, scoring rules
+- [SPEC-data](../SPEC-data.md) — Corpus, goldset, splits, leakage rules
+- [BACKLOG-routing-research](../BACKLOG-routing-research.md) — Full routing/merge research space
 
 ## Backlog
-- [ ] [BL-001] Chunk-level clustering ablation for S4 (if document-level proves inadequate)
-- [ ] [BL-002] Learned router for S4 (appendix only)
-- [ ] [BL-003] Second backbone confirmatory run (if time permits)
-- [ ] [BL-004] RAFT open-book vs closed-book ablation for S2 (appendix)
+- See [BACKLOG-routing-research.md](../BACKLOG-routing-research.md) for full research space
+- [ ] [BL-001] Soft weighted routing (addresses multi-doc limitation)
+- [ ] [BL-002] Merge degradation curve (Q_main vs number of adapters merged)
+- [ ] [BL-003] Adapter similarity matrix (interpretability heatmap)
+- [ ] [BL-004] Metadata-based clustering vs k-means comparison
+- [ ] [BL-005] RAFT open-book vs closed-book ablation for S2

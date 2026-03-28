@@ -37,8 +37,7 @@
 
 | ID | Date | Result | Notes |
 |----|------|--------|-------|
-| EXP-001 | 2026-03-26 | Superseded | Original audit on 65 docs/150 QA — corpus changed to 8 docs/200 QA |
-| EXP-001v2 | 2026-03-27 | Done | Goldset merged (200 QA), quality audit passed. Split pending. |
+| EXP-001 | 2026-03-28 | Done | 8 docs, 115K tokens, all fit D2L. 200 QA validated. Split frozen 160/40. |
 
 ## Known Issues
 
