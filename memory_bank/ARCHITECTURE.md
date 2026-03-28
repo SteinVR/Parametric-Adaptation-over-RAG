@@ -1,6 +1,6 @@
 # SSOT: Knowledge Injection for Document-Grounded QA on Consumer Hardware
 
-**Version:** 3.0 | **Updated:** 2026-03-26 | **Shorthand:** `knowledge-injection-consumer-hw`
+**Version:** 4.0 | **Updated:** 2026-03-27 | **Shorthand:** `knowledge-injection-consumer-hw`
 
 > Authoritative source for scope, systems, metrics, and frozen decisions.
 > Detail specs live in `memory_bank/tasks/SPEC-*.md`.
@@ -21,9 +21,9 @@
 | ID | System | Family | Info input | What is adapted |
 |----|--------|--------|------------|-----------------|
 | S1 | Classical RAG | Nonparametric | Full corpus via index | Nothing (retrieval only) |
-| S2 | QLoRA (RAFT-style) | Supervised parametric | 150 QA pairs + gold chunks | One LoRA adapter on backbone |
-| S3 | Doc-to-LoRA (monolithic) | Supervision-free parametric | Full corpus via hypernetwork | One merged LoRA from chunk passes |
-| S4 | Cluster-routed Doc-to-LoRA | Supervision-free parametric + routing | Corpus clusters via hypernetwork | Per-cluster LoRA + router |
+| S2 | QLoRA (RAFT-style) | Supervised parametric | 200 QA pairs + gold chunks | One LoRA adapter on backbone |
+| S3 | Doc-to-LoRA (monolithic) | Supervision-free parametric | 8 docs via hypernetwork (per-doc → merge) | One merged LoRA from per-doc passes |
+| S4 | Cluster-routed Doc-to-LoRA | Supervision-free parametric + routing | 8 docs via hypernetwork (per-cluster) | Per-cluster LoRA + router |
 | S5 | Hybrid: RAG + best adapter | Hybrid | Retrieval + best adapter (S2-S4) | Best adapter + retrieval pipeline |
 
 S5 sub-variants: **S5a** (raw-query retrieval + adapter), **S5b** (adapter-generated HyDE + retrieval + adapter). HyDE is only evaluated inside S5.
@@ -35,8 +35,8 @@ See `SPEC-systems.md` for detailed system definitions, packaging strategies, and
 ## 3. Working Hypotheses
 
 - **H1.** S5 Hybrid gives best practical trade-off (retrieval evidence + adapted generation).
-- **H2.** S2 QLoRA shows best format discipline but is bounded by goldset coverage (~150 facts).
-- **H3.** S3/S4 Doc-to-LoRA competitive on facts outside goldset scope; limited by hypernetwork capacity.
+- **H2.** S2 QLoRA shows best format discipline but is bounded by goldset coverage (~200 QA over 8 docs).
+- **H3.** S3/S4 Doc-to-LoRA competitive on facts outside goldset scope; each doc fits one D2L pass cleanly.
 - **H4.** S4 cluster-routed beats S3 monolithic via capacity relief and specialization.
 - **H5.** S1 RAG dominates on deterministic lookup (date, number, name).
 - **H6.** Even if parametric systems don't beat RAG, quantifying their limits is a valid result.
@@ -49,9 +49,9 @@ See `SPEC-systems.md` for detailed system definitions, packaging strategies, and
 |----------|-------|-----------|
 | Backbone | **Gemma-2-2b-it** | Only backbone with released Doc-to-LoRA hypernetwork checkpoint; used by all S1-S5 for fairness |
 | Hypernetwork | **SakanaAI Doc-to-LoRA** (checkpoint-80000) | Pre-trained, not retrained in this project |
-| Corpus | **65 PDF documents** (DIFC legal domain) | Fixed, frozen before experiments |
-| Goldset | **150 human-authored QA pairs** (Warmup 100 + Full 50) | No synthetic expansion |
-| Split | **120 dev / 30 locked test**, stratified by answer_type + difficulty | Single fixed split, no CV |
+| Corpus | **8 PDF documents** (DIFC legal, ~141K tokens total) | Each fits D2L single pass; frozen before experiments |
+| Goldset | **200 human-authored QA pairs** (100 per batch of 4 docs) | `data/goldset/goldset.benchmark.json` |
+| Split | **160 dev / 40 locked test**, stratified by answer_type + difficulty | Single fixed split, no CV; split needed for S2 leakage prevention |
 | S2 variance | **3 random seeds**, report mean ± std | Replaces CV for supervised system |
 | S2 training format | **RAFT-style open-book** (question + gold chunks → answer) | Context-aware, not closed-book |
 | Judge model | **gpt-5.4-mini** (OpenAI API, medium reasoning), version-pinned | External, not self-judging |
@@ -101,12 +101,12 @@ See `SPEC-evaluation.md` for scoring rules, judge rubric, and reporting format.
 
 | Attribute | Value |
 |-----------|-------|
-| Documents | 65 PDFs, DIFC legal domain |
-| QA pairs | 150 (100 warmup + 50 full) |
-| Answer types | free_text: 44, boolean: 42, number: 25, name: 21, names: 11, date: 7 |
-| Difficulty | easy: 101, medium: 43, hard: 6 |
-| Multi-doc questions | 47 (31%) |
-| Negative/unanswerable | 33 (22%) |
+| Documents | 8 PDFs (4 statutes/regs + 4 cases), DIFC legal, 176 pages, ~141K tokens |
+| QA pairs | 200 (2 batches × 100) |
+| Answer types | free_text: 53, boolean: 48, number: 36, name: 30, names: 17, date: 16 |
+| Difficulty | easy: 98, medium: 71, hard: 31 |
+| Multi-doc questions | 26 (13%) — all within same-batch doc pairs |
+| Negative/unanswerable | 17 (8.5%) — 9 deterministic null + 8 free_text negative |
 
 See `SPEC-data.md` for split protocol, schema, leakage rules.
 
@@ -116,7 +116,7 @@ See `SPEC-data.md` for split protocol, schema, leakage rules.
 
 | Phase | Goal | Key output |
 |-------|------|------------|
-| EXP-001 | Data audit + corpus manifest + split freeze | `data/manifests/`, `data/splits/` |
+| EXP-001 | Data audit + goldset merge + split freeze | `data/goldset/`, `data/splits/` |
 | EXP-002 | S1 Classical RAG baseline | Nonparametric baseline metrics |
 | EXP-003 | S2 QLoRA feasibility + baseline (3 seeds) | Supervised parametric baseline |
 | EXP-004 | S3 Doc-to-LoRA monolithic feasibility + packaging | Hypernetwork baseline |

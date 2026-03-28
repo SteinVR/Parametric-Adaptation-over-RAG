@@ -1,0 +1,35 @@
+{
+  "total_questions": 200,
+  "answer_type_distribution": {
+    "free_text": 53,
+    "boolean": 48,
+    "number": 36,
+    "name": 30,
+    "names": 17,
+    "date": 16
+  },
+  "difficulty_distribution": {
+    "easy": 98,
+    "medium": 71,
+    "hard": 31
+  },
+  "document_coverage": {
+    "doc2_crs_regulations": 28,
+    "doc5_personal_property_law": 28,
+    "doc6_securities_regulations": 27,
+    "doc1_general_partnership_law": 26,
+    "doc3_techteryx_v_aria": 25,
+    "doc4_bond_v_tr88house": 25,
+    "doc8_lxt_v_sir_realestate": 25,
+    "doc7_ozias_v_obadiah": 25
+  },
+  "multi_document_questions": 26,
+  "null_unanswerable": 9,
+  "near_duplicate_groups": [
+    [
+      "2452eb7b7f44e7016edeeba41a7b1ae4badb99bb5cfc06a918f611e54e558abd",
+      "c8bd14fd89c211485a2181de90704867a936e5c094247bf7fed909e6db36528f"
+    ]
+  ],
+  "cross_batch_multi_doc": 0
+}

@@ -11,9 +11,9 @@ from pathlib import Path
 # =============================================================================
 
 PROJECT_ROOT = Path(__file__).parent
-DATA_RAW = PROJECT_ROOT / "data" / "150"
+DATA_CORPUS = PROJECT_ROOT / "data" / "corpus"
 DATA_PROCESSED = PROJECT_ROOT / "data" / "processed"
-DATA_MANIFESTS = PROJECT_ROOT / "data" / "manifests"
+DATA_GOLDSET = PROJECT_ROOT / "data" / "goldset"
 DATA_SPLITS = PROJECT_ROOT / "data" / "splits"
 MODELS_DIR = PROJECT_ROOT / "models"
 LOGS_DIR = PROJECT_ROOT / "logs"
@@ -45,13 +45,14 @@ DOC2LORA_MAX_CONTEXT_TOKENS = 32_000  # approximate safe limit
 # Corpus & Goldset
 # =============================================================================
 
-CORPUS_DIR = DATA_RAW / "documents" / "pdfs"
-GOLDSET_PATH = DATA_RAW / "dev-gold-150-v1.benchmark.json"
-QUESTIONS_PATH = DATA_RAW / "questions" / "questions.json"
+CORPUS_DIR = DATA_CORPUS
+GOLDSET_PATH = DATA_GOLDSET / "goldset.benchmark.json"
+QUESTIONS_PATH = DATA_GOLDSET / "goldset.questions.json"
 
-GOLDSET_SIZE = 150
-DEV_SIZE = 120
-TEST_SIZE = 30
+N_DOCUMENTS = 8
+GOLDSET_SIZE = 200
+DEV_SIZE = 160
+TEST_SIZE = 40
 
 # =============================================================================
 # S2 QLoRA Defaults

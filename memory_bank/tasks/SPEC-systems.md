@@ -36,29 +36,27 @@
 - **Hypernetwork:** SakanaAI Doc-to-LoRA, Gemma-2-2b-it checkpoint
 - **Target modules:** MLP layers (as defined by hypernetwork)
 - **Packaging pipeline:**
-  1. Segment corpus into Doc-to-LoRA-compatible windows (respecting ~32K token limit)
-  2. Generate one intermediate LoRA per segment via hypernetwork forward pass
-  3. Merge intermediates into one global adapter
+  1. Process each of 8 documents individually through hypernetwork (each fits single pass)
+  2. Get 8 per-document LoRA adapters
+  3. Merge 8 adapters into one global adapter
 - **Merge strategy:** TBD at EXP-004 feasibility. Candidates:
   - Simple average of delta weights
-  - Weighted average by segment token count
-  - Sum with scaling factor
+  - Weighted average by document token count
   - TIES-Merging if compatible
-- **Key concern:** merge may destroy information. S3 is explicitly an *approximate* packaging baseline.
-- **Interpretation:** S3 tests whether corpus-to-adapter memory is viable at all in this setting.
+- **Key concern:** merge of 8 adapters may degrade quality. S3 is explicitly the *monolithic baseline*.
+- **Interpretation:** S3 tests whether merged multi-document adapter retains useful knowledge.
 - **Metrics scope:** Q_main + systems metrics
 
 ## S4 — Cluster-Routed Doc-to-LoRA
 
 - **Clustering:**
-  - Granularity: **document-level** (65 docs → 4 clusters)
-  - Embedding: same model as retriever
-  - Method: k-means, k=4
-  - Fit on: all corpus documents (clustering is unsupervised, no QA leakage)
+  - Granularity: **document-level** (8 docs → 4 clusters of ~2 docs each)
+  - Natural clustering: statutes / regulations / first-instance cases / appeal cases
+  - Alternative: embedding-based k-means (k=4) for data-driven clusters
   - Diagnostics: cluster balance, semantic coherence, silhouette (diagnostic only)
 - **Per-cluster adapter generation:**
-  - For each cluster: segment cluster documents → Doc-to-LoRA → merge into one cluster adapter
-  - Same merge strategy as S3 within each cluster
+  - For each cluster: process cluster documents through D2L → merge per-cluster adapters
+  - Merge of 2 adapters per cluster (much more tractable than S3's 8-way merge)
 - **Router:**
   - Embed user question with same embedding model
   - Cosine similarity to cluster centroids
