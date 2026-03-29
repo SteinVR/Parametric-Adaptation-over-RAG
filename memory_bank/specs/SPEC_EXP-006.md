@@ -8,15 +8,15 @@ Unified comparison of all systems. Produce the main results table.
 
 **Evaluation scope:** ALL systems evaluated on the same 50 eval questions. S2 never saw these during training (trained on 150 train). No contamination for any system.
 
-## Pipeline
+## Analysis Steps
 
-1. **Collect** all system outputs from EXP-002..005b (already evaluated)
+1. **Collect** all system outputs from EXP-002..005b (already evaluated, no fresh inference)
 2. **Normalize** into common results format: one row per (system, question_id) with predicted_answer, metrics, timing
 3. **Score** each system: Q_main, S_det, S_asst. G (F_β=2.5) for S1, S2 (retrieval-based). S3, S4-doc, S4-cluster: G = N/A.
-4. **Breakdowns:** by answer_type (6 types: boolean, number, name, names, date, free_text), by difficulty (3 levels), by single/multi-doc, by unanswerable (flag, reported separately)
+4. **Breakdowns:** by answer_type (6 types), by difficulty (3 levels), by single/multi-doc, by unanswerable (cross-cutting flag, reported separately)
 5. **Systems metrics table:** TTFT, end-to-end latency, peak VRAM, offline packaging cost
 6. **Merge↔Route gradient plot:** x-axis = number of adapters (1, 4, 8), y-axis = Q_main for S3, S4-cluster, S4-doc
-7. **Best single adapter selection for S5:** rank S2 and S3 only by eval Q_main → select top for S5. S4-doc/S4-cluster are routed multi-adapter systems and cannot be used as a single adapter in S5.
+7. **Best single adapter selection for S5:** select from S2 and S3 by eval Q_main. S4-doc/S4-cluster are multi-adapter routed systems — not eligible.
 
 ## Key Tables
 

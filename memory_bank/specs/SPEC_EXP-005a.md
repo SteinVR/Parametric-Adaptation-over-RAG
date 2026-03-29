@@ -6,25 +6,21 @@
 
 Evaluate per-document routing with zero merge. At inference, route each question to the single most relevant document adapter.
 
-## Pipeline
+## Pipeline (inference)
 
-### Step 1: Document embeddings
+1. **Route:** embed question via Qwen3-Embedding-0.6B → cosine similarity to 8 document embeddings → hard top-1
+2. **Generate:** load selected doc's adapter (from EXP-004) → no-retrieval prompt → generate → parse
+3. **Score** on 50 eval questions
+
+## Packaging
+
+### Document embeddings (offline, one-time)
 - For each of 8 docs: embed all chunks via Qwen3-Embedding-0.6B → mean-pool → 1 document embedding per doc
 - Store 8 document embeddings as routing index
 
-### Step 2: Router
-- Embed question via Qwen3-Embedding-0.6B
-- Cosine similarity to 8 document embeddings
-- Hard top-1: select the doc with highest similarity
+### Routing details
 - Log all 8 similarity scores per question
-
-### Step 3: Generation
-- Load selected doc's adapter (from EXP-004)
-- No retrieved context — adapter parameters only
-- Same no-retrieval prompt template as EXP-004
-- Same answer parser
-
-### Step 4: Evaluation on 50 eval questions
+- Hard top-1: select the doc with highest similarity
 
 ## Analysis
 

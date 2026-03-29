@@ -6,30 +6,27 @@
 
 Cluster 8 documents into 4 groups. Merge 2 per-doc adapters within each cluster. Route questions to cluster adapter.
 
-## Pipeline
+## Pipeline (inference)
 
-### Step 1: Clustering
+1. **Route:** embed question via Qwen3-Embedding-0.6B → cosine similarity to 4 cluster centroids → hard top-1
+2. **Generate:** load selected cluster adapter → no-retrieval prompt → generate → parse
+3. **Score** on 50 eval questions
+
+## Packaging
+
+### Clustering (offline, one-time)
 - Embed all 8 documents via Qwen3-Embedding-0.6B (same doc embeddings as EXP-005a)
 - k-means, k=4, on document embeddings
 - Log cluster assignments, silhouette score, cluster sizes
-- **Imbalanced clusters:** if a cluster has 1 doc → use its per-doc adapter as-is (no merge; note this is identical to S4-doc's adapter for that doc — flag in analysis). If a cluster has 3+ docs → merge all adapters in that cluster (same strategy as S3). Document actual composition.
+- **Imbalanced clusters:** if a cluster has 1 doc → use its per-doc adapter as-is (note: identical to S4-doc for that doc — flag in analysis). If 3+ docs → merge all (same strategy as S3). Document actual composition.
 
-### Step 2: Per-cluster adapter merge
-- For each cluster: merge its 2 doc adapters using frozen merge strategy from EXP-004 (simple average)
+### Per-cluster adapter merge
+- For each cluster: merge its doc adapters using frozen simple average from EXP-004
 - Result: 4 cluster adapters
 
-### Step 3: Router
-- Compute cluster centroids (mean of doc embeddings per cluster)
-- Embed question → cosine similarity to 4 centroids → hard top-1
+### Routing details
+- Cluster centroids = mean of doc embeddings per cluster
 - Log all 4 similarity scores per question
-
-### Step 4: Generation
-- Load selected cluster adapter
-- No retrieved context — adapter parameters only
-- Same no-retrieval prompt template as EXP-004
-- Same answer parser
-
-### Step 5: Evaluation on 50 eval questions
 
 ## Analysis
 

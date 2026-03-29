@@ -6,34 +6,29 @@
 
 Generate 8 per-document LoRA adapters via Doc-to-LoRA hypernetwork. Sanity-check each individually. Merge all 8 into one monolithic adapter. Evaluate.
 
-## Pipeline
+## Pipeline (inference)
 
-### Step 1: Setup
-- Clone/install SakanaAI doc-to-lora repo
-- Download Gemma-2-2b-it checkpoint and hypernetwork weights (checkpoint-80000)
-- Verify: load model + hypernetwork, run on one test document, confirm adapter is generated
+1. Load Gemma-2-2b-it + monolithic merged adapter (4-bit NF4)
+2. For each question: no-retrieval prompt → generate → parse
+3. Score on 50 eval questions
 
-### Step 2: Per-document adapter generation
-- For each of 8 documents: extract full text → feed to hypernetwork → save LoRA adapter
-- Expected output: 8 adapter files, each containing delta weights for MLP layers
+## Packaging
+
+### Adapter generation
+- For each of 8 documents: extract full text → feed to Doc-to-LoRA hypernetwork → save LoRA adapter
+- Expected output: 8 adapter files, each containing delta weights
 - Log: generation time per doc, adapter file size, peak VRAM
 
-### Step 3: Per-doc sanity check
+### Per-doc sanity check
 - For each doc adapter: load it, run inference on questions from that document only (from S2-train set, not eval)
-- Score per-doc **S_det only** (no judge calls — this is a diagnostic, not a final result). Free_text questions excluded from sanity scoring.
-- This validates that the hypernetwork actually works before attempting merge
+- Score per-doc **S_det only** (no judge calls — this is a diagnostic, not a final result). Free_text excluded.
+- Validates that the hypernetwork works before merge
 
-### Step 4: Merge
+### Merge
 **Primary strategy: simple average.**
-For each LoRA matrix, average the corresponding delta weights across all 8 adapters:
-`merged_W = (1/8) × Σ(adapter_i_W)`
+For each LoRA matrix: `merged_W = (1/8) × Σ(adapter_i_W)`
 
 **Merge strategy is frozen to simple average.** No fallback selection on eval set (that would be tuning on evaluation data). If simple average produces poor Q_main, report as negative result — this IS the finding.
-
-### Step 5: Monolithic evaluation
-- Load merged adapter, run on 50 eval questions
-- No retrieved context — adapter parameters only
-- Same prompt template (but without retrieved chunks section), same answer parser
 
 ## Prompt Template (S3/S4 — no retrieval)
 

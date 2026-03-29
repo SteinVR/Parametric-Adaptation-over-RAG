@@ -6,7 +6,7 @@
 
 Final consolidated evaluation on 50 eval questions (same set used in EXP-002..007). Error analysis. Publication-ready tables and figures.
 
-## Pipeline
+## Analysis Steps
 
 1. **Consolidate** existing results from EXP-002..007 (and EXP-009 if it ran) — no fresh inference, reuse artifacts. S2 results use the mean across 3 seeds.
 2. Score: Q_main, S_det, S_asst, G (for S1, S2, S5, S6 if triggered)
