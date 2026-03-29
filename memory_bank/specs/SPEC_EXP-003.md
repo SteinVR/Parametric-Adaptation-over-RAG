@@ -16,7 +16,7 @@ Split stratified by answer_type + difficulty, frozen in `data/splits/split_v1.js
 
 ## Data Preparation
 
-From 150 train questions, build RAFT-style training examples. All examples are oracle (gold context provided):
+From 150 train questions, build RAFT-style training examples. Use oracle gold context when `gold_retrieval` is available:
 
 ```
 Input:  prompt_template(question, [gold_chunks..., distractor_1, distractor_2])
@@ -45,7 +45,7 @@ Training prompt `retrieved_chunks` field = gold chunks first, then distractors, 
 
 ### Other rules
 
-- **No distractor-only examples** (2B model cannot answer domain-specific legal facts without gold context)
+- If a train question has empty `gold_retrieval`, keep it in the 150-example training set and build a **distractor-only** context with the same 2 distractors. These are rare negative examples required to preserve the frozen split.
 - **Answer formatting:** same format as parser expects (true/false, number, date ISO, `[]` for unanswerable, etc.)
 - **Multi-doc questions:** all gold pages from all gold documents included as gold chunks
 
@@ -63,7 +63,7 @@ Training prompt `retrieved_chunks` field = gold chunks first, then distractors, 
 | Optimizer | paged AdamW 8-bit |
 | LR scheduler | cosine |
 | Max seq length | 4096 |
-| Batch size | 4 (gradient accumulation to effective 8 if needed) |
+| Batch size | 4 ( to effective 8 if needed) |
 | Epochs | 3 |
 | Warmup ratio | 0.03 |
 | Weight decay | 0.01 |
@@ -72,7 +72,7 @@ No hyperparameter sweep. Fixed values.
 
 ## Training Protocol
 
-1. Prepare RAFT dataset from 150 train questions (150 oracle examples, 2 distractors each)
+1. Prepare RAFT dataset from 150 train questions (oracle when gold exists, distractor-only when `gold_retrieval` is empty, always 2 distractors)
 2. Train with fixed hyperparams
 3. Repeat with 3 seeds: 42, 123, 777
 4. Report mean ± std on 50 eval questions
@@ -97,7 +97,7 @@ S2 at inference = S1 retrieval pipeline (hybrid search + RRF + reranker + eviden
 
 ## Definition of Done
 
-- [ ] RAFT dataset generated — `data/processed/raft_train.jsonl` has 150 entries with gold + 2 distractors each
+- [ ] RAFT dataset generated — `data/processed/raft_train.jsonl` has 150 entries, each with exactly 2 distractors and gold pages when available
 - [ ] 3 adapters trained — `models/qlora/seed_{42,123,777}/` each contain adapter weights
 - [ ] Full 50-question eval for ALL 3 seeds — each `predictions.json` has 50 entries
 - [ ] Judge scored all free_text questions via OpenAI API for each seed
