@@ -2,3 +2,4 @@
 /.codex
 __pycache__/
 external/doc-to-lora/
+.env

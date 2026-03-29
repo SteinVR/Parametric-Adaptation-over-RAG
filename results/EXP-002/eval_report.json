@@ -1,0 +1,80 @@
+{
+  "system_id": "S1",
+  "experiment_id": "EXP-002",
+  "question_scores": [
+    {
+      "question_id": "1d356814de25d5623275b9b1de2113fcebf2002ff4199294cdaaf10641257242",
+      "answer_type": "free_text",
+      "difficulty": "medium",
+      "is_unanswerable": false,
+      "s_det": null,
+      "s_asst": 0.0,
+      "judge_criteria": {
+        "correctness": 0,
+        "completeness": 0,
+        "grounding": 0,
+        "calibration": 0,
+        "clarity": 0
+      },
+      "grounding_precision": 0.5,
+      "grounding_recall": 1.0,
+      "grounding_f_beta": 0.8787878787878788,
+      "is_malformed": false
+    },
+    {
+      "question_id": "bf7e0ebf84229c956c1154a4d1386ed4b887fc9fc8191ef518ece6c115d182db",
+      "answer_type": "free_text",
+      "difficulty": "easy",
+      "is_unanswerable": false,
+      "s_det": null,
+      "s_asst": 0.0,
+      "judge_criteria": {
+        "correctness": 0,
+        "completeness": 0,
+        "grounding": 0,
+        "calibration": 0,
+        "clarity": 0
+      },
+      "grounding_precision": 1.0,
+      "grounding_recall": 1.0,
+      "grounding_f_beta": 1.0,
+      "is_malformed": false
+    },
+    {
+      "question_id": "f2366d2d2cc2a2dab585b0c6681b04fcb1af8b46422c4fbe6a9126ae56c6fe8a",
+      "answer_type": "date",
+      "difficulty": "easy",
+      "is_unanswerable": false,
+      "s_det": 0.0,
+      "s_asst": null,
+      "judge_criteria": null,
+      "grounding_precision": 0.0,
+      "grounding_recall": 0.0,
+      "grounding_f_beta": 0.0,
+      "is_malformed": false
+    }
+  ],
+  "q_main": 0.0,
+  "s_det": 0.0,
+  "s_asst": 0.0,
+  "grounding_f_beta": 0.6262626262626263,
+  "breakdown_by_type": {
+    "free_text": {
+      "count": 2.0,
+      "s_asst_mean": 0.0,
+      "grounding_f_beta_mean": 0.9393939393939394,
+      "malformed_rate": 0.0
+    },
+    "date": {
+      "count": 1.0,
+      "s_det_mean": 0.0,
+      "grounding_f_beta_mean": 0.0,
+      "malformed_rate": 0.0
+    }
+  },
+  "ttft_median_ms": 541.2483190011699,
+  "ttft_p95_ms": 541.2483190011699,
+  "latency_median_ms": 1870.0980809990142,
+  "latency_p95_ms": 1870.0980809990142,
+  "malformed_rate": 0.0
+}

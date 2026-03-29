@@ -1,0 +1,16 @@
+{
+  "chunk_count": 1099,
+  "document_count": 8,
+  "collection_name": "document_index",
+  "config": {
+    "token_chunk_size": 300,
+    "token_chunk_overlap": 50,
+    "enabled_chunk_families": [
+      "page",
+      "section",
+      "clause",
+      "microchunk",
+      "table"
+    ]
+  }
+}

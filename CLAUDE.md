@@ -49,5 +49,12 @@ New artifacts (models, experiment outputs, logs) are written locally in the work
 - **Activity Log** — load skill `apm-report`. Structured agent session log written after meaningful work.
 - **Delegation Contract** — load skill `apm-subagent`. Minimal framing for specialist subagent requests.
 
+## Code conventions
+- All code must be **modular and typed**. Each logical step (loading, preprocessing, inference, scoring, etc.) is a self-contained module with explicit input/output types. `main.py` composes modules into a pipeline — no business logic lives there.
+- Prioritize readability and hot-swappability: any module can be replaced or updated without touching the rest of the pipeline.
+
+## Self-review gate
+- Before reporting work as done, **always** perform self-review and verification: re-read changed code, check for bugs, spec/contract mismatches, type errors, and edge cases. Fix anything found before returning to the user.
+
 ## Notes
 - If instructions conflict, prefer the closest (most specific) AGENTS.md.

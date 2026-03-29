@@ -10,7 +10,7 @@
 
 ### Wave 2: Parametric Feasibility
 - [ ] EXP-003 — S2 QLoRA RAFT-style baseline, 3 seeds ([spec](./specs/SPEC_EXP-003.md))
-- [ ] EXP-004 — S3 Doc-to-LoRA per-doc generation + monolithic merge ([spec](./specs/SPEC_EXP-004.md))
+- [ ] EXP-004 — S3 Doc-to-LoRA   per-doc generation + monolithic merge ([spec](./specs/SPEC_EXP-004.md))
 
 ### Wave 3: Routing
 - [ ] EXP-005a — S4-doc: per-document routing, hard top-1 ([spec](./specs/SPEC_EXP-005a.md))

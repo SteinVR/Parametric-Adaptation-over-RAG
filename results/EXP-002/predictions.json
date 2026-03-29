@@ -1,0 +1,59 @@
+[
+  {
+    "question_id": "f2366d2d2cc2a2dab585b0c6681b04fcb1af8b46422c4fbe6a9126ae56c6fe8a",
+    "raw_output": "2223-11-11",
+    "parsed_answer": "2223-11-11",
+    "answer_type": "date",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 3
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 10
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 19
+      }
+    ],
+    "ttft_ms": 2340.589485000237,
+    "latency_ms": 2340.589485000237
+  },
+  {
+    "question_id": "1d356814de25d5623275b9b1de2113fcebf2002ff4199294cdaaf10641257242",
+    "raw_output": "The General Partnership is liable to make good the loss if a Partner misapplies fiduciary money or property under Article 31. This means the General Partnership is responsible for the loss caused by the misapplication.",
+    "parsed_answer": "The General Partnership is liable to make good the loss if a Partner misapplies fiduciary money or property under Article 31. This means the General Partnership is responsible for the loss caused by the misapplication.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 2
+      },
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 11
+      }
+    ],
+    "ttft_ms": 275.06092800103943,
+    "latency_ms": 1347.7379600008135
+  },
+  {
+    "question_id": "bf7e0ebf84229c956c1154a4d1386ed4b887fc9fc8191ef518ece6c115d182db",
+    "raw_output": "When property is transferred by way of gift, it is presumed that the intention of the parties is that title to the property should be transferred to the transferee.  This presumption is based on the assumption that the parties intend for the gift to be effective.",
+    "parsed_answer": "When property is transferred by way of gift, it is presumed that the intention of the parties is that title to the property should be transferred to the transferee.  This presumption is based on the assumption that the parties intend for the gift to be effective.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "536bbce854b9406cc22697e04fcdabd645e030c0e55b918252643b00e0b2b25f",
+        "page_number": 5
+      }
+    ],
+    "ttft_ms": 541.2483190011699,
+    "latency_ms": 1870.0980809990142
+  }
+]
