@@ -21,13 +21,13 @@
       "difficulty": "hard",
       "is_unanswerable": false,
       "s_det": null,
-      "s_asst": 0.4,
+      "s_asst": 0.2,
       "judge_criteria": {
         "correctness": 0,
         "completeness": 0,
         "grounding": 0,
         "calibration": 1,
-        "clarity": 1
+        "clarity": 0
       },
       "grounding_precision": 0.0,
       "grounding_recall": 0.0,
@@ -105,11 +105,11 @@
       "difficulty": "medium",
       "is_unanswerable": false,
       "s_det": null,
-      "s_asst": 0.2,
+      "s_asst": 0.4,
       "judge_criteria": {
         "correctness": 0,
         "completeness": 0,
-        "grounding": 0,
+        "grounding": 1,
         "calibration": 0,
         "clarity": 1
       },
@@ -233,7 +233,7 @@
       "answer_type": "number",
       "difficulty": "easy",
       "is_unanswerable": false,
-      "s_det": 0.0,
+      "s_det": 1.0,
       "s_asst": null,
       "judge_criteria": null,
       "grounding_precision": 0.3333333333333333,
@@ -310,7 +310,7 @@
       "answer_type": "number",
       "difficulty": "easy",
       "is_unanswerable": false,
-      "s_det": 0.0,
+      "s_det": 1.0,
       "s_asst": null,
       "judge_criteria": null,
       "grounding_precision": 1.0,
@@ -426,14 +426,14 @@
       "grounding_precision": 0.5,
       "grounding_recall": 0.5,
       "grounding_f_beta": 0.5,
-      "is_malformed": false
+      "is_malformed": true
     },
     {
       "question_id": "a73a4fa484db325f96c907f5763845cef3cb9cde1b5b201ddecc34ba8d4738e1",
       "answer_type": "name",
       "difficulty": "medium",
       "is_unanswerable": false,
-      "s_det": 1.0,
+      "s_det": 0.0,
       "s_asst": null,
       "judge_criteria": null,
       "grounding_precision": 0.5,
@@ -459,7 +459,7 @@
       "answer_type": "name",
       "difficulty": "easy",
       "is_unanswerable": false,
-      "s_det": 0.0,
+      "s_det": 1.0,
       "s_asst": null,
       "judge_criteria": null,
       "grounding_precision": 0.0,
@@ -518,10 +518,10 @@
       "difficulty": "easy",
       "is_unanswerable": false,
       "s_det": null,
-      "s_asst": 1.0,
+      "s_asst": 0.8,
       "judge_criteria": {
         "correctness": 1,
-        "completeness": 1,
+        "completeness": 0,
         "grounding": 1,
         "calibration": 1,
         "clarity": 1
@@ -568,7 +568,7 @@
       "answer_type": "date",
       "difficulty": "easy",
       "is_unanswerable": false,
-      "s_det": 0.0,
+      "s_det": 1.0,
       "s_asst": null,
       "judge_criteria": null,
       "grounding_precision": 0.3333333333333333,
@@ -581,7 +581,7 @@
       "answer_type": "number",
       "difficulty": "easy",
       "is_unanswerable": false,
-      "s_det": 0.0,
+      "s_det": 1.0,
       "s_asst": null,
       "judge_criteria": null,
       "grounding_precision": 0.5,
@@ -621,11 +621,11 @@
       "difficulty": "medium",
       "is_unanswerable": false,
       "s_det": null,
-      "s_asst": 0.2,
+      "s_asst": 0.4,
       "judge_criteria": {
         "correctness": 0,
         "completeness": 0,
-        "grounding": 0,
+        "grounding": 1,
         "calibration": 0,
         "clarity": 1
       },
@@ -731,16 +731,16 @@
       "is_malformed": false
     }
   ],
-  "q_main": 0.5668087318087318,
-  "s_det": 0.49324324324324326,
+  "q_main": 0.6424844074844075,
+  "s_det": 0.6013513513513513,
   "s_asst": 0.7384615384615385,
   "grounding_f_beta": 0.5666785553882328,
   "breakdown_by_type": {
     "number": {
       "count": 7.0,
-      "s_det_mean": 0.2857142857142857,
+      "s_det_mean": 0.7142857142857143,
       "grounding_f_beta_mean": 0.7201942201942202,
-      "malformed_rate": 0.0
+      "malformed_rate": 0.14285714285714285
     },
     "free_text": {
       "count": 13.0,
@@ -762,7 +762,7 @@
     },
     "date": {
       "count": 5.0,
-      "s_det_mean": 0.0,
+      "s_det_mean": 0.2,
       "grounding_f_beta_mean": 0.26930596285434993,
       "malformed_rate": 0.0
     },
@@ -773,9 +773,9 @@
       "malformed_rate": 0.0
     }
   },
-  "ttft_median_ms": 390.1989695004886,
-  "ttft_p95_ms": 1507.2457299975213,
-  "latency_median_ms": 495.8478120024665,
-  "latency_p95_ms": 2417.016805997264,
-  "malformed_rate": 0.0
+  "ttft_median_ms": 334.8470900000393,
+  "ttft_p95_ms": 749.7689129995706,
+  "latency_median_ms": 479.2931669999234,
+  "latency_p95_ms": 2088.996977003262,
+  "malformed_rate": 0.02
 }

@@ -19,15 +19,14 @@ from src.generation.prompt import format_prompt
 
 logger = logging.getLogger(__name__)
 
-# Outlines regex patterns per answer_type (constrained decoding)
+# Outlines regex patterns per answer_type (constrained decoding).
+# Only for types where the model struggles with format — NOT for date/number/name
+# where unconstrained generation is more accurate (outlines distorts logits).
 ANSWER_TYPE_REGEX: dict[str, str] = {
     "boolean": r"(true|false|True|False)",
-    "number": r"-?\d+(\.\d+)?",
-    "date": r"\d{4}-\d{2}-\d{2}",
-    "name": r"[^\n]{1,200}",
     "names": r'\["[^"]*"(,\s*"[^"]*")*\]|\[\]',
 }
-# free_text: no constraint (uses unconstrained generation)
+# date, number, name, free_text: unconstrained generation + rule-based parser
 
 
 class GenerationPipeline:
