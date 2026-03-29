@@ -59,13 +59,14 @@
 From 150 S2-train questions:
 
 ```
-Input:  RAG prompt template(question, [gold_chunk, distractor_1, distractor_2])
+Input:  RAG prompt template(question, [gold_chunks..., distractor_1, distractor_2])
 Output: answer
 ```
 
-- Gold chunks extracted from `gold_retrieval` page references
-- Distractors: exactly 2 random pages from documents OTHER than the gold document
+- **Gold chunks:** page-family IndexChunks from EXP-002 index matching `gold_retrieval` pages. One chunk per gold page, sorted by (doc_id, page_number). Multi-doc questions include all gold pages from all gold documents.
+- **Distractors:** exactly 2 random page-family chunks from documents OTHER than any gold document
 - Distractors sampled once, frozen in training set
+- Context assembly: gold chunks first, then distractors, separated by `\n\n---\n\n`
 - All examples oracle (no distractor-only)
 - Answer formatted per answer_type: true/false, number, date ISO, `[]` for unanswerable
 

@@ -19,14 +19,35 @@ Split stratified by answer_type + difficulty, frozen in `data/splits/split_v1.js
 From 150 train questions, build RAFT-style training examples. All examples are oracle (gold context provided):
 
 ```
-Input:  prompt_template(question, [gold_chunk, distractor_1, distractor_2])
+Input:  prompt_template(question, [gold_chunks..., distractor_1, distractor_2])
 Output: answer
 ```
 
-- **Distractors:** exactly 2 random pages from documents OTHER than the gold document
+### Gold chunk selection policy
+
+Goldset provides `gold_retrieval` at page level: `[{doc_id, page_numbers}]`. The EXP-002 index contains chunks across 5 families (page, section, clause, microchunk, table). Training context uses **page-family chunks only:**
+
+1. For each gold page in `gold_retrieval` → find the corresponding `page`-family `IndexChunk` from the EXP-002 index (one chunk per page, contains full page text)
+2. Gold chunks = ordered list of these page chunks, sorted by (doc_id, page_number)
+3. If a gold page has no matching page-family chunk (should not happen) → fall back to raw page text from `CanonicalPageRecord`
+
+Rationale: page-family chunks are the most complete representation of gold evidence. Using finer-grained chunks (clause, microchunk) would require arbitrary selection among multiple candidates per gold page.
+
+### Distractor policy
+
+- **Distractors:** exactly 2 **page-family chunks** from documents OTHER than any gold document
+- Sampled uniformly at random from all page-family chunks of non-gold documents
 - **Distractors sampled once** and frozen in training set (not re-sampled per epoch)
+
+### Context assembly
+
+Training prompt `retrieved_chunks` field = gold chunks first, then distractors, concatenated with `\n\n---\n\n` separator. Order: `[gold_1, gold_2, ..., distractor_1, distractor_2]`. No shuffling — model should learn to extract from any position.
+
+### Other rules
+
 - **No distractor-only examples** (2B model cannot answer domain-specific legal facts without gold context)
 - **Answer formatting:** same format as parser expects (true/false, number, date ISO, `[]` for unanswerable, etc.)
+- **Multi-doc questions:** all gold pages from all gold documents included as gold chunks
 
 ## QLoRA Configuration (Fixed)
 
@@ -58,7 +79,7 @@ No hyperparameter sweep. Fixed values.
 
 ## Inference
 
-S2 at inference = S1 retriever (top-5 chunks) + QLoRA-adapted Gemma-2-2b-it. Same RAG prompt template, same answer parser.
+S2 at inference = S1 retrieval pipeline (hybrid search + RRF + reranker + evidence compressor) + QLoRA-adapted Gemma-2-2b-it. Reuses the Qdrant index built in EXP-002 (no rebuild). Same RAG prompt template, same answer parser.
 
 ## Metrics (on 50 eval questions)
 

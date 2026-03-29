@@ -20,7 +20,7 @@ Generate 8 per-document LoRA adapters via Doc-to-LoRA hypernetwork. Sanity-check
 
 ### Step 3: Per-doc sanity check
 - For each doc adapter: load it, run inference on questions from that document only (from S2-train set, not eval)
-- Score per-doc Q_main — does the adapter help on its own document's questions?
+- Score per-doc **S_det only** (no judge calls — this is a diagnostic, not a final result). Free_text questions excluded from sanity scoring.
 - This validates that the hypernetwork actually works before attempting merge
 
 ### Step 4: Merge
@@ -53,7 +53,7 @@ Same `answer_type_instruction` as EXP-002.
 
 ## Metrics
 
-- Per-doc adapter Q_main (sanity check, per-document subset)
+- Per-doc adapter S_det (sanity check, per-document subset, deterministic types only)
 - Monolithic Q_main, S_det, S_asst on 50 eval
 - Adapter generation time per doc (seconds)
 - Merge compute time

@@ -30,7 +30,7 @@ Unified comparison of all systems. Produce the main results table.
 
 ## Best Adapter Selection Rule
 
-S5 candidates: **S2 and S3 only** (single adapters). Rank by eval Q_main on 50 questions. If tie (within 1pp): prefer lower latency → prefer simpler (S3 > S2).
+S5 candidates: **S2 and S3 only** (single adapters). Rank by eval Q_main on 50 questions. If tie (within 1pp): prefer lower inference latency → prefer S2 (standard QLoRA, simpler inference pipeline — no hypernetwork dependency).
 
 ## Output
 

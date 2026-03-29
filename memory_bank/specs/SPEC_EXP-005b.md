@@ -12,7 +12,7 @@ Cluster 8 documents into 4 groups. Merge 2 per-doc adapters within each cluster.
 - Embed all 8 documents via Qwen3-Embedding-0.6B (same doc embeddings as EXP-005a)
 - k-means, k=4, on document embeddings
 - Log cluster assignments, silhouette score, cluster sizes
-- **Imbalanced clusters:** if a cluster has 1 doc → use its per-doc adapter as-is (no merge). If a cluster has 3+ docs → merge all adapters in that cluster (same strategy as S3). Document actual composition.
+- **Imbalanced clusters:** if a cluster has 1 doc → use its per-doc adapter as-is (no merge; note this is identical to S4-doc's adapter for that doc — flag in analysis). If a cluster has 3+ docs → merge all adapters in that cluster (same strategy as S3). Document actual composition.
 
 ### Step 2: Per-cluster adapter merge
 - For each cluster: merge its 2 doc adapters using frozen merge strategy from EXP-004 (simple average)

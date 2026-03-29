@@ -8,7 +8,7 @@
 
 `Q_main = 0.7 × S_det + 0.3 × S_asst`
 
-Applied universally to S1-S5.
+Applied universally to S1-S5 (and S6 if triggered).
 
 ---
 
@@ -73,20 +73,20 @@ Return JSON: {"correctness": 0|1, "completeness": 0|1, "grounding": 0|1, "calibr
 
 ---
 
-## Retrieval-Aware Metrics (S1, S2, S5 — systems using retrieval)
+## Retrieval-Aware Metrics (S1, S2, S5 — always; S6 if triggered)
 
 S3, S4-doc, S4-cluster: G = N/A (no retrieval).
 
 **Grounding:**
 `G = F_β(β=2.5)` on `(doc_id, page_number)` pairs.
 
-**Building predicted set P:** deduplicated union of all `(doc_id, page_number)` from metadata of top-k retrieved chunks. Each chunk carries its source page metadata through the indexing pipeline.
+**Building predicted set P:** deduplicated union of all `(doc_id, page_number)` from **final evidence chunks** — i.e. after the full retrieval pipeline completes (search → rerank → evidence compression → page lifting). For S1/S2/S5 this is `RetrievalService.retrieve().page_references`. For S6 this is the naive top-k output. P is NOT built from raw pre-compression candidates.
 
 - precision = |P ∩ G_ref| / |P|
 - recall = |P ∩ G_ref| / |G_ref|
 - Both empty → 1.0; one empty → 0.0
 
-**Supplementary:** Recall@k, evidence hit-rate (optional, for analysis).
+**Supplementary:** Recall@k on raw pre-compression candidates (optional, for retrieval stack analysis).
 
 ---
 
@@ -124,6 +124,8 @@ Tables saved as CSV in experiment artifacts + rendered in REPORT.md.
 | S4 beats S3 | Routing + sharding > monolithic merge; capacity bottleneck confirmed |
 | S3 beats S4 | Routing overhead / clustering noise hurts; monolithic sufficient |
 | S1 beats all parametric | Parametric injection not justified on small corpus; retrieval sufficient |
+| S1 >> S6 | Full pipeline (hybrid+rerank+compression+chunk topology) materially contributes beyond naive dense RAG |
+| S1 ≈ S6 | Full pipeline marginal on this corpus scale; naive dense RAG sufficient |
 | All close | Main result is the cost/quality trade-off analysis, not a winner |
 
 **Mandatory caveats in all conclusions:**

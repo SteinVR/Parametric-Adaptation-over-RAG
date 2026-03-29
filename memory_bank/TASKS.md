@@ -17,17 +17,18 @@
 - [ ] EXP-005b — S4-cluster: cluster routing, k=4 ([spec](./specs/SPEC_EXP-005b.md))
 
 ### Wave 4: Comparison
-- [ ] EXP-006 — Main cross-paradigm comparison S1–S4 on dev ([spec](./specs/SPEC_EXP-006.md))
+- [ ] EXP-006 — Main cross-paradigm comparison (S1, S2, S3, S4-doc, S4-cluster) ([spec](./specs/SPEC_EXP-006.md))
 
 ### Wave 5: Hybrid + Final
 - [ ] EXP-007 — S5 Hybrid: RAG + best adapter + HyDE ([spec](./specs/SPEC_EXP-007.md))
 - [ ] EXP-008 — Locked test + error analysis + final tables ([spec](./specs/SPEC_EXP-008.md))
+- [ ] EXP-009 — S6 E2E naive dense RAG ablation (conditional: S5 < S1) ([spec](./specs/SPEC_EXP-009.md))
 
 ## Reference Docs (in memory_bank/)
-- [SPEC-systems](../SPEC-systems.md) — Detailed system definitions
-- [SPEC-evaluation](../SPEC-evaluation.md) — Evaluation protocol, judge config, scoring rules
-- [SPEC-data](../SPEC-data.md) — Corpus, goldset, splits, leakage rules
-- [BACKLOG-routing-research](../BACKLOG-routing-research.md) — Full routing/merge research space
+- [SPEC-systems](./SPEC-systems.md) — Detailed system definitions
+- [SPEC-evaluation](./SPEC-evaluation.md) — Evaluation protocol, judge config, scoring rules
+- [SPEC-data](./SPEC-data.md) — Corpus, goldset, splits, leakage rules
+- [BACKLOG-routing-research](./BACKLOG-routing-research.md) — Full routing/merge research space
 
 ## Backlog
 - See [BACKLOG-routing-research.md](../BACKLOG-routing-research.md) for full research space

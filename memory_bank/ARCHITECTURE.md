@@ -1,6 +1,6 @@
 # SSOT: Knowledge Injection for Document-Grounded QA on Consumer Hardware
 
-**Version:** 5.0 | **Updated:** 2026-03-28 | **Shorthand:** `knowledge-injection-consumer-hw`
+**Version:** 6.0 | **Updated:** 2026-03-29 | **Shorthand:** `knowledge-injection-consumer-hw`
 
 > Authoritative source for scope, systems, metrics, and frozen decisions.
 > Detail specs live in `memory_bank/SPEC-*.md`.
@@ -20,14 +20,17 @@
 
 | ID | System | Family | Info input | What is adapted |
 |----|--------|--------|------------|-----------------|
-| S1 | Classical RAG | Nonparametric | Full corpus via index | Nothing (retrieval only) |
+| S1 | Classical RAG | Nonparametric | Full corpus via hybrid index | Nothing (retrieval only) |
 | S2 | QLoRA (RAFT-style) | Supervised parametric | 150 train QA + gold chunks | One LoRA adapter on backbone |
 | S3 | Doc-to-LoRA (monolithic) | Supervision-free parametric | 8 docs via hypernetwork → merge all | One merged LoRA (8 → 1) |
 | S4-doc | Doc-to-LoRA per-doc routed | Supervision-free parametric + routing | 8 docs → 8 adapters, hard top-1 routing | Per-doc adapter, zero merge |
 | S4-cluster | Doc-to-LoRA cluster-routed | Supervision-free parametric + routing | 8 docs → 4 clusters, merge 2 per cluster, route | Per-cluster adapter (k=4) |
 | S5 | Hybrid: RAG + best single adapter | Hybrid | Retrieval + best of S2 or S3 | Single adapter + retrieval pipeline |
+| S6 | Naive Dense RAG (e2e ablation) | Nonparametric | Corpus via dense-only index | Nothing (e2e ablation of S1) |
 
 S5 sub-variants: **S5a** (raw-query retrieval + adapter), **S5b** (adapter-generated HyDE + retrieval + adapter). HyDE is only evaluated inside S5.
+
+**S6** is conditional: run only if headline S5 (best of S5a/S5b) < S1 on eval Q_main. End-to-end naive dense RAG ablation (microchunk-only, dense FAISS, no reranker/hybrid/compression). Delta(S1, S6) measures combined retrieval engineering + chunk topology contribution.
 
 See `memory_bank/SPEC-systems.md` for detailed system definitions, packaging strategies, and merge rules.
 
@@ -59,7 +62,9 @@ See `memory_bank/SPEC-systems.md` for detailed system definitions, packaging str
 | Judge model | **gpt-5.4-mini** (OpenAI API, medium reasoning), version-pinned | External, not self-judging |
 | Hardware | **RTX 4060 8GB VRAM, 32GB RAM** | Hard constraint; QLoRA 4-bit default |
 | Quantization | **4-bit NF4** for QLoRA training | Standard QLoRA recipe |
-| Embedding model | **Qwen3-Embedding-0.6B** for retrieval index and document routing | Shared across S1/S4 |
+| Embedding model | **Qwen3-Embedding-0.6B** for retrieval index and document routing | Shared across S1/S2/S4/S5/S6 (S2 and S5 via S1 pipeline) |
+| Reranker | **Qwen3-Reranker-0.6B** cross-encoder for S1 retrieval pipeline | Lexical fallback if model fails |
+| S1 retrieval stack | **Full hybrid pipeline** from `external/pdf_rag_pipeline/` | Dense+sparse, RRF, reranker, evidence compressor |
 | Routing (S4-doc) | **Hard top-1, cosine similarity to document embeddings** | Simplest per-doc routing |
 | Clustering (S4-cluster) | **k=4, document-level, k-means, cosine nearest centroid** | Simple, interpretable, no learned router |
 
@@ -73,8 +78,8 @@ See `memory_bank/SPEC-systems.md` for detailed system definitions, packaging str
 - `S_det`: deterministic accuracy (number, boolean, name, names, date). Unanswerable: expected `[]`, system returns `[]` → 1.0.
 - `S_asst`: LLM-judge score on free_text (5 binary criteria, gpt-5.4-mini)
 
-**Retrieval-aware (S1, S2, S5):**
-`G = F_β(β=2.5)` on page-level grounding. P = deduplicated union of (doc_id, page_number) from top-k retrieved chunks.
+**Retrieval-aware (S1, S2, S5, S6 if triggered):**
+`G = F_β(β=2.5)` on page-level grounding. P = deduplicated union of (doc_id, page_number) from **final evidence chunks** (after rerank + compression, not raw candidates).
 
 **Systems metrics (all):**
 TTFT, end-to-end latency, peak VRAM, offline packaging cost (index build / training / adapter generation time)
@@ -127,6 +132,7 @@ See `memory_bank/SPEC-data.md` for split protocol, schema, leakage rules.
 | EXP-006 | Main comparison S1-S4 on 50 eval | Cross-paradigm results |
 | EXP-007 | S5 Hybrid (S5a + S5b) | Hybrid top-line |
 | EXP-008 | Locked test + error analysis | Final thesis tables |
+| EXP-009 | S6 E2E naive dense RAG ablation (conditional: S5 < S1) | Full pipeline value vs naive baseline |
 
 ---
 
@@ -134,7 +140,7 @@ See `memory_bank/SPEC-data.md` for split protocol, schema, leakage rules.
 
 - **Python 3.11+**, `uv` for env management
 - **DL:** `torch`, `transformers`, `peft`, `accelerate`, `bitsandbytes`
-- **Retrieval:** `sentence-transformers`, `faiss` or existing vector DB
+- **Retrieval:** `sentence-transformers`, `qdrant-client`, `faiss` (S6 ablation only)
 - **Doc-to-LoRA:** SakanaAI repo as dependency/submodule
 - **Evaluation:** custom metrics + OpenAI API client for judge
 - **Viz:** `matplotlib`
