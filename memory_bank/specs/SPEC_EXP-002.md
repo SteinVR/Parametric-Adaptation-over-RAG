@@ -105,4 +105,4 @@ Models loaded/unloaded sequentially to stay within 8 GB RTX 4060 budget.
 - `src/generation/` — Gemma loader, prompt builder, answer parser
 - `src/evaluation/` — Q_main scorer, grounding scorer, judge client
 - Eval baseline metrics CSV in `results/EXP-002/`
-- `experiments/EXP-002/REPORT.md`
+- `experiments/EXP-002_s1_rag_baseline/REPORT.md`
