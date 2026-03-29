@@ -4,7 +4,7 @@
 
 ---
 
-## S1 — Classical RAG
+## S1 — Classical RAG (Axis 1: Nonparametric)
 
 - **Pipeline:** full hybrid retrieval stack from `external/pdf_rag_pipeline/`:
   ingestion (PyMuPDF + table serializer) → corpus assembly → hierarchical chunking (page, section, clause, microchunk, table) → Qdrant hybrid index (dense + sparse) → RRF fusion → cross-encoder reranking → page-diverse evidence compression → generation
@@ -19,19 +19,32 @@
 - **No model adaptation.** Index + retrieval pipeline are the only offline artifacts.
 - **Metrics scope:** Q_main + grounding G + systems metrics
 
-## S2 — QLoRA Fine-Tuned (RAFT-style)
+## S2 — QLoRA Closed-Book (Axis 1: Supervised Parametric)
+
+- **Training format:** closed-book
+  - Input: question only (no retrieved context, no gold chunks)
+  - Output: answer in expected format
+  - Dataset: 150 S2-train QA pairs from goldset
+- **Adapter config:** QLoRA 4-bit NF4, rank 32, alpha 32, dropout 0.05, target q_proj + v_proj, lr 2e-4, paged AdamW 8-bit, 3 epochs. No sweep.
+- **Split:** 150 S2-train / 50 eval (all systems evaluated on same 50)
+- **Variance:** 3 random seeds (42, 123, 777), report mean ± std on 50 eval
+- **Inference:** question → adapted model → answer. **No retrieval.** Model must answer from knowledge absorbed during fine-tuning.
+- **Interpretation:** S2 tests whether supervised QA-pair training injects document knowledge into a 2B model's weights. Expected to be bounded by goldset coverage (150 QA over 8 docs, no full-document exposure).
+- **Metrics scope:** Q_main + systems metrics (no grounding — no retrieval)
+
+## S2+R — QLoRA RAFT + Retrieval (Axis 2: Retrieval Augmentation)
 
 - **Training format:** RAFT-style open-book
   - Input: question + gold page-family chunks (from gold_retrieval pages) + 2 distractor page-family chunks (from non-gold docs)
   - Output: answer in expected format
-- **Adapter config:** QLoRA 4-bit NF4, rank 32, alpha 32, dropout 0.05, target q_proj + v_proj, lr 2e-4, paged AdamW 8-bit, 3 epochs. No sweep.
-- **Split:** 150 S2-train / 50 eval (all systems evaluated on same 50)
-- **Variance:** 3 random seeds (42, 123, 777), report mean ± std on 50 eval
-- **Inference:** S2 uses the same retrieval pipeline as S1 — retrieved evidence + adapted generator → answer. RAFT-style: trained with context, infers with context.
-- **Interpretation:** S2 is "RAG with supervised adapter." Learns context-use and answer formatting. Does NOT internalize full corpus.
+- **Adapter config:** same as S2
+- **Split/variance:** same as S2
+- **Inference:** S1 retrieval pipeline → retrieved evidence + RAFT-adapted generator → answer. Trained with context, infers with context.
+- **Interpretation:** S2+R is "RAG with supervised adapter." Compares against S2 (closed-book) to isolate the contribution of retrieval to a supervised system. Δ(S2+R, S2) = retrieval value.
+- **Results:** frozen from EXP-003. See `memory_bank/specs/SPEC_EXP-003.md`.
 - **Metrics scope:** Q_main + grounding G + systems metrics
 
-## S3 — Doc-to-LoRA (Monolithic)
+## S3 — Doc-to-LoRA Monolithic (Axis 1: Supervision-Free Parametric)
 
 - **Hypernetwork:** SakanaAI Doc-to-LoRA, Gemma-2-2b-it checkpoint
 - **Target modules:** MLP layers (as defined by hypernetwork)
@@ -45,7 +58,7 @@
 - **Interpretation:** S3 tests whether merged multi-document adapter retains useful knowledge.
 - **Metrics scope:** Q_main + systems metrics (no grounding — no retrieval)
 
-## S4-doc — Per-Document Routed Doc-to-LoRA
+## S4-doc — Per-Document Routed Doc-to-LoRA (Axis 1: Supervision-Free Parametric + Routing)
 
 - **Adapters:** 8 per-document adapters from EXP-004 (no merge)
 - **Router:** embed question → cosine similarity to 8 document embeddings → hard top-1
@@ -53,7 +66,7 @@
 - **Interpretation:** maximum specialization, zero merge. Expected to excel on single-doc questions, fail on multi-doc.
 - **Metrics scope:** Q_main + systems metrics + routing accuracy analysis (no grounding — no retrieval)
 
-## S4-cluster — Cluster-Routed Doc-to-LoRA
+## S4-cluster — Cluster-Routed Doc-to-LoRA (Axis 1: Supervision-Free Parametric + Routing)
 
 - **Clustering:**
   - Granularity: **document-level** (8 docs → 4 clusters of ~2 docs each)
@@ -74,7 +87,7 @@
 - **Interpretation:** S4 tests whether document-level sharding + routing preserves more information than global merge (S3)
 - **Metrics scope:** Q_main + systems metrics + routing distribution analysis (no grounding — no retrieval)
 
-## S5 — Hybrid: RAG + Best Adapter
+## S5 — Hybrid: RAG + Best Adapter (Axis 2: Retrieval Augmentation)
 
 - **Adapter selection:** best **single** adapter from S2 or S3 on eval Q_main. S4-doc/S4-cluster are multi-adapter routed systems — not eligible. Ties broken by: latency → simplicity. **Known limitation:** selection on eval-50 introduces mild optimistic bias for S5 (see EXP-006 spec).
 - **Two sub-variants:**

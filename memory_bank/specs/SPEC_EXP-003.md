@@ -1,10 +1,13 @@
-# SPEC: EXP-003 — S2 QLoRA RAFT-style Baseline
+# SPEC: EXP-003 — S2+R QLoRA RAFT + Retrieval (Axis 2)
 
-**System:** S2 | **Wave:** 2 | **Depends on:** EXP-002 (retriever, prompt, parser) | **Blocks:** EXP-006, EXP-007
+> **Architecture note:** This experiment produces **S2+R** results (Axis 2: retrieval augmentation).
+> For Axis 1 paradigm comparison (S2 closed-book), see EXP-003b.
+
+**System:** S2+R | **Axis:** 2 (Retrieval Augmentation) | **Wave:** 2 | **Depends on:** EXP-002 (retriever, prompt, parser) | **Blocks:** EXP-006, EXP-007
 
 ## Goal
 
-Fine-tune Gemma-2-2b-it with QLoRA in RAFT-style. Establish supervised parametric baseline. At inference S2 uses same retriever as S1.
+Fine-tune Gemma-2-2b-it with QLoRA in RAFT-style. At inference S2+R uses same retriever as S1. Results serve as retrieval-augmented ablation: Δ(S2+R, S2) isolates retrieval contribution to the supervised system.
 
 ## Split
 
