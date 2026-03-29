@@ -31,6 +31,9 @@
 - Use skill `apm-subagent` to form role-appropriate delegation requests.
 - Before final integration, normalize outputs and run comparison checks.
 
+## Environment
+- After every `uv sync`, re-install Doc-to-LoRA: `uv pip install --no-deps -e ./external/doc-to-lora` (it is excluded from `pyproject.toml` to avoid pulling vllm/deepspeed).
+
 ## Worktree shared resources
 When working inside a git worktree (e.g., under `.apm/worktrees/{TASK_ID}`), heavy untracked resources are not present by default. Default policy is a **single repo-level runtime** (e.g., `.venv`) and shared `data/` reused across worktrees (no per-worktree environments). If a task changes dependencies, update lockfiles and run a managed sync for the shared runtime (e.g., `uv sync`) in a serialized way.
 

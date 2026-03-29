@@ -138,11 +138,11 @@ See `memory_bank/SPEC-data.md` for split protocol, schema, leakage rules.
 
 ## 9. Technology Stack
 
-- **Python 3.11+**, `uv` for env management
-- **DL:** `torch`, `transformers`, `peft`, `accelerate`, `bitsandbytes`
+- **Python 3.12**, `uv` for env management, single `.venv` for all experiments
+- **DL:** `torch==2.6.0+cu124`, `transformers==4.51.3`, `accelerate==1.6.0`, `peft`, `bitsandbytes` (versions pinned for Doc-to-LoRA compatibility)
 - **Retrieval:** `sentence-transformers`, `qdrant-client`, `faiss` (S6 ablation only)
-- **Doc-to-LoRA:** SakanaAI repo as dependency/submodule
-- **Evaluation:** custom metrics + OpenAI API client for judge
+- **Doc-to-LoRA:** SakanaAI repo cloned to `external/doc-to-lora/`, installed as editable `--no-deps` (skips vllm/deepspeed); re-install after every `uv sync`
+- **Evaluation:** custom metrics + OpenAI API client (`openai`) for judge
 - **Viz:** `matplotlib`
 
 ---
