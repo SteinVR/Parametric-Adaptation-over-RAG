@@ -1,4 +1,4 @@
 scope,Q_main,S_det,S_asst,G_f_beta,TTFT_median_ms,latency_median_ms,malformed_rate,count,s_asst_mean,grounding_f_beta_mean,s_det_mean
-aggregate,0.0000,0.0000,0.0000,0.6263,541.2,1870.1,0.00%,,,,
-free_text,,,,,,,0.0000,2.0000,0.0000,0.9394,
-date,,,,,,,0.0000,1.0000,,0.0000,0.0000
+aggregate,0.9700,1.0000,0.9000,0.6263,541.8,1604.4,0.00%,,,,
+free_text,,,,,,,0.0000,2.0000,0.9000,0.9394,
+date,,,,,,,0.0000,1.0000,,0.0000,1.0000

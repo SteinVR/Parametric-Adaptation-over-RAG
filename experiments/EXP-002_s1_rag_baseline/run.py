@@ -3,8 +3,8 @@
 Builds the hybrid RAG index over 8-doc corpus, runs retrieval + generation
 on 50 eval questions, and produces evaluation metrics.
 
-Usage:
-    python -m experiments.EXP-002.run [--skip-index] [--subset N]
+Usage (from repo root):
+    python experiments/EXP-002_s1_rag_baseline/run.py [--skip-index] [--subset N]
 """
 
 from __future__ import annotations
@@ -18,6 +18,10 @@ from pathlib import Path
 # Ensure project root is on path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
+
+# Load .env (for OPENAI_API_KEY etc.)
+from dotenv import load_dotenv
+load_dotenv(PROJECT_ROOT / ".env")
 
 import torch
 

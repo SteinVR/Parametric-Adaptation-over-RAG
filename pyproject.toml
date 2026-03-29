@@ -36,6 +36,11 @@ dependencies = [
     # Analysis & clustering
     "scikit-learn>=1.5",
     "matplotlib>=3.9",
+
+    # Utilities
+    "python-dotenv>=1.0",
+    "outlines>=1.2",
+    "sentencepiece",
 ]
 
 [build-system]

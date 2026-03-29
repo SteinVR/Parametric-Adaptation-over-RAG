@@ -5,13 +5,13 @@
     "difficulty": "medium",
     "is_unanswerable": false,
     "s_det": null,
-    "s_asst": 0.0,
+    "s_asst": 1.0,
     "judge_criteria": {
-      "correctness": 0,
-      "completeness": 0,
-      "grounding": 0,
-      "calibration": 0,
-      "clarity": 0
+      "correctness": 1,
+      "completeness": 1,
+      "grounding": 1,
+      "calibration": 1,
+      "clarity": 1
     },
     "grounding_precision": 0.5,
     "grounding_recall": 1.0,
@@ -24,13 +24,13 @@
     "difficulty": "easy",
     "is_unanswerable": false,
     "s_det": null,
-    "s_asst": 0.0,
+    "s_asst": 0.8,
     "judge_criteria": {
-      "correctness": 0,
+      "correctness": 1,
       "completeness": 0,
-      "grounding": 0,
-      "calibration": 0,
-      "clarity": 0
+      "grounding": 1,
+      "calibration": 1,
+      "clarity": 1
     },
     "grounding_precision": 1.0,
     "grounding_recall": 1.0,
@@ -42,7 +42,7 @@
     "answer_type": "date",
     "difficulty": "easy",
     "is_unanswerable": false,
-    "s_det": 0.0,
+    "s_det": 1.0,
     "s_asst": null,
     "judge_criteria": null,
     "grounding_precision": 0.0,

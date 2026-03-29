@@ -1,8 +1,8 @@
 [
   {
     "question_id": "f2366d2d2cc2a2dab585b0c6681b04fcb1af8b46422c4fbe6a9126ae56c6fe8a",
-    "raw_output": "2223-11-11",
-    "parsed_answer": "2223-11-11",
+    "raw_output": "2023-03-09",
+    "parsed_answer": "2023-03-09",
     "answer_type": "date",
     "is_malformed": false,
     "predicted_pages": [
@@ -19,8 +19,8 @@
         "page_number": 19
       }
     ],
-    "ttft_ms": 2340.589485000237,
-    "latency_ms": 2340.589485000237
+    "ttft_ms": 1604.4356159982271,
+    "latency_ms": 1604.4356159982271
   },
   {
     "question_id": "1d356814de25d5623275b9b1de2113fcebf2002ff4199294cdaaf10641257242",
@@ -38,8 +38,8 @@
         "page_number": 11
       }
     ],
-    "ttft_ms": 275.06092800103943,
-    "latency_ms": 1347.7379600008135
+    "ttft_ms": 281.1341150008957,
+    "latency_ms": 1339.8695120013144
   },
   {
     "question_id": "bf7e0ebf84229c956c1154a4d1386ed4b887fc9fc8191ef518ece6c115d182db",
@@ -53,7 +53,7 @@
         "page_number": 5
       }
     ],
-    "ttft_ms": 541.2483190011699,
-    "latency_ms": 1870.0980809990142
+    "ttft_ms": 541.8495630001416,
+    "latency_ms": 1846.3553360015794
   }
 ]
