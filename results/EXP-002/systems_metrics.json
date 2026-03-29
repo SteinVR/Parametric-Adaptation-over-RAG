@@ -1,8 +1,8 @@
 {
-  "peak_vram_mb": 4039.3037109375,
-  "ttft_median_ms": 541.8495630001416,
-  "ttft_p95_ms": 541.8495630001416,
-  "latency_median_ms": 1604.4356159982271,
-  "latency_p95_ms": 1604.4356159982271,
+  "peak_vram_mb": 5200.49365234375,
+  "ttft_median_ms": 390.1989695004886,
+  "ttft_p95_ms": 1507.2457299975213,
+  "latency_median_ms": 495.8478120024665,
+  "latency_p95_ms": 2417.016805997264,
   "malformed_rate": 0.0
 }
