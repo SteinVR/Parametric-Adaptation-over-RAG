@@ -36,3 +36,13 @@ Manually inspect top-5 worst failures per system. Document with: question text, 
   - `merge_route_gradient.png`
   - `per_type_heatmap.png`
   - `routing_confusion_matrix.png`
+
+## Definition of Done
+
+- [ ] `test_results.csv` consolidates all system results (no fresh inference)
+- [ ] `cross_system_comparison.csv` with all systems × all metrics
+- [ ] Error analysis: top-5 worst failures per system documented in `error_analysis.md`
+- [ ] Error hypotheses from spec checked (all wrong, only S1 right, only S2 right, etc.)
+- [ ] 4 publication figures generated in `results/figures/`
+- [ ] All results committed to git
+- [ ] `experiments/EXP-008/REPORT.md` written with final conclusions and mandatory caveats

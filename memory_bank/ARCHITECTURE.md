@@ -54,7 +54,7 @@ See `memory_bank/SPEC-systems.md` for detailed system definitions, packaging str
 |----------|-------|-----------|
 | Backbone | **Gemma-2-2b-it** | Only backbone with released Doc-to-LoRA hypernetwork checkpoint; used by all S1-S5 for fairness |
 | Hypernetwork | **SakanaAI Doc-to-LoRA** (checkpoint-80000) | Pre-trained, not retrained in this project |
-| Corpus | **8 PDF documents** (DIFC legal, ~141K tokens total) | Each fits D2L single pass; frozen before experiments |
+| Corpus | **8 PDF documents** (DIFC legal, ~115K tokens total) | Each fits D2L single pass; frozen before experiments |
 | Goldset | **200 human-authored QA pairs** (100 per batch of 4 docs) | `data/goldset/goldset.benchmark.json` |
 | Split | **150 S2-train / 50 eval**, stratified by answer_type + difficulty | All systems evaluated on same 50. S2 trains on 150. No CV. |
 | S2 variance | **3 random seeds**, report mean ± std | Replaces CV for supervised system |
@@ -109,7 +109,7 @@ See `memory_bank/SPEC-evaluation.md` for scoring rules, judge rubric, and report
 
 | Attribute | Value |
 |-----------|-------|
-| Documents | 8 PDFs (4 statutes/regs + 4 cases), DIFC legal, 176 pages, ~141K tokens |
+| Documents | 8 PDFs (4 statutes/regs + 4 cases), DIFC legal, 176 pages, ~115K tokens |
 | QA pairs | 200 (2 batches × 100) |
 | Answer types | free_text: 53, boolean: 48, number: 36, name: 30, names: 17, date: 16 |
 | Difficulty | easy: 98, medium: 71, hard: 31 |

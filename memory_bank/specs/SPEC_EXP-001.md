@@ -13,6 +13,14 @@ Validate corpus and goldset, merge 2 QA batches, create frozen 150 train / 50 ev
 ## Legacy (not used by downstream experiments)
 - `data/manifests/corpus_manifest.csv` — 65-doc manifest from original audit, superseded by 8-doc corpus
 
+## Definition of Done
+
+- [x] `data/goldset/goldset.benchmark.json` exists with 200 entries
+- [x] `data/splits/split_v1.json` exists with `s2_train` (150) and `eval` (50) keys
+- [x] Split stratified by answer_type + difficulty
+- [x] Near-duplicate pair grouped in same split
+- [x] All 8 corpus PDFs validated and present
+
 ## Key Results
 - 200 QA, 8 docs, 176 pages, ~141K tokens
 - 1 near-duplicate pair (grouped in same split)

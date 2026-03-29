@@ -106,3 +106,15 @@ Models loaded/unloaded sequentially to stay within 8 GB RTX 4060 budget.
 - `src/evaluation/` — Q_main scorer, grounding scorer, judge client
 - Eval baseline metrics CSV in `results/EXP-002/`
 - `experiments/EXP-002_s1_rag_baseline/REPORT.md`
+
+## Definition of Done
+
+- [ ] RAG index built and persisted (`results/EXP-002/index/`)
+- [ ] Full 50-question eval completed — `predictions.json` has exactly 50 entries
+- [ ] Judge scored ALL free_text questions via OpenAI API (no all-zero fallback)
+- [ ] Artifacts saved: `predictions.json`, `eval_report.json`, `eval_summary.csv`, `systems_metrics.json`
+- [ ] Aggregate Q_main, S_det, S_asst, G reported
+- [ ] Breakdown by all 6 answer_types in `eval_summary.csv`
+- [ ] Malformed rate < 5%
+- [ ] All results committed to git
+- [ ] `experiments/EXP-002_s1_rag_baseline/REPORT.md` written with config params, results, interpretation

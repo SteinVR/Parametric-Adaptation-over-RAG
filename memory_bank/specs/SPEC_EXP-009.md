@@ -57,3 +57,16 @@ All parameters above must be defined in a local `S6Config` dataclass (not inline
 - FAISS index: `results/EXP-009/faiss_index/`
 - Eval results: `results/EXP-009/`
 - `experiments/EXP-009/REPORT.md`
+
+## Definition of Done
+
+- [ ] Trigger condition verified: headline S5 < S1 on Q_main (otherwise skip + document)
+- [ ] FAISS index built with microchunk-only chunking — `results/EXP-009/faiss_index/`
+- [ ] Full 50-question eval — `predictions.json` has 50 entries
+- [ ] Judge scored all free_text questions via OpenAI API
+- [ ] Q_main, S_det, S_asst, G reported
+- [ ] Delta vs S1 computed on all metrics
+- [ ] Retrieval overlap: Jaccard between S1 and S6 page sets per question
+- [ ] Breakdown by answer_type
+- [ ] All results committed to git
+- [ ] `experiments/EXP-009/REPORT.md` written

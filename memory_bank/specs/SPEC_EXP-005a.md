@@ -48,3 +48,16 @@ Evaluate per-document routing with zero merge. At inference, route each question
 
 - Routing logs: `results/EXP-005a/routing_log.csv` (question_id, gold_docs, routed_doc, similarities, correct)
 - `experiments/EXP-005a/REPORT.md`
+
+## Definition of Done
+
+- [ ] 8 document embeddings computed and stored
+- [ ] Full 50-question eval — `predictions.json` has 50 entries
+- [ ] Judge scored all free_text questions via OpenAI API
+- [ ] Routing log saved — `routing_log.csv` with 50 rows (question_id, gold_docs, routed_doc, similarities, correct)
+- [ ] Routing accuracy reported: overall, single-doc, multi-doc
+- [ ] Q_main, S_det, S_asst reported
+- [ ] Routing confusion matrix (8x8) generated
+- [ ] Breakdown by answer_type
+- [ ] All results committed to git
+- [ ] `experiments/EXP-005a/REPORT.md` written

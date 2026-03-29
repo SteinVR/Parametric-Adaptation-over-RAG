@@ -68,6 +68,19 @@ Same `answer_type_instruction` as EXP-002.
 - **Frozen merge strategy** for EXP-005b
 - `experiments/EXP-004/REPORT.md`
 
+## Definition of Done
+
+- [ ] 8 per-doc adapters generated — `models/d2l/doc{1-8}/` each contain adapter weights
+- [ ] Per-doc sanity check: S_det reported for each doc adapter on its own questions
+- [ ] Monolithic merged adapter saved — `models/d2l/monolithic/`
+- [ ] Full 50-question eval on monolithic adapter — `predictions.json` has 50 entries
+- [ ] Judge scored all free_text questions via OpenAI API
+- [ ] Q_main, S_det, S_asst reported for monolithic adapter
+- [ ] Adapter generation time per doc and merge time logged
+- [ ] Breakdown by answer_type
+- [ ] All results committed to git
+- [ ] `experiments/EXP-004/REPORT.md` written (including sanity check table and merge viability assessment)
+
 ## Risk
 
 Merge of 8 adapters may destroy information. If so, S3 is declared non-viable — document this as finding, proceed with S4-doc and S4-cluster.

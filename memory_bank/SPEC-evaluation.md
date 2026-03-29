@@ -132,3 +132,4 @@ Tables saved as CSV in experiment artifacts + rendered in REPORT.md.
 - Bounded to this corpus, goldset, backbone, hardware
 - Doc-to-LoRA hypernetwork is pre-trained, not project-trained
 - S2's advantage on format is expected, not evidence of corpus internalization
+- S5 adapter selection uses eval-50 (same set as final evaluation) — mild optimistic bias with 2 candidates; no separate validation split due to small dataset

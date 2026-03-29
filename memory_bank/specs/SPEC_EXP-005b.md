@@ -52,3 +52,17 @@ Cluster 8 documents into 4 groups. Merge 2 per-doc adapters within each cluster.
 - 4 cluster adapters: `models/d2l/cluster_{0-3}/`
 - Routing logs: `results/EXP-005b/routing_log.csv`
 - `experiments/EXP-005b/REPORT.md`
+
+## Definition of Done
+
+- [ ] k-means clustering done — `clusters.json` with 4 cluster assignments and silhouette score
+- [ ] 4 cluster adapters merged and saved — `models/d2l/cluster_{0-3}/`
+- [ ] Full 50-question eval — `predictions.json` has 50 entries
+- [ ] Judge scored all free_text questions via OpenAI API
+- [ ] Routing log saved — `routing_log.csv` with 50 rows
+- [ ] Routing accuracy reported: overall + per-cluster
+- [ ] Q_main, S_det, S_asst reported
+- [ ] Delta vs S3 and S4-doc computed
+- [ ] Breakdown by answer_type
+- [ ] All results committed to git
+- [ ] `experiments/EXP-005b/REPORT.md` written (including cluster composition analysis)

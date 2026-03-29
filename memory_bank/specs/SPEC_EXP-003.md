@@ -94,3 +94,16 @@ S2 at inference = S1 retrieval pipeline (hybrid search + RRF + reranker + eviden
 - RAFT dataset: `data/processed/raft_train.jsonl`
 - 3 adapter checkpoints: `models/qlora/seed_{42,123,777}/`
 - `experiments/EXP-003/REPORT.md`
+
+## Definition of Done
+
+- [ ] RAFT dataset generated — `data/processed/raft_train.jsonl` has 150 entries with gold + 2 distractors each
+- [ ] 3 adapters trained — `models/qlora/seed_{42,123,777}/` each contain adapter weights
+- [ ] Full 50-question eval for ALL 3 seeds — each `predictions.json` has 50 entries
+- [ ] Judge scored all free_text questions via OpenAI API for each seed
+- [ ] Mean ± std reported for Q_main, S_det, S_asst, G across 3 seeds
+- [ ] Delta vs S1 baseline computed and reported
+- [ ] Training time (seconds) and peak VRAM (MB) logged per seed
+- [ ] Breakdown by answer_type for each seed
+- [ ] All results committed to git
+- [ ] `experiments/EXP-003/REPORT.md` written

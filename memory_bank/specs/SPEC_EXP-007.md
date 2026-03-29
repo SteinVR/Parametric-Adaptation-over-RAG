@@ -44,3 +44,17 @@ Both S5a and S5b on 50 eval questions. Headline S5 = variant with higher Q_main.
 
 - S5a and S5b results: `results/EXP-007/`
 - `experiments/EXP-007/REPORT.md`
+
+## Definition of Done
+
+- [ ] S5a: full 50-question eval — predictions.json has 50 entries
+- [ ] S5b: full 50-question eval — predictions.json has 50 entries
+- [ ] Judge scored all free_text questions for both variants
+- [ ] Q_main, S_det, S_asst, G reported for both S5a and S5b
+- [ ] Headline S5 selected (higher Q_main variant)
+- [ ] Grounding delta vs S1 computed for both variants
+- [ ] HyDE retrieval quality: Recall@k comparison vs raw query
+- [ ] Breakdown by answer_type for both variants
+- [ ] All results committed to git
+- [ ] `experiments/EXP-007/REPORT.md` written
+- [ ] Trigger condition for EXP-009 evaluated: headline S5 vs S1 Q_main

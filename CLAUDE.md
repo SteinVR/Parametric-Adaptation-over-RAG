@@ -49,6 +49,13 @@ New artifacts (models, experiment outputs, logs) are written locally in the work
 - **Activity Log** — load skill `apm-report`. Structured agent session log written after meaningful work.
 - **Delegation Contract** — load skill `apm-subagent`. Minimal framing for specialist subagent requests.
 
+## Experiment specs
+- Every experiment has a spec at `memory_bank/specs/SPEC_EXP-{NNN}.md`. **Read the spec before starting any experiment work.**
+- Each spec contains a **Definition of Done** checklist — the experiment is NOT complete until every item is checked off.
+- Key sections: Goal, Pipeline, Frozen Decisions, Metrics, Output, DoD. Follow them literally.
+- Cross-cutting specs: `memory_bank/SPEC-evaluation.md` (scoring rules, judge prompt), `memory_bank/SPEC-systems.md` (system definitions), `memory_bank/SPEC-data.md` (goldset schema, split, leakage rules).
+- If a spec is ambiguous or seems wrong, ask the user before deviating.
+
 ## Code conventions
 - All code must be **modular and typed**. Each logical step (loading, preprocessing, inference, scoring, etc.) is a self-contained module with explicit input/output types. `main.py` composes modules into a pipeline — no business logic lives there.
 - Prioritize readability and hot-swappability: any module can be replaced or updated without touching the rest of the pipeline.

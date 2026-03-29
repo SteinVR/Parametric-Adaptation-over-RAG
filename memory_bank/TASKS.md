@@ -6,7 +6,7 @@
 
 ### Wave 1: Foundation
 - [x] EXP-001 — Data audit, goldset merge, split freeze ([spec](./specs/SPEC_EXP-001.md) | [task](./tasks/EXP-001.md))
-- [ ] EXP-002 — S1 Classical RAG baseline ([spec](./specs/SPEC_EXP-002.md))
+- [x] EXP-002 — S1 Classical RAG baseline ([spec](./specs/SPEC_EXP-002.md))
 
 ### Wave 2: Parametric Feasibility
 - [ ] EXP-003 — S2 QLoRA RAFT-style baseline, 3 seeds ([spec](./specs/SPEC_EXP-003.md))

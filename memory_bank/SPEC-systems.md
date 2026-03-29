@@ -76,7 +76,7 @@
 
 ## S5 — Hybrid: RAG + Best Adapter
 
-- **Adapter selection:** best **single** adapter from S2 or S3 on eval Q_main. S4-doc/S4-cluster are multi-adapter routed systems — not eligible. Ties broken by: latency → simplicity.
+- **Adapter selection:** best **single** adapter from S2 or S3 on eval Q_main. S4-doc/S4-cluster are multi-adapter routed systems — not eligible. Ties broken by: latency → simplicity. **Known limitation:** selection on eval-50 introduces mild optimistic bias for S5 (see EXP-006 spec).
 - **Two sub-variants:**
   - **S5a:** raw question → S1 retrieval pipeline → best adapter generates answer with retrieved context
   - **S5b:** best adapter generates HyDE text → HyDE used as retrieval query → best adapter generates answer with retrieved context

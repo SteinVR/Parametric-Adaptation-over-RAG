@@ -1,8 +1,8 @@
 # Project Architecture: Nonparametric, Supervised Parametric, Downstream Supervision-Free Parametric, and Hybrid Knowledge Injection for Document-Grounded QA on Consumer Hardware
 
-**Status:** SSOT (single source of truth)  
-**Version:** 2.0  
-**Last updated:** 2026-03-26  
+**Status:** SUPERSEDED — historical draft, NOT the SSOT. Current SSOT: `memory_bank/ARCHITECTURE.md`
+**Version:** 2.0 (outdated)
+**Last updated:** 2026-03-26
 **Project shorthand:** `knowledge-injection-consumer-hardware`  
 **Primary practical setting:** domain-specific / legal-style document-grounded QA on a fixed corpus  
 

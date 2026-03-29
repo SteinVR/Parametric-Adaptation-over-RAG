@@ -31,6 +31,9 @@
 - Use skill `apm-subagent` to form role-appropriate delegation requests.
 - Before final integration, normalize outputs and run comparison checks.
 
+## Environment
+- After every `uv sync`, re-install Doc-to-LoRA: `uv pip install --no-deps -e ./external/doc-to-lora` (it is excluded from `pyproject.toml` to avoid pulling vllm/deepspeed).
+
 ## Worktree shared resources
 When working inside a git worktree (e.g., under `.apm/worktrees/{TASK_ID}`), heavy untracked resources are not present by default. Default policy is a **single repo-level runtime** (e.g., `.venv`) and shared `data/` reused across worktrees (no per-worktree environments). If a task changes dependencies, update lockfiles and run a managed sync for the shared runtime (e.g., `uv sync`) in a serialized way.
 
@@ -45,6 +48,20 @@ New artifacts (models, experiment outputs, logs) are written locally in the work
 - **Wave Protocol** — task grouping described in `memory_bank/TASKS.md`. Waves execute sequentially; tasks within a wave execute in parallel.
 - **Activity Log** — load skill `apm-report`. Structured agent session log written after meaningful work.
 - **Delegation Contract** — load skill `apm-subagent`. Minimal framing for specialist subagent requests.
+
+## Experiment specs
+- Every experiment has a spec at `memory_bank/specs/SPEC_EXP-{NNN}.md`. **Read the spec before starting any experiment work.**
+- Each spec contains a **Definition of Done** checklist — the experiment is NOT complete until every item is checked off.
+- Key sections: Goal, Pipeline, Frozen Decisions, Metrics, Output, DoD. Follow them literally.
+- Cross-cutting specs: `memory_bank/SPEC-evaluation.md` (scoring rules, judge prompt), `memory_bank/SPEC-systems.md` (system definitions), `memory_bank/SPEC-data.md` (goldset schema, split, leakage rules).
+- If a spec is ambiguous or seems wrong, ask the user before deviating.
+
+## Code conventions
+- All code must be **modular and typed**. Each logical step (loading, preprocessing, inference, scoring, etc.) is a self-contained module with explicit input/output types. `main.py` composes modules into a pipeline — no business logic lives there.
+- Prioritize readability and hot-swappability: any module can be replaced or updated without touching the rest of the pipeline.
+
+## Self-review gate
+- Before reporting work as done, **always** perform self-review and verification: re-read changed code, check for bugs, spec/contract mismatches, type errors, and edge cases. Fix anything found before returning to the user.
 
 ## Notes
 - If instructions conflict, prefer the closest (most specific) AGENTS.md.

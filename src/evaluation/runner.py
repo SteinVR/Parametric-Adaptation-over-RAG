@@ -248,6 +248,17 @@ class EvalRunner:
             metrics["malformed_rate"] = malformed / len(group) if group else 0.0
 
             breakdown[atype] = metrics
+
+        # Unanswerable cross-cutting breakdown (per SPEC-evaluation.md)
+        unanswerable = [qs for qs in scores if qs.is_unanswerable]
+        if unanswerable:
+            u_det = [qs.s_det for qs in unanswerable if qs.s_det is not None]
+            breakdown["_unanswerable"] = {
+                "count": len(unanswerable),
+                "s_det_mean": mean(u_det) if u_det else 0.0,
+                "malformed_rate": sum(1 for qs in unanswerable if qs.is_malformed) / len(unanswerable),
+            }
+
         return breakdown
 
 
