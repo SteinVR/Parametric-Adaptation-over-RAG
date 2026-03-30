@@ -55,12 +55,14 @@ def aggregate_seed_summaries(
         for metric_name, values in metrics.items()
         if values
     }
-    aggregate["delta_vs_s1"] = {
+    delta_vs_s1: dict[str, float] = {
         "Q_main": aggregate["Q_main"]["mean"] - float(s1_report["q_main"]),
         "S_det": aggregate["S_det"]["mean"] - float(s1_report["s_det"]),
         "S_asst": aggregate["S_asst"]["mean"] - float(s1_report["s_asst"]),
-        "G_f_beta": aggregate["G_f_beta"]["mean"] - float(s1_report["grounding_f_beta"]),
     }
+    if "G_f_beta" in aggregate and s1_report.get("grounding_f_beta") is not None:
+        delta_vs_s1["G_f_beta"] = aggregate["G_f_beta"]["mean"] - float(s1_report["grounding_f_beta"])
+    aggregate["delta_vs_s1"] = delta_vs_s1
     aggregate["seed_results"] = [asdict(summary) for summary in summaries]
     aggregate["breakdown_by_type"] = _aggregate_breakdown(summaries)
     return aggregate

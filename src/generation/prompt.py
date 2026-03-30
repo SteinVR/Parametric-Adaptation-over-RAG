@@ -25,12 +25,27 @@ Context:
 Question: {question}
 Expected answer format: {answer_type_instruction}"""
 
+CLOSED_BOOK_PROMPT_TEMPLATE = """\
+Answer the following question based on your knowledge.
+
+Question: {question}
+Expected answer format: {answer_type_instruction}"""
+
 
 def format_prompt(question: str, answer_type: str, context: str = "") -> str:
-    """Build the complete prompt string using the frozen template."""
+    """Build the complete prompt string using the frozen RAG template."""
     instruction = ANSWER_TYPE_INSTRUCTIONS.get(answer_type, "")
     return PROMPT_TEMPLATE.format(
         context=context or "(no context provided)",
+        question=question,
+        answer_type_instruction=instruction,
+    )
+
+
+def format_closed_book_prompt(question: str, answer_type: str) -> str:
+    """Build a closed-book prompt (no context field)."""
+    instruction = ANSWER_TYPE_INSTRUCTIONS.get(answer_type, "")
+    return CLOSED_BOOK_PROMPT_TEMPLATE.format(
         question=question,
         answer_type_instruction=instruction,
     )

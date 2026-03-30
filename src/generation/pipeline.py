@@ -77,9 +77,11 @@ class GenerationPipeline:
         answer_type: str,
         context: str = "",
         question_id: str = "",
+        prompt_text: str | None = None,
     ) -> Prediction:
         """Generate and parse an answer, using constrained decoding when available."""
-        prompt_text = format_prompt(question, answer_type, context)
+        if prompt_text is None:
+            prompt_text = format_prompt(question, answer_type, context)
 
         # Try constrained generation for structured types
         if self.use_outlines and answer_type in ANSWER_TYPE_REGEX:
