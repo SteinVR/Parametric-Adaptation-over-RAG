@@ -1,0 +1,31 @@
+{
+  "status": "tokenized",
+  "doc_index": 2,
+  "doc_name": "doc2_crs_regulations",
+  "context_token_count": 20091,
+  "chunk_count": 20,
+  "chunk_token_lengths": [
+    1010,
+    1014,
+    1014,
+    1014,
+    1014,
+    1014,
+    1014,
+    1014,
+    1014,
+    1014,
+    1014,
+    1014,
+    1014,
+    1014,
+    1014,
+    1014,
+    1014,
+    1014,
+    1014,
+    1000
+  ],
+  "rss_mb": 3846.6171875,
+  "used_chunk_fallback": true
+}

@@ -1,0 +1,18 @@
+{
+  "doc_index": 6,
+  "doc_name": "doc6_securities_regulations",
+  "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+  "page_count": 24,
+  "word_count": 6675,
+  "char_count": 45138,
+  "context_token_count": 11746,
+  "chunk_count": 12,
+  "used_chunk_fallback": true,
+  "generation_seconds": 448.8817966909992,
+  "peak_vram_mb": 2131.1123046875,
+  "peak_rss_mb": 3668.921875,
+  "chunk_merge_mean_explained_variance": 0.9915090294984671,
+  "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc6",
+  "adapter_file_size_bytes": 9592301,
+  "tensor_count": 52
+}

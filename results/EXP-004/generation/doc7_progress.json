@@ -1,0 +1,26 @@
+{
+  "status": "saved",
+  "doc_index": 7,
+  "doc_name": "doc7_ozias_v_obadiah",
+  "context_token_count": 12034,
+  "chunk_count": 12,
+  "chunk_token_lengths": [
+    1008,
+    1012,
+    1012,
+    1012,
+    1012,
+    1012,
+    1012,
+    1012,
+    1012,
+    1012,
+    1012,
+    1005
+  ],
+  "rss_mb": 3679.5546875,
+  "used_chunk_fallback": true,
+  "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc7",
+  "adapter_file_size_bytes": 9592301,
+  "chunk_merge_mean_explained_variance": 0.9891610076794257
+}

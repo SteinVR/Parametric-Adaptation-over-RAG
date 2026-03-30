@@ -8,6 +8,12 @@ from pathlib import Path
 
 import torch
 from peft import LoraConfig
+from safetensors.torch import load_file as load_safetensors_file
+from safetensors.torch import save_file as save_safetensors_file
+
+
+SAFETENSORS_WEIGHTS_NAME = "adapter_model.safetensors"
+BIN_WEIGHTS_NAME = "adapter_model.bin"
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,8 +42,12 @@ def save_peft_lora_adapter(
     export_config.inference_mode = True
     export_config.save_pretrained(str(adapter_dir))
 
-    weight_path = adapter_dir / "adapter_model.bin"
-    torch.save(state_dict, weight_path)
+    weight_path = adapter_dir / SAFETENSORS_WEIGHTS_NAME
+    export_state_dict = _normalize_state_dict_for_peft_save(state_dict)
+    save_safetensors_file(
+        {key: value.detach().cpu().contiguous() for key, value in export_state_dict.items()},
+        str(weight_path),
+    )
     config_path = adapter_dir / "adapter_config.json"
     byte_size = sum(
         path.stat().st_size for path in adapter_dir.iterdir() if path.is_file()
@@ -46,14 +56,43 @@ def save_peft_lora_adapter(
         adapter_dir=adapter_dir,
         config_path=config_path,
         weight_path=weight_path,
-        tensor_count=len(state_dict),
+        tensor_count=len(export_state_dict),
         byte_size=byte_size,
     )
 
 
 def load_peft_lora_state_dict(adapter_dir: Path) -> dict[str, torch.Tensor]:
     """Load a PEFT adapter state dict from disk."""
-    weight_path = adapter_dir / "adapter_model.bin"
-    if not weight_path.exists():
-        raise FileNotFoundError(f"Missing adapter weights: {weight_path}")
-    return torch.load(weight_path, map_location="cpu", weights_only=False)
+    safetensors_path = adapter_dir / SAFETENSORS_WEIGHTS_NAME
+    if safetensors_path.exists():
+        return load_safetensors_file(str(safetensors_path), device="cpu")
+
+    bin_path = adapter_dir / BIN_WEIGHTS_NAME
+    if bin_path.exists():
+        return torch.load(bin_path, map_location="cpu", weights_only=False)
+
+    raise FileNotFoundError(
+        f"Missing adapter weights in {adapter_dir}: expected "
+        f"{SAFETENSORS_WEIGHTS_NAME} or {BIN_WEIGHTS_NAME}"
+    )
+
+
+def _normalize_state_dict_for_peft_save(
+    state_dict: dict[str, torch.Tensor],
+) -> dict[str, torch.Tensor]:
+    """Convert internal D2L LoRA orientation to PEFT's on-disk layout when needed."""
+    normalized = {
+        key: value.detach().cpu().contiguous()
+        for key, value in state_dict.items()
+    }
+    for key, value in list(normalized.items()):
+        if ".lora_B." not in key or value.ndim != 2:
+            continue
+        prefix = key.split(".lora_B.")[0]
+        key_a = f"{prefix}.lora_A.weight"
+        if key_a not in normalized:
+            continue
+        rank = normalized[key_a].shape[0]
+        if value.shape[0] == rank:
+            normalized[key] = value.transpose(0, 1).contiguous()
+    return normalized

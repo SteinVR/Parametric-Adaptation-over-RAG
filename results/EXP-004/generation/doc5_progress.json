@@ -1,0 +1,26 @@
+{
+  "status": "saved",
+  "doc_index": 5,
+  "doc_name": "doc5_personal_property_law",
+  "context_token_count": 11489,
+  "chunk_count": 12,
+  "chunk_token_lengths": [
+    963,
+    967,
+    967,
+    967,
+    967,
+    967,
+    967,
+    967,
+    967,
+    967,
+    967,
+    955
+  ],
+  "rss_mb": 3678.63671875,
+  "used_chunk_fallback": true,
+  "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc5",
+  "adapter_file_size_bytes": 9592301,
+  "chunk_merge_mean_explained_variance": 0.9901417127022376
+}

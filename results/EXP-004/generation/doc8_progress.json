@@ -1,0 +1,23 @@
+{
+  "status": "saved",
+  "doc_index": 8,
+  "doc_name": "doc8_lxt_v_sir_realestate",
+  "context_token_count": 8410,
+  "chunk_count": 9,
+  "chunk_token_lengths": [
+    940,
+    944,
+    944,
+    944,
+    944,
+    944,
+    944,
+    944,
+    934
+  ],
+  "rss_mb": 3657.39453125,
+  "used_chunk_fallback": true,
+  "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc8",
+  "adapter_file_size_bytes": 9592301,
+  "chunk_merge_mean_explained_variance": 0.9900024922994467
+}

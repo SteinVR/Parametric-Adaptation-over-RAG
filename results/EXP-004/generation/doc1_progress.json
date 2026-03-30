@@ -1,0 +1,26 @@
+{
+  "status": "saved",
+  "doc_index": 1,
+  "doc_name": "doc1_general_partnership_law",
+  "context_token_count": 11900,
+  "chunk_count": 12,
+  "chunk_token_lengths": [
+    997,
+    1001,
+    1001,
+    1001,
+    1001,
+    1001,
+    1001,
+    1001,
+    1001,
+    1001,
+    1001,
+    992
+  ],
+  "rss_mb": 3600.85546875,
+  "used_chunk_fallback": true,
+  "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc1",
+  "adapter_file_size_bytes": 9592301,
+  "chunk_merge_mean_explained_variance": 0.9892441286490514
+}

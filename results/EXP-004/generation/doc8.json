@@ -1,0 +1,18 @@
+{
+  "doc_index": 8,
+  "doc_name": "doc8_lxt_v_sir_realestate",
+  "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+  "page_count": 15,
+  "word_count": 6198,
+  "char_count": 38648,
+  "context_token_count": 8410,
+  "chunk_count": 9,
+  "used_chunk_fallback": true,
+  "generation_seconds": 362.035027564998,
+  "peak_vram_mb": 2131.111328125,
+  "peak_rss_mb": 3657.7109375,
+  "chunk_merge_mean_explained_variance": 0.9900024922994467,
+  "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc8",
+  "adapter_file_size_bytes": 9592301,
+  "tensor_count": 52
+}

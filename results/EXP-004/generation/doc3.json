@@ -1,0 +1,18 @@
+{
+  "doc_index": 3,
+  "doc_name": "doc3_techteryx_v_aria",
+  "doc_id": "3f8a5ea0e051ba3af7a02da340c911fe0970ebece6c852c3e61a10c00cac6d6e",
+  "page_count": 25,
+  "word_count": 11541,
+  "char_count": 69803,
+  "context_token_count": 15903,
+  "chunk_count": 16,
+  "used_chunk_fallback": true,
+  "generation_seconds": 566.218900849999,
+  "peak_vram_mb": 2131.1123046875,
+  "peak_rss_mb": 3714.98828125,
+  "chunk_merge_mean_explained_variance": 0.9891175031661987,
+  "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc3",
+  "adapter_file_size_bytes": 9592301,
+  "tensor_count": 52
+}

@@ -1,0 +1,29 @@
+{
+  "status": "saved",
+  "doc_index": 4,
+  "doc_name": "doc4_bond_v_tr88house",
+  "context_token_count": 14613,
+  "chunk_count": 15,
+  "chunk_token_lengths": [
+    980,
+    984,
+    984,
+    984,
+    984,
+    984,
+    984,
+    984,
+    984,
+    984,
+    984,
+    984,
+    984,
+    984,
+    967
+  ],
+  "rss_mb": 3704.859375,
+  "used_chunk_fallback": true,
+  "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc4",
+  "adapter_file_size_bytes": 9592301,
+  "chunk_merge_mean_explained_variance": 0.989362916121116
+}

@@ -1,0 +1,18 @@
+{
+  "doc_index": 1,
+  "doc_name": "doc1_general_partnership_law",
+  "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+  "page_count": 23,
+  "word_count": 7271,
+  "char_count": 53004,
+  "context_token_count": 11900,
+  "chunk_count": 12,
+  "used_chunk_fallback": true,
+  "generation_seconds": 451.975041589998,
+  "peak_vram_mb": 2131.1123046875,
+  "peak_rss_mb": 3601.16796875,
+  "chunk_merge_mean_explained_variance": 0.9892441286490514,
+  "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc1",
+  "adapter_file_size_bytes": 9592301,
+  "tensor_count": 52
+}

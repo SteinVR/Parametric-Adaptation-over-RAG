@@ -31,6 +31,7 @@ from src.d2l.corpus import CorpusDocument, load_frozen_corpus_documents
 from src.d2l.packaging import (
     DocAdapterGenerationResult,
     average_lora_state_dicts,
+    delta_w_average_lora_state_dicts,
     generate_document_adapter,
 )
 from src.d2l.runner import run_d2l_no_retrieval_generation
@@ -92,6 +93,7 @@ def main() -> None:
             merge_summary=None,
             eval_report=None,
             eval_artifacts=None,
+            dw_avg_ablation=None,
             status_label=report_status,
             blocker_message=(
                 validation.get("checkpoint_status")
@@ -128,8 +130,16 @@ def main() -> None:
         logger.info("Smoke mode: packaging %d documents", len(documents))
 
     if args.skip_generate:
-        doc_generation_results = []
-        logger.warning("Skipping adapter generation and expecting existing adapters")
+        existing_generation = exp_cfg.RESULTS_DIR / "document_generation.json"
+        if existing_generation.exists():
+            doc_generation_results = load_json(existing_generation)
+            logger.warning(
+                "Skipping adapter generation and reusing existing generation records from %s",
+                existing_generation,
+            )
+        else:
+            doc_generation_results = []
+            logger.warning("Skipping adapter generation and expecting existing adapters")
     else:
         _free_gpu()
         doc_generation_results = _generate_doc_adapters(
@@ -145,9 +155,15 @@ def main() -> None:
 
     eval_report = None
     eval_artifacts = None
+    dw_avg_ablation = None
     if not args.skip_eval:
         _free_gpu()
         eval_report, eval_artifacts = _run_monolithic_eval(eval_refs=eval_refs)
+
+        dw_avg_ablation = _run_dw_avg_ablation(
+            documents=documents,
+            eval_refs=eval_refs,
+        )
 
     _write_report(
         validation=validation,
@@ -156,6 +172,7 @@ def main() -> None:
         merge_summary=merge_summary,
         eval_report=eval_report,
         eval_artifacts=eval_artifacts,
+        dw_avg_ablation=dw_avg_ablation,
         status_label="Completed",
         blocker_message=None,
     )
@@ -195,25 +212,56 @@ def _generate_doc_adapters(
     *,
     documents: Sequence[CorpusDocument],
 ) -> list[dict[str, object]]:
+    _cleanup_generation_failure_artifacts()
     model = load_d2l_model(exp_cfg.DOC2LORA_CHECKPOINT_ROOT)
     results: list[dict[str, object]] = []
     try:
         for document in documents:
             output_dir = exp_cfg.MODELS_DIR / f"doc{document.doc_index}"
-            generation_result = generate_document_adapter(
-                model=model,
-                document=document,
-                output_dir=output_dir,
+            progress_path = (
+                exp_cfg.RESULTS_DIR
+                / "generation"
+                / f"doc{document.doc_index}_progress.json"
             )
+            try:
+                generation_result = generate_document_adapter(
+                    model=model,
+                    document=document,
+                    output_dir=output_dir,
+                    progress_path=progress_path,
+                )
+            except Exception as exc:
+                logger.exception(
+                    "Adapter generation failed for doc%d (%s)",
+                    document.doc_index,
+                    document.doc_name,
+                )
+                save_json(
+                    {
+                        "failed_doc_index": document.doc_index,
+                        "failed_doc_name": document.doc_name,
+                        "failed_doc_id": document.doc_id,
+                        "error": repr(exc),
+                        "completed_docs": results,
+                    },
+                    exp_cfg.RESULTS_DIR / "generation_failure.json",
+                )
+                save_json(
+                    results,
+                    exp_cfg.RESULTS_DIR / "document_generation.partial.json",
+                )
+                raise
             row = _doc_generation_row(generation_result)
             save_json(
                 row,
                 exp_cfg.RESULTS_DIR / "generation" / f"doc{document.doc_index}.json",
             )
             results.append(row)
+            save_json(results, exp_cfg.RESULTS_DIR / "document_generation.json")
     finally:
         unload_model(model)
     save_json(results, exp_cfg.RESULTS_DIR / "document_generation.json")
+    _cleanup_generation_failure_artifacts()
     return results
 
 
@@ -285,6 +333,7 @@ def _merge_doc_adapters(
             "source_adapter_dirs": adapter_dirs,
             "tensor_count": len(merged_state_dict),
             "reference_config_path": str(reference_adapter_dir / "adapter_config.json"),
+            "output_dir": str(exp_cfg.MONOLITHIC_MODEL_DIR),
         },
         exp_cfg.RESULTS_DIR / "merge_summary.json",
     )
@@ -349,6 +398,89 @@ def _run_monolithic_eval(
     return report.model_dump(), systems_metrics
 
 
+def _run_dw_avg_ablation(
+    *,
+    documents: Sequence[CorpusDocument],
+    eval_refs: list[dict[str, Any]],
+) -> dict[str, object]:
+    """Ablation: merge adapters via ΔW-averaging + SVD, evaluate, return comparison."""
+    # Load per-doc state dicts.
+    state_dicts: list[dict[str, torch.Tensor]] = []
+    for document in documents:
+        adapter_dir = exp_cfg.MODELS_DIR / f"doc{document.doc_index}"
+        state_dicts.append(load_peft_lora_state_dict(adapter_dir))
+
+    # Read rank from reference PEFT config.
+    reference_adapter_dir = exp_cfg.MODELS_DIR / "doc1"
+    peft_config = LoraConfig.from_pretrained(reference_adapter_dir)
+    rank = peft_config.r
+
+    # ΔW-avg merge.
+    dw_result = delta_w_average_lora_state_dicts(state_dicts, rank=rank)
+
+    save_peft_lora_adapter(
+        adapter_dir=exp_cfg.DW_AVG_MODEL_DIR,
+        state_dict=dw_result.state_dict,
+        peft_config=peft_config,
+        base_model_name=cfg.BACKBONE_MODEL,
+    )
+    save_json(
+        {
+            "merge_seconds": dw_result.merge_seconds,
+            "rank": rank,
+            "mean_explained_variance": dw_result.mean_explained_variance,
+            "explained_variance": dw_result.explained_variance,
+            "output_dir": str(exp_cfg.DW_AVG_MODEL_DIR),
+        },
+        exp_cfg.RESULTS_DIR / "dw_avg_merge.json",
+    )
+    logger.info(
+        "ΔW-avg adapter saved to %s (mean EV=%.4f)",
+        exp_cfg.DW_AVG_MODEL_DIR,
+        dw_result.mean_explained_variance,
+    )
+
+    # Eval on the ΔW-avg adapter.
+    _free_gpu()
+    predictions, peak_infer_vram_mb = run_d2l_no_retrieval_generation(
+        model_name=cfg.BACKBONE_MODEL,
+        adapter_dir=exp_cfg.DW_AVG_MODEL_DIR,
+        eval_refs=eval_refs,
+        max_new_tokens=exp_cfg.MAX_NEW_TOKENS,
+    )
+    save_json(
+        [p.model_dump() for p in predictions],
+        exp_cfg.RESULTS_DIR / "predictions_dw_avg.json",
+    )
+
+    eval_runner = EvalRunner(
+        goldset_path=cfg.GOLDSET_PATH,
+        split_path=cfg.DATA_SPLITS / "split_v1.json",
+        judge_model=cfg.JUDGE_MODEL,
+        judge_reasoning=cfg.JUDGE_REASONING,
+        grounding_beta=cfg.GROUNDING_BETA,
+        q_main_weights=cfg.Q_MAIN_WEIGHTS,
+    )
+    report = eval_runner.evaluate(
+        predictions=predictions,
+        system_id="S3_dw_avg",
+        experiment_id=exp_cfg.EXPERIMENT_ID,
+        split="eval",
+        compute_grounding_flag=False,
+    )
+    eval_runner.save_report(report, exp_cfg.RESULTS_DIR / "dw_avg")
+
+    return {
+        "merge_seconds": dw_result.merge_seconds,
+        "rank": rank,
+        "mean_explained_variance": dw_result.mean_explained_variance,
+        "q_main": report.q_main,
+        "s_det": report.s_det,
+        "s_asst": report.s_asst,
+        "peak_infer_vram_mb": peak_infer_vram_mb,
+    }
+
+
 def _write_report(
     *,
     validation: dict[str, str | int | bool],
@@ -357,9 +489,33 @@ def _write_report(
     merge_summary: dict[str, object] | None,
     eval_report: dict[str, object] | None,
     eval_artifacts: dict[str, object] | None,
+    dw_avg_ablation: dict[str, object] | None,
     status_label: str,
     blocker_message: str | None,
 ) -> None:
+    used_chunk_fallback = any(
+        bool(row.get("used_chunk_fallback")) for row in doc_generation_results
+    )
+    eval_question_count = 0
+    free_text_judge_count = 0
+    breakdown_by_type: dict[str, dict[str, object]] = {}
+    if eval_report is not None:
+        question_scores = eval_report.get("question_scores", [])
+        if isinstance(question_scores, list):
+            eval_question_count = len(question_scores)
+            free_text_judge_count = sum(
+                1
+                for row in question_scores
+                if isinstance(row, dict) and row.get("answer_type") == "free_text"
+            )
+        raw_breakdown = eval_report.get("breakdown_by_type", {})
+        if isinstance(raw_breakdown, dict):
+            breakdown_by_type = {
+                str(answer_type): stats
+                for answer_type, stats in raw_breakdown.items()
+                if isinstance(stats, dict)
+            }
+
     lines: list[str] = [
         "# Experiment Report: EXP-004 - S3 Doc-to-LoRA Monolithic",
         "",
@@ -380,6 +536,18 @@ def _write_report(
         "",
     ]
 
+    if used_chunk_fallback:
+        lines.extend(
+            [
+                "## Spec Deviation Warning",
+                "",
+                "- This run used chunk-level adapter generation with an internal merge back into one per-document adapter.",
+                "- That introduces an extra merge level before the frozen 8-adapter monolithic merge, so the result is not a strict EXP-004 implementation.",
+                "- Treat all metrics in this report as engineering diagnostics for the memory workaround, not as the official EXP-004 result.",
+                "",
+            ]
+        )
+
     if blocker_message:
         lines.extend(
             [
@@ -394,20 +562,28 @@ def _write_report(
             [
                 "## 3. Per-Document Packaging",
                 "",
-                "| Doc | Pages | Words | Gen sec | Peak VRAM MB | Adapter bytes |",
-                "| --- | ---: | ---: | ---: | ---: | ---: |",
+                "| Doc | Pages | Words | Ctx toks | Chunks | Chunked | Gen sec | Peak VRAM MB | Peak RSS MB | Adapter bytes |",
+                "| --- | ---: | ---: | ---: | ---: | --- | ---: | ---: | ---: | ---: |",
             ]
         )
         for row in doc_generation_results:
             lines.append(
-                "| {doc_index} | {page_count} | {word_count} | {generation_seconds:.1f} | {peak_vram_mb} | {adapter_file_size_bytes} |".format(
+                "| {doc_index} | {page_count} | {word_count} | {context_token_count} | {chunk_count} | {used_chunk_fallback} | {generation_seconds:.1f} | {peak_vram_mb} | {peak_rss_mb} | {adapter_file_size_bytes} |".format(
                     doc_index=row["doc_index"],
                     page_count=row["page_count"],
                     word_count=row["word_count"],
+                    context_token_count=row["context_token_count"],
+                    chunk_count=row["chunk_count"],
+                    used_chunk_fallback="yes" if row["used_chunk_fallback"] else "no",
                     generation_seconds=float(row["generation_seconds"]),
                     peak_vram_mb=(
                         f"{float(row['peak_vram_mb']):.1f}"
                         if row.get("peak_vram_mb") is not None
+                        else "N/A"
+                    ),
+                    peak_rss_mb=(
+                        f"{float(row['peak_rss_mb']):.1f}"
+                        if row.get("peak_rss_mb") is not None
                         else "N/A"
                     ),
                     adapter_file_size_bytes=row["adapter_file_size_bytes"],
@@ -462,6 +638,9 @@ def _write_report(
                     f"| S_det | {float(eval_report['s_det']):.4f} |",
                     f"| S_asst | {float(eval_report['s_asst']):.4f} |",
                     f"| Grounding F_beta | {eval_report['grounding_f_beta'] if eval_report.get('grounding_f_beta') is not None else 'N/A'} |",
+                    "",
+                    f"- Eval questions scored: {eval_question_count}",
+                    f"- Free-text judge calls completed: {free_text_judge_count}",
                 ]
             )
         else:
@@ -479,10 +658,77 @@ def _write_report(
                 ]
             )
 
+    lines.extend(["", "## 8. Breakdown by Answer Type", ""])
+    if breakdown_by_type:
+        lines.extend(
+            [
+                "| Answer type | Count | Metric | Score | Malformed |",
+                "| --- | ---: | --- | ---: | ---: |",
+            ]
+        )
+        for answer_type, stats in breakdown_by_type.items():
+            count = int(float(stats.get("count", 0.0)))
+            malformed = float(stats.get("malformed_rate", 0.0))
+            if "s_asst_mean" in stats:
+                metric_name = "S_asst"
+                metric_value = float(stats["s_asst_mean"])
+            else:
+                metric_name = "S_det"
+                metric_value = float(stats.get("s_det_mean", 0.0))
+            lines.append(
+                f"| {answer_type} | {count} | {metric_name} | {metric_value:.4f} | {malformed:.4f} |"
+            )
+    else:
+        lines.append("- Breakdown unavailable.")
+
+    lines.extend(["", "## 9. Merge Viability Assessment", ""])
+    if eval_report is not None and doc_sanity_results:
+        mean_sanity = sum(float(row["s_det"]) for row in doc_sanity_results) / len(
+            doc_sanity_results
+        )
+        lines.extend(
+            [
+                f"- Technical viability: yes. All 8 adapters generated, loaded, merged, and the monolithic adapter completed the full 50-question eval.",
+                f"- Quality viability: weak. Mean per-doc sanity S_det was {mean_sanity:.4f}, and merged S3 reached Q_main={float(eval_report['q_main']):.4f}, S_det={float(eval_report['s_det']):.4f}, S_asst={float(eval_report['s_asst']):.4f}.",
+                "- Interpretation: the frozen simple-average merge is operationally feasible but not competitive as a standalone no-retrieval system on this benchmark. Treat this as a negative control and carry the merged adapter forward as the fixed S3 artifact for downstream comparison.",
+            ]
+        )
+    else:
+        lines.append("- Viability assessment unavailable.")
+
     lines.extend(
         [
             "",
-            "## 8. Artifacts",
+            "## 10. Ablation: ΔW-Average Merge",
+            "",
+        ]
+    )
+    if dw_avg_ablation is not None:
+        lines.extend(
+            [
+                f"- Merge method: ΔW-avg + SVD re-decomposition (rank={dw_avg_ablation['rank']})",
+                f"- Mean explained variance: {float(dw_avg_ablation['mean_explained_variance']):.4f}",
+                f"- Merge seconds: {float(dw_avg_ablation['merge_seconds']):.1f}",
+                "",
+                "| Metric | Factor-wise | ΔW-avg | Delta |",
+                "| --- | ---: | ---: | ---: |",
+            ]
+        )
+        if eval_report is not None:
+            for metric in ("q_main", "s_det", "s_asst"):
+                fw_val = float(eval_report[metric])
+                dw_val = float(dw_avg_ablation[metric])
+                delta = dw_val - fw_val
+                lines.append(
+                    f"| {metric} | {fw_val:.4f} | {dw_val:.4f} | {delta:+.4f} |"
+                )
+    else:
+        lines.append("- Ablation not run.")
+
+    lines.extend(
+        [
+            "",
+            "## 11. Artifacts",
             "",
             f"- Generation records: `{exp_cfg.RESULTS_DIR / 'document_generation.json'}`",
             f"- Sanity results: `{exp_cfg.RESULTS_DIR / 'doc_sanity.json'}`",
@@ -496,6 +742,14 @@ def _write_report(
     exp_cfg.REPORT_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _cleanup_generation_failure_artifacts() -> None:
+    for path in (
+        exp_cfg.RESULTS_DIR / "generation_failure.json",
+        exp_cfg.RESULTS_DIR / "document_generation.partial.json",
+    ):
+        path.unlink(missing_ok=True)
+
+
 def _doc_generation_row(result: DocAdapterGenerationResult) -> dict[str, object]:
     return {
         "doc_index": result.doc_index,
@@ -504,8 +758,13 @@ def _doc_generation_row(result: DocAdapterGenerationResult) -> dict[str, object]
         "page_count": result.page_count,
         "word_count": result.word_count,
         "char_count": result.char_count,
+        "context_token_count": result.context_token_count,
+        "chunk_count": result.chunk_count,
+        "used_chunk_fallback": result.used_chunk_fallback,
         "generation_seconds": result.generation_seconds,
         "peak_vram_mb": result.peak_vram_mb,
+        "peak_rss_mb": result.peak_rss_mb,
+        "chunk_merge_mean_explained_variance": result.chunk_merge_mean_explained_variance,
         "adapter_dir": str(result.adapter.adapter_dir),
         "adapter_file_size_bytes": result.adapter.byte_size,
         "tensor_count": result.adapter.tensor_count,

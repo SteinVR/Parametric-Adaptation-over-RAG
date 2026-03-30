@@ -1,0 +1,18 @@
+{
+  "doc_index": 2,
+  "doc_name": "doc2_crs_regulations",
+  "doc_id": "04be93255ec4b88e6e6c65c8e9335e10729723c2637452f3ad66d5b3dbe87513",
+  "page_count": 26,
+  "word_count": 13351,
+  "char_count": 89354,
+  "context_token_count": 20091,
+  "chunk_count": 20,
+  "used_chunk_fallback": true,
+  "generation_seconds": 674.4200438109983,
+  "peak_vram_mb": 2131.1123046875,
+  "peak_rss_mb": 3747.30859375,
+  "chunk_merge_mean_explained_variance": 0.9919803027923291,
+  "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc2",
+  "adapter_file_size_bytes": 9592301,
+  "tensor_count": 52
+}
