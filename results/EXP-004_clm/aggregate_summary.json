@@ -1,0 +1,284 @@
+{
+  "Q_main": {
+    "mean": 0.18536382536382537,
+    "std": 0.0026646935501059587
+  },
+  "S_det": {
+    "mean": 0.13513513513513514,
+    "std": 0.0
+  },
+  "S_asst": {
+    "mean": 0.3025641025641026,
+    "std": 0.00888231183368655
+  },
+  "train_time_seconds": {
+    "mean": 581.4329703306672,
+    "std": 0.723282606044831
+  },
+  "peak_train_vram_mb": {
+    "mean": 6327.72265625,
+    "std": 0.0
+  },
+  "peak_infer_vram_mb": {
+    "mean": 3077.3986002604165,
+    "std": 4.69097093716571
+  },
+  "delta_vs_s1": {
+    "Q_main": -0.45712058212058215,
+    "S_det": -0.4662162162162162,
+    "S_asst": -0.4358974358974359
+  },
+  "seed_results": [
+    {
+      "seed": 42,
+      "q_main": 0.1822869022869023,
+      "s_det": 0.13513513513513514,
+      "s_asst": 0.2923076923076923,
+      "grounding_f_beta": null,
+      "train_time_seconds": 580.5989412179988,
+      "peak_train_vram_mb": 6327.72265625,
+      "peak_infer_vram_mb": 3071.98193359375,
+      "breakdown_by_type": {
+        "number": {
+          "count": 7.0,
+          "s_det_mean": 0.0,
+          "malformed_rate": 0.7142857142857143
+        },
+        "free_text": {
+          "count": 13.0,
+          "s_asst_mean": 0.2923076923076923,
+          "malformed_rate": 0.0
+        },
+        "name": {
+          "count": 8.0,
+          "s_det_mean": 0.125,
+          "malformed_rate": 0.0
+        },
+        "boolean": {
+          "count": 12.0,
+          "s_det_mean": 0.3333333333333333,
+          "malformed_rate": 0.0
+        },
+        "date": {
+          "count": 5.0,
+          "s_det_mean": 0.0,
+          "malformed_rate": 1.0
+        },
+        "names": {
+          "count": 5.0,
+          "s_det_mean": 0.0,
+          "malformed_rate": 0.0
+        },
+        "_unanswerable": {
+          "count": 3.0,
+          "s_det_mean": 0.3333333333333333,
+          "malformed_rate": 0.0
+        }
+      }
+    },
+    {
+      "seed": 123,
+      "q_main": 0.1869022869022869,
+      "s_det": 0.13513513513513514,
+      "s_asst": 0.3076923076923077,
+      "grounding_f_beta": null,
+      "train_time_seconds": 581.8121126330007,
+      "peak_train_vram_mb": 6327.72265625,
+      "peak_infer_vram_mb": 3080.10693359375,
+      "breakdown_by_type": {
+        "number": {
+          "count": 7.0,
+          "s_det_mean": 0.0,
+          "malformed_rate": 0.7142857142857143
+        },
+        "free_text": {
+          "count": 13.0,
+          "s_asst_mean": 0.3076923076923077,
+          "malformed_rate": 0.0
+        },
+        "name": {
+          "count": 8.0,
+          "s_det_mean": 0.125,
+          "malformed_rate": 0.0
+        },
+        "boolean": {
+          "count": 12.0,
+          "s_det_mean": 0.3333333333333333,
+          "malformed_rate": 0.0
+        },
+        "date": {
+          "count": 5.0,
+          "s_det_mean": 0.0,
+          "malformed_rate": 1.0
+        },
+        "names": {
+          "count": 5.0,
+          "s_det_mean": 0.0,
+          "malformed_rate": 0.0
+        },
+        "_unanswerable": {
+          "count": 3.0,
+          "s_det_mean": 0.3333333333333333,
+          "malformed_rate": 0.0
+        }
+      }
+    },
+    {
+      "seed": 777,
+      "q_main": 0.1869022869022869,
+      "s_det": 0.13513513513513514,
+      "s_asst": 0.3076923076923077,
+      "grounding_f_beta": null,
+      "train_time_seconds": 581.8878571410023,
+      "peak_train_vram_mb": 6327.72265625,
+      "peak_infer_vram_mb": 3080.10693359375,
+      "breakdown_by_type": {
+        "number": {
+          "count": 7.0,
+          "s_det_mean": 0.0,
+          "malformed_rate": 0.7142857142857143
+        },
+        "free_text": {
+          "count": 13.0,
+          "s_asst_mean": 0.3076923076923077,
+          "malformed_rate": 0.0
+        },
+        "name": {
+          "count": 8.0,
+          "s_det_mean": 0.125,
+          "malformed_rate": 0.0
+        },
+        "boolean": {
+          "count": 12.0,
+          "s_det_mean": 0.3333333333333333,
+          "malformed_rate": 0.0
+        },
+        "date": {
+          "count": 5.0,
+          "s_det_mean": 0.0,
+          "malformed_rate": 1.0
+        },
+        "names": {
+          "count": 5.0,
+          "s_det_mean": 0.0,
+          "malformed_rate": 0.0
+        },
+        "_unanswerable": {
+          "count": 3.0,
+          "s_det_mean": 0.3333333333333333,
+          "malformed_rate": 0.0
+        }
+      }
+    }
+  ],
+  "breakdown_by_type": {
+    "number": {
+      "count": {
+        "mean": 7.0,
+        "std": 0.0
+      },
+      "s_det_mean": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "malformed_rate": {
+        "mean": 0.7142857142857143,
+        "std": 0.0
+      }
+    },
+    "free_text": {
+      "count": {
+        "mean": 13.0,
+        "std": 0.0
+      },
+      "s_asst_mean": {
+        "mean": 0.3025641025641026,
+        "std": 0.00888231183368655
+      },
+      "malformed_rate": {
+        "mean": 0.0,
+        "std": 0.0
+      }
+    },
+    "name": {
+      "count": {
+        "mean": 8.0,
+        "std": 0.0
+      },
+      "s_det_mean": {
+        "mean": 0.125,
+        "std": 0.0
+      },
+      "malformed_rate": {
+        "mean": 0.0,
+        "std": 0.0
+      }
+    },
+    "boolean": {
+      "count": {
+        "mean": 12.0,
+        "std": 0.0
+      },
+      "s_det_mean": {
+        "mean": 0.3333333333333333,
+        "std": 0.0
+      },
+      "malformed_rate": {
+        "mean": 0.0,
+        "std": 0.0
+      }
+    },
+    "date": {
+      "count": {
+        "mean": 5.0,
+        "std": 0.0
+      },
+      "s_det_mean": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "malformed_rate": {
+        "mean": 1.0,
+        "std": 0.0
+      }
+    },
+    "names": {
+      "count": {
+        "mean": 5.0,
+        "std": 0.0
+      },
+      "s_det_mean": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "malformed_rate": {
+        "mean": 0.0,
+        "std": 0.0
+      }
+    },
+    "_unanswerable": {
+      "count": {
+        "mean": 3.0,
+        "std": 0.0
+      },
+      "s_det_mean": {
+        "mean": 0.3333333333333333,
+        "std": 0.0
+      },
+      "malformed_rate": {
+        "mean": 0.0,
+        "std": 0.0
+      }
+    }
+  },
+  "delta_vs_s2r": {
+    "Q_main": -0.4835769777875041,
+    "S_det": -0.5128022759601707,
+    "S_asst": -0.41538461538461535
+  },
+  "delta_vs_s2": {
+    "Q_main": -0.07767151767151767,
+    "S_det": -0.13513513513513514,
+    "S_asst": 0.05641025641025643
+  }
+}

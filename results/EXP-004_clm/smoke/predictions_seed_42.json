@@ -1,0 +1,22 @@
+[
+  {
+    "question_id": "f2366d2d2cc2a2dab585b0c6681b04fcb1af8b46422c4fbe6a9126ae56c6fe8a",
+    "raw_output": "[ ]",
+    "parsed_answer": "_malformed_",
+    "answer_type": "date",
+    "is_malformed": true,
+    "predicted_pages": [],
+    "ttft_ms": 49.15596600039862,
+    "latency_ms": 189.38837500172667
+  },
+  {
+    "question_id": "1d356814de25d5623275b9b1de2113fcebf2002ff4199294cdaaf10641257242",
+    "raw_output": "If a partner misapplies fiduciary money or property under Article 31, the partner may be held personally liable for the misapplication.  This could result in a civil action for damages and potentially criminal charges depending on the circumstances.",
+    "parsed_answer": "If a partner misapplies fiduciary money or property under Article 31, the partner may be held personally liable for the misapplication.  This could result in a civil action for damages and potentially criminal charges depending on the circumstances.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [],
+    "ttft_ms": 56.85094500222476,
+    "latency_ms": 1791.321231998154
+  }
+]

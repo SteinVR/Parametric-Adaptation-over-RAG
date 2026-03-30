@@ -28,15 +28,15 @@ EXP-004 originally targeted Doc-to-LoRA (D2L) hypernetwork packaging. D2L was no
 | Dropout | 0.05 | Same as S2+R |
 | Target modules | q_proj, v_proj | Same as S2+R — isolates training signal |
 | Quantization | 4-bit NF4, double quant | Standard QLoRA recipe |
-| Learning rate | 2e-4 | Same as S2+R |
-| Batch size | 1 | Hardware constraint (2048-tok sequences) |
+| Learning rate | 5e-5 | Standard for continued pretraining; 2e-4 too aggressive on 106K tokens |
+| Batch size | 1 | Hardware constraint (512-tok sequences on 8GB) |
 | Gradient accumulation | 4 | Effective batch = 4 |
-| Epochs | 3 | Same as S2+R |
-| Warmup ratio | 0.03 | Same as S2+R |
+| Epochs | 5 | Diffuse CLM signal needs more passes; safe at low LR |
+| Warmup ratio | 0.1 | Longer warmup stabilizes low-LR continued pretraining |
 | Weight decay | 0.01 | Same as S2+R |
 | Scheduler | Cosine | Same as S2+R |
 | Optimizer | Paged AdamW 8-bit | Same as S2+R |
-| Max sequence length | 2048 | Standard Gemma-2 context |
+| Max sequence length | 512 | CLM computes loss on all tokens → (seq × 256K vocab) fp32 logit tensor. 512 fits 8 GB; 2048 does not (OOM at cross_entropy). |
 | Seeds | 42, 123, 777 | Same as S2+R |
 
 ## Prompt Template (S3 — no retrieval)
@@ -68,9 +68,12 @@ Same `answer_type_instruction` as EXP-002.
 ## Output
 
 - 3 adapters: `models/clm/seed_{42,123,777}/`
-- Predictions per seed: `results/EXP-004_clm/predictions_seed_{42,123,777}.json`
-- Eval report: `results/EXP-004_clm/eval_report.json`
-- Systems metrics: `results/EXP-004_clm/systems_metrics.json`
+- Per-seed results: `results/EXP-004_clm/seed_{42,123,777}/` each containing:
+  - `predictions_seed_*.json` (50 entries)
+  - `eval_report.json`
+  - `systems_metrics.json`
+  - `training_metrics.json`
+- Aggregate: `results/EXP-004_clm/aggregate_summary.json`
 - `experiments/EXP-004_clm_pretraining/REPORT.md`
 
 **Note:** D2L archived results remain in `results/EXP-004/` (not overwritten).
@@ -79,7 +82,7 @@ Same `answer_type_instruction` as EXP-002.
 
 - [ ] CLM training module implemented (`src/training/clm.py`)
 - [ ] 3 adapters trained (seeds 42, 123, 777) — `models/clm/seed_*/` each contain adapter weights
-- [ ] Full 50-question eval per seed — each `predictions_seed_*.json` has 50 entries
+- [ ] Full 50-question eval per seed — each `seed_*/predictions_seed_*.json` has 50 entries
 - [ ] Judge scored all free_text questions via OpenAI API (per seed)
 - [ ] Q_main, S_det, S_asst reported as mean ± std over 3 seeds
 - [ ] Training time per seed and peak training VRAM logged
