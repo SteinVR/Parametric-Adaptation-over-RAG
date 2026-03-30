@@ -1,0 +1,48 @@
+[
+  {
+    "question_id": "f2366d2d2cc2a2dab585b0c6681b04fcb1af8b46422c4fbe6a9126ae56c6fe8a",
+    "raw_output": "2023-03-09",
+    "parsed_answer": "2023-03-09",
+    "answer_type": "date",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 15
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 7
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 9
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 11
+      }
+    ],
+    "ttft_ms": 465.2948180009844,
+    "latency_ms": 767.4893120056367
+  },
+  {
+    "question_id": "1d356814de25d5623275b9b1de2113fcebf2002ff4199294cdaaf10641257242",
+    "raw_output": "The provided text does not contain information about what happens if a partner misapplies fiduciary money or property under Article 31.",
+    "parsed_answer": "The provided text does not contain information about what happens if a partner misapplies fiduciary money or property under Article 31.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 11
+      },
+      {
+        "doc_id": "536bbce854b9406cc22697e04fcdabd645e030c0e55b918252643b00e0b2b25f",
+        "page_number": 14
+      }
+    ],
+    "ttft_ms": 425.76344100234564,
+    "latency_ms": 1110.5710859992541
+  }
+]
