@@ -1,6 +1,6 @@
 # SPEC: EXP-008 — S6 End-to-End Naive Dense RAG Ablation (Conditional)
 
-**System:** S6 | **Wave:** 5 (conditional) | **Depends on:** EXP-006 (trigger evaluation) | **Blocks:** Nothing (terminal ablation)
+**System:** S6 | **Wave:** 5 (conditional) | **Depends on:** EXP-006 (trigger evaluation) | **Blocks:** EXP-009 (conditional refresh)
 
 ## Trigger Condition
 
@@ -9,6 +9,8 @@ Run **only if** both S2+R AND S3+R < S1 on eval Q_main (from EXP-006). If either
 ## Goal
 
 End-to-end ablation: quantify the combined contribution of S1's retrieval engineering (hybrid search, RRF fusion, cross-encoder reranking, page-diverse evidence compression) AND its chunk topology (5 families vs microchunk-only). Delta(S1, S6) measures the full gap between a maximally simplified dense RAG and the production-grade hybrid RAG. This is deliberately an e2e comparison, not a single-variable ablation.
+
+This experiment owns S6-only artifacts and metrics. If it runs, EXP-009 integrates S6 into the final thesis package.
 
 ## Pipeline
 
@@ -68,5 +70,6 @@ All parameters above must be defined in a local `S6Config` dataclass (not inline
 - [ ] Delta vs S1 computed on all metrics
 - [ ] Retrieval overlap: Jaccard between S1 and S6 page sets per question
 - [ ] Breakdown by answer_type
+- [ ] S6 metrics/artifacts handed off to EXP-009 for conditional final-package refresh
 - [ ] All results committed to git
 - [ ] `experiments/EXP-008/REPORT.md` written

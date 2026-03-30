@@ -86,6 +86,7 @@ See `memory_bank/SPEC-systems.md` for detailed system definitions.
 | S2 training format | **Closed-book** (question → answer, no context) | Pure parametric control |
 | S2+R training format | **RAFT-style open-book** (question + gold chunks → answer) | Retrieval-conditioned headline system |
 | S3+R inference | S3 monolithic adapter + S1 retrieval pipeline | Symmetric to S2+R: same retrieval, different adapter |
+| S5 practical slot | **Reporting-only best practical hybrid** chosen between S2+R and S3+R | No separate training/eval; summary conclusion after headline comparison |
 | Judge model | **gpt-5.4-mini** (OpenAI API, medium reasoning), version-pinned | External, not self-judging |
 | Hardware | **RTX 4060 8GB VRAM, 32GB RAM** | Hard constraint; QLoRA 4-bit default |
 | Quantization | **4-bit NF4** for QLoRA training | Standard QLoRA recipe |
@@ -116,6 +117,7 @@ TTFT, end-to-end latency, peak VRAM, offline packaging cost (index build / train
 **Interpretation guidelines** (not targets):
 - Quality claims require discussing cost + grounding trade-off, not quality alone.
 - Headline comparison is S1 vs S2+R vs S3+R (same retrieval, different adapter). Delta isolates adapter value.
+- Final best practical hybrid is a reporting conclusion over S2+R vs S3+R, not a separately validated system row.
 - Controls (S2, S3, S4) measure limits of parametric memory, not expected to win.
 - If S1 beats all augmented systems, this is a valid finding: retrieval engineering dominates over adaptation.
 
@@ -160,8 +162,9 @@ See `memory_bank/SPEC-data.md` for split protocol, schema, leakage rules.
 | EXP-004b | Headline | S3+R Doc-to-LoRA + retrieval | Hypernetwork retrieval-augmented system |
 | EXP-005 | Control | S4 Clustering study + routed Doc-to-LoRA | Routing vs merge inner study (RQ2) |
 | EXP-006 | Analysis | Main comparison: headline S1 vs S2+R vs S3+R + all controls | Cross-system results table |
-| EXP-007 | Analysis | Error analysis + cost/quality/grounding trade-off | Final thesis tables |
+| EXP-007 | Analysis | Error analysis + cost/quality/grounding trade-off (mandatory systems) | Final thesis tables + practical winner call for default path |
 | EXP-008 | Ablation | S6 E2E naive dense RAG (conditional: S2+R and S3+R < S1) | Retrieval engineering value |
+| EXP-009 | Analysis | Refresh final thesis package with S6 after EXP-008 (conditional) | Final thesis tables including S6 |
 
 ---
 

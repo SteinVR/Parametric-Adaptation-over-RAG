@@ -46,6 +46,17 @@
 - **Interpretation:** S3+R measures whether document-level hypernetwork packaging improves RAG generation, even without QA supervision. Delta vs S1 = D2L adapter value. Symmetric comparison with S2+R (same retrieval, different adapter source).
 - **Metrics scope:** Q_main + grounding G + systems metrics
 
+### S5 — Final Best Practical Hybrid (Reporting-Only Headline Conclusion)
+
+- **Role:** Optional deployment-oriented conclusion after the headline comparison is complete.
+- **Definition:** S5 is **not** a separately trained or separately evaluated system. It is the reporting alias for the stronger practical hybrid among **S2+R** and **S3+R** after both headline systems have been evaluated on the frozen benchmark.
+- **Selection rule:** choose between S2+R and S3+R using the already reported trade-off package:
+  - primary signal: Q_main
+  - required qualifiers: grounding G, end-to-end latency, offline packaging cost
+  - if the trade-off is ambiguous, report **no single practical winner**
+- **Guardrail:** no retuning, no extra inference pass, no choosing on eval-50 and then presenting S5 as an independently validated result. S5 is a **summary label**, not a fourth experimental row.
+- **Interpretation:** this is the answer to the practical question "which retrieval+adapter combination would we carry forward on consumer hardware?" It must be discussed only after the direct S2+R vs S3+R comparison is reported.
+
 ---
 
 ## CONTROL SYSTEMS

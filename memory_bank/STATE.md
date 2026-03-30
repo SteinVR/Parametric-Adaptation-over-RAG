@@ -24,6 +24,7 @@
 | 2026-03-29 | Outlines only for boolean/names | Constrained decoding distorts logits on date/number/name |
 | 2026-03-30 | **Architecture v8.0: headline/control split** | Advisor review: Axis 1 (isolation) is control, not main story. Main RQ = value of parametric adaptation on top of RAG. S2+R promoted to headline, S3+R added as headline. |
 | 2026-03-30 | S3+R = D2L adapter + S1 retrieval | Symmetric comparison with S2+R: same retrieval, different adapter source |
+| 2026-03-30 | S5 restored as reporting-only practical winner slot | Keeps the "final best practical hybrid" conclusion without reintroducing selection-on-eval as a separate system |
 
 ## System Readiness
 

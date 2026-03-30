@@ -21,10 +21,11 @@
 
 ### Wave 4: Comparison + Analysis
 - [ ] EXP-006 — Main comparison: headline S1 vs S2+R vs S3+R + all controls ([spec](./specs/SPEC_EXP-006.md))
-- [ ] EXP-007 — Error analysis + cost/quality/grounding trade-off ([spec](./specs/SPEC_EXP-007.md))
+- [ ] EXP-007 — Error analysis + cost/quality/grounding trade-off (mandatory systems only) ([spec](./specs/SPEC_EXP-007.md))
 
 ### Wave 5: Conditional
 - [ ] EXP-008 — S6 E2E naive dense RAG ablation (conditional: S2+R and S3+R < S1) ([spec](./specs/SPEC_EXP-008.md))
+- [ ] EXP-009 — Refresh final thesis package with S6 after EXP-008 (conditional) ([spec](./specs/SPEC_EXP-009.md))
 
 ## Reference Docs (in memory_bank/)
 - [SPEC-systems](./SPEC-systems.md) — Detailed system definitions (Headline / Control)

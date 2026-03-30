@@ -1,14 +1,14 @@
 # SPEC: EXP-007 — Error Analysis + Cost/Quality/Grounding Trade-off
 
-**Systems:** All (S1, S2+R, S3+R, S2, S3, S4-doc, S4-cluster; S6 if triggered) | **Class:** Analysis | **Wave:** 4 | **Depends on:** EXP-006 | **Blocks:** Nothing (terminal after S6 trigger is resolved)
+**Systems:** S1, S2+R, S3+R, S2, S3, S4-doc, S4-cluster | **Class:** Analysis | **Wave:** 4 | **Depends on:** EXP-006 | **Blocks:** EXP-009 (conditional refresh only)
 
 ## Goal
 
-Consolidate results from all prior experiments into final thesis tables and figures. Error analysis on system failures. Cost/quality/grounding trade-off analysis.
+Consolidate mandatory-system results from EXP-002..006 into the default thesis tables and figures. Error analysis on system failures. Cost/quality/grounding trade-off analysis.
 
-This spec has two modes:
-- **Default path:** if EXP-008 is skipped, finalize from EXP-002..006 artifacts.
-- **Ablation path:** if EXP-008 runs, refresh the consolidated tables/figures after EXP-008 completes so the final thesis package includes S6.
+If EXP-008 later runs, EXP-009 owns the post-S6 refresh. EXP-007 itself must be completable without waiting for any later wave.
+
+This spec also owns the **practical winner call** between S2+R and S3+R: declare the final best practical hybrid only as a reporting conclusion, never as a new independently validated system.
 
 No fresh inference — reuse existing artifacts only.
 
@@ -18,8 +18,8 @@ No fresh inference — reuse existing artifacts only.
 2. **Error categorization:** label failures by type (see protocol below)
 3. **Cost/quality scatter:** offline packaging cost (x) vs Q_main (y) per system
 4. **Per-type breakdown:** S_det per answer_type per system (heatmap)
-5. **Grounding analysis:** G per system (S1, S2+R, S3+R, S6 if triggered); latency vs G scatter
-6. **If EXP-008 ran:** re-open `consolidated_results.csv`, append S6 outputs, and refresh every figure/table that depends on the full system set before marking this spec complete.
+5. **Grounding analysis:** G per system (S1, S2+R, S3+R); latency vs G scatter
+6. **Practical winner call:** compare S2+R vs S3+R on Q_main, grounding, latency, and offline packaging cost; either name the final best practical hybrid or explicitly state that the trade-off is ambiguous.
 
 ## Error Analysis Protocol
 
@@ -29,7 +29,7 @@ Hypotheses for manual inspection (verify each manually — not deterministic lab
 - Questions ONLY S2+R got right → hypothesis: supervised adapter gave an edge; check if answer was in training set
 - S4-doc failures on multi-doc questions → hypothesis: routing limitation; confirm routed doc was wrong
 - S3 vs per-doc adapter on same question → hypothesis: merge degradation
-- S1 vs S6 (if triggered) → hypothesis: full pipeline (hybrid+rerank+compression+chunk topology) accounts for Δ vs naive dense RAG
+- S1 vs S6 belongs to EXP-009 manual refresh scope if EXP-008 is triggered
 
 Manually inspect top-5 worst failures per headline system (S1, S2+R, S3+R). Document: question text, expected answer, system answer, likely failure cause.
 
@@ -41,6 +41,7 @@ Manually inspect top-5 worst failures per headline system (S1, S2+R, S3+R). Docu
 | Table B | Controls (S2, S3, S4-doc, S4-cluster) — parametric limits |
 | Table C | Per answer_type S_det heatmap (all systems) |
 | Table D | Cost/quality/grounding trade-off: packaging cost, Q_main, G, latency |
+| Callout | Final best practical hybrid: S2+R or S3+R, or "no single winner" |
 | `error_analysis.md` | Categorized failures, top-5 per headline system |
 
 ## Output
@@ -55,12 +56,13 @@ Manually inspect top-5 worst failures per headline system (S1, S2+R, S3+R). Docu
 
 ## Definition of Done
 
-- [ ] `consolidated_results.csv` has all mandatory systems × all metrics; if EXP-008 ran, S6 is appended before final handoff
+- [ ] `consolidated_results.csv` has all mandatory systems × all metrics
 - [ ] Error analysis: top-5 worst failures per headline system documented in `error_analysis.md`
 - [ ] Error hypotheses from spec checked (all wrong, only S1 right, only S2+R right, etc.)
 - [ ] Cost/quality/grounding scatter generated (`cost_quality_scatter.png`)
 - [ ] Per-type heatmap generated (`per_type_heatmap.png`)
 - [ ] Merge↔Route gradient figure generated (`merge_route_gradient.png`)
-- [ ] Tables A–D present in REPORT.md and refreshed after EXP-008 if S6 was triggered
+- [ ] Tables A–D present in REPORT.md for the mandatory system set
+- [ ] REPORT.md states the final best practical hybrid call between S2+R and S3+R, or explicitly states that no single winner exists
 - [ ] All results committed to git
 - [ ] `experiments/EXP-007/REPORT.md` written with final conclusions and mandatory caveats
