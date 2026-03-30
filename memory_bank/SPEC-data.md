@@ -9,7 +9,7 @@
 - **Source:** `data/corpus/` — 8 PDF files, human-selected
 - **Domain:** DIFC (Dubai International Financial Centre) legal documents
 - **Total:** 176 pages, ~115K tokens
-- **Each document fits Doc-to-LoRA single pass** (all ≤30K tokens)
+- **Each document ≤30K tokens**
 
 | # | File | Doc ID | Pages | Tokens | Type |
 |---|------|--------|-------|--------|------|
@@ -49,7 +49,7 @@
 - **Stratification:** by answer_type + difficulty + single/multi-doc
 - **Near-duplicate pair grouped** in same split
 - **Split is created once and frozen** in `data/splits/split_v1.json`
-- **No cross-validation.** S2 uses 3 random seeds for variance estimation.
+- **No cross-validation.** S2/S3 use 3 random seeds for variance estimation.
 - **Split needed because:** supervised QLoRA systems (S2 and S2+R) train on QA pairs → must not evaluate on training data. Single eval set for all systems eliminates selection bias.
 
 ---
@@ -72,19 +72,19 @@ Output: answer
 
 ---
 
-## Doc-to-LoRA Packaging (S3/S4)
+## CLM Pretraining (S3/S3+R)
 
-- **Each document processed individually** via hypernetwork (no chunking needed — all fit)
-- S3: 8 per-doc adapters → merge into 1 monolithic adapter
-- S4: per-cluster adapters (e.g. 4 clusters of 2 docs each) → route at inference
-- No sub-document segmentation required (key advantage of 8-doc corpus)
+- **All 8 corpus documents concatenated** into a single training corpus (~115K tokens)
+- **Tokenized as plain text** — no chat template, no prompt/answer structure, no label masking
+- **Training objective:** standard causal LM (next-token prediction on all tokens)
+- **No QA pairs used** — adapter learns document content only
+- **No sub-document segmentation** — documents concatenated with separator tokens
 
 ---
 
 ## Leakage Rules
 
-1. No eval question (50) may influence: prompt tuning, hyperparameter selection, routing calibration.
-2. Clustering (S4) uses document embeddings only — no QA-derived features
-3. Near-duplicate questions grouped before splitting
-4. S2 and S2+R train only on Train-150 (`S2-train`), never on 50 eval
-5. Doc-to-LoRA (S3/S4) ingests documents, not QA pairs — no QA leakage by design
+1. No eval question (50) may influence: prompt tuning, hyperparameter selection.
+2. Near-duplicate questions grouped before splitting.
+3. S2 and S2+R train only on Train-150 (`S2-train`), never on 50 eval.
+4. CLM (S3/S3+R) trains on document text, not QA pairs — no QA leakage by design.

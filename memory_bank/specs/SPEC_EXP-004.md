@@ -1,36 +1,45 @@
-# SPEC: EXP-004 — S3 Doc-to-LoRA Monolithic
+# SPEC: EXP-004 — S3 CLM Continued Pretraining
 
-**System:** S3 | **Class:** Control + prep | **Wave:** 2 | **Depends on:** EXP-002 (prompt, parser) | **Blocks:** EXP-004b, EXP-005a, EXP-005b, EXP-006
+**System:** S3 | **Class:** Control | **Wave:** 2 | **Depends on:** EXP-002 (prompt, parser) | **Blocks:** EXP-004b, EXP-006
 
 ## Goal
 
-Generate 8 per-document LoRA adapters via Doc-to-LoRA hypernetwork. Sanity-check each individually. Merge all 8 into one monolithic adapter. Evaluate.
+Train a QLoRA adapter on corpus document text with causal language modeling loss (next-token prediction). Evaluate as pure parametric control without retrieval. 3 seeds for variance estimation.
 
-## Pipeline (inference)
+## Historical Note
 
-1. Load Gemma-2-2b-it + monolithic merged adapter (4-bit NF4)
-2. For each question: no-retrieval prompt → generate → parse
-3. Score on 50 eval questions
+EXP-004 originally targeted Doc-to-LoRA (D2L) hypernetwork packaging. D2L was non-viable: documents exceeded the hypernetwork's context window, requiring chunking (12–20 chunks/doc) and double merge. Result: Q_main=0.210, worse than S2 closed-book (0.263). Per-doc sanity S_det=0.154. Archived as negative finding in `experiments/EXP-004_d2l_monolithic/REPORT.md`. Architecture pivoted to CLM in v9.0.
 
-## Packaging
+## Pipeline
 
-### Adapter generation
-- For each of 8 documents: extract full text → feed to Doc-to-LoRA hypernetwork → save LoRA adapter
-- Expected output: 8 adapter files, each containing delta weights
-- Log: generation time per doc, adapter file size, peak VRAM
+1. Extract text from 8 PDFs via `src/d2l/corpus.py::load_frozen_corpus_documents()` (module path is legacy from D2L; function is corpus-agnostic)
+2. Concatenate all document texts into a single training corpus (~115K tokens)
+3. Tokenize as plain text — no chat template, no prompt/answer masking. Labels = input_ids (standard CLM).
+4. QLoRA training with causal LM loss
+5. Eval on 50 questions, closed-book prompt (no retrieval), 3 seeds
 
-### Per-doc sanity check
-- For each doc adapter: load it, run inference on questions from that document only (from S2-train set, not eval)
-- Score per-doc **S_det only** (no judge calls — this is a diagnostic, not a final result). Free_text excluded.
-- Validates that the hypernetwork works before merge
+## Training Config
 
-### Merge
-**Primary strategy: simple average.**
-For each LoRA matrix: `merged_W = (1/8) × Σ(adapter_i_W)`
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| PEFT method | QLoRA | Matches S2+R for fair comparison |
+| Rank | 32 | Same as S2+R |
+| Alpha | 32 | Same as S2+R |
+| Dropout | 0.05 | Same as S2+R |
+| Target modules | q_proj, v_proj | Same as S2+R — isolates training signal |
+| Quantization | 4-bit NF4, double quant | Standard QLoRA recipe |
+| Learning rate | 2e-4 | Same as S2+R |
+| Batch size | 1 | Hardware constraint (2048-tok sequences) |
+| Gradient accumulation | 4 | Effective batch = 4 |
+| Epochs | 3 | Same as S2+R |
+| Warmup ratio | 0.03 | Same as S2+R |
+| Weight decay | 0.01 | Same as S2+R |
+| Scheduler | Cosine | Same as S2+R |
+| Optimizer | Paged AdamW 8-bit | Same as S2+R |
+| Max sequence length | 2048 | Standard Gemma-2 context |
+| Seeds | 42, 123, 777 | Same as S2+R |
 
-**Merge strategy is frozen to simple average.** No fallback selection on eval set (that would be tuning on evaluation data). If simple average produces poor Q_main, report as negative result — this IS the finding.
-
-## Prompt Template (S3/S4 — no retrieval)
+## Prompt Template (S3 — no retrieval)
 
 ```
 <start_of_turn>user
@@ -44,38 +53,42 @@ Expected answer format: {answer_type_instruction}
 
 Same `answer_type_instruction` as EXP-002.
 
-**Unanswerable handling:** S3/S4 have no retrieved context, so for unanswerable questions the model must rely on its uncertainty signal. Scoring: if model outputs `[]` → correct (1.0); if model hallucinates an answer → incorrect (0.0). This is an expected disadvantage of parametric-only systems.
+**Unanswerable handling:** S3 has no retrieved context, so for unanswerable questions the model must rely on its uncertainty signal. Scoring: if model outputs `[]` → correct (1.0); if model hallucinates an answer → incorrect (0.0).
 
 ## Metrics
 
-- Per-doc adapter S_det (sanity check, per-document subset, deterministic types only)
-- Monolithic Q_main, S_det, S_asst on 50 eval
-- Adapter generation time per doc (seconds)
-- Merge compute time
-- Peak VRAM at inference
+- Q_main, S_det, S_asst on 50 eval — mean ± std over 3 seeds
+- Training time per seed (seconds)
+- Training loss curve (final loss)
+- Peak VRAM during training
+- Peak VRAM during inference
+- TTFT, end-to-end latency
 - Breakdown by answer_type
 
 ## Output
 
-- 8 per-doc adapters: `models/d2l/doc{1-8}/`
-- Monolithic merged adapter: `models/d2l/monolithic/`
-- Per-doc sanity check results table
-- **Frozen merge strategy** for EXP-005b
-- `experiments/EXP-004/REPORT.md`
+- 3 adapters: `models/clm/seed_{42,123,777}/`
+- Predictions per seed: `results/EXP-004_clm/predictions_seed_{42,123,777}.json`
+- Eval report: `results/EXP-004_clm/eval_report.json`
+- Systems metrics: `results/EXP-004_clm/systems_metrics.json`
+- `experiments/EXP-004_clm_pretraining/REPORT.md`
+
+**Note:** D2L archived results remain in `results/EXP-004/` (not overwritten).
 
 ## Definition of Done
 
-- [ ] 8 per-doc adapters generated — `models/d2l/doc{1-8}/` each contain adapter weights
-- [ ] Per-doc sanity check: S_det reported for each doc adapter on its own questions
-- [ ] Monolithic merged adapter saved — `models/d2l/monolithic/`
-- [ ] Full 50-question eval on monolithic adapter — `predictions.json` has 50 entries
-- [ ] Judge scored all free_text questions via OpenAI API
-- [ ] Q_main, S_det, S_asst reported for monolithic adapter
-- [ ] Adapter generation time per doc and merge time logged
+- [ ] CLM training module implemented (`src/training/clm.py`)
+- [ ] 3 adapters trained (seeds 42, 123, 777) — `models/clm/seed_*/` each contain adapter weights
+- [ ] Full 50-question eval per seed — each `predictions_seed_*.json` has 50 entries
+- [ ] Judge scored all free_text questions via OpenAI API (per seed)
+- [ ] Q_main, S_det, S_asst reported as mean ± std over 3 seeds
+- [ ] Training time per seed and peak training VRAM logged
+- [ ] Inference VRAM, TTFT, latency logged
 - [ ] Breakdown by answer_type
 - [ ] All results committed to git
-- [ ] `experiments/EXP-004/REPORT.md` written (including sanity check table and merge viability assessment)
+- [ ] `experiments/EXP-004_clm_pretraining/REPORT.md` written
 
 ## Risk
 
-Merge of 8 adapters may destroy information. If so, S3 is declared non-viable — document this as finding, proceed with S4-doc and S4-cluster.
+- **115K tokens may be too small for meaningful CLM adaptation.** 3 epochs gives ~345K token exposures. If Q_main ≈ base model (no improvement), this is a valid finding: continued pretraining on a small corpus does not inject useful parametric knowledge.
+- **Overfitting.** Low data volume + 3 epochs may cause memorization without generalization. Monitor training loss for collapse. If loss → 0 too fast, reduce to 1 epoch.

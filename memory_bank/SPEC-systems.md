@@ -1,6 +1,6 @@
 # SPEC: System Definitions
 
-> Detail spec for all systems. Parent: `memory_bank/ARCHITECTURE.md` (v8.0)
+> Detail spec for all systems. Parent: `memory_bank/ARCHITECTURE.md` (v9.0)
 > Systems are classified as **Headline** (main results) or **Control** (secondary/limits analysis).
 
 ---
@@ -37,13 +37,16 @@
 - **Results:** frozen from EXP-003. See `memory_bank/specs/SPEC_EXP-003.md`.
 - **Metrics scope:** Q_main + grounding G + systems metrics
 
-### S3+R — Doc-to-LoRA + Retrieval (Headline)
+### S3+R — CLM + Retrieval (Headline)
 
-- **Role:** Hypernetwork adapter inside RAG. Tests whether D2L packaging improves RAG quality without downstream QA supervision.
-- **Adapter:** S3 monolithic adapter (8 per-doc D2L adapters merged into one)
-- **Inference:** S1 retrieval pipeline → retrieved evidence + D2L-adapted generator → answer. Same retrieval backbone as S1 and S2+R.
+- **Role:** Continued pretraining adapter inside RAG. Tests whether CLM document exposure improves RAG quality without QA supervision.
+- **Adapter:** S3 CLM adapter (QLoRA trained on corpus text with causal LM loss)
+- **Adapter config:** QLoRA 4-bit NF4, rank 32, alpha 32, dropout 0.05, target q_proj + v_proj. Same PEFT architecture as S2+R — isolates training signal difference.
+- **Inference:** S1 retrieval pipeline → retrieved evidence + CLM-adapted generator → answer. Same retrieval backbone as S1 and S2+R.
 - **Prompt:** Same RAG prompt template as S1 and S2+R — retrieved context provided, model generates answer.
-- **Interpretation:** S3+R measures whether document-level hypernetwork packaging improves RAG generation, even without QA supervision. Delta vs S1 = D2L adapter value. Symmetric comparison with S2+R (same retrieval, different adapter source).
+- **Note:** The CLM adapter was NOT trained with this prompt — it was trained on raw document text with next-token prediction. Whether the adapter nonetheless improves generation from retrieved context is the central question of this experiment.
+- **Variance:** 3 random seeds (42, 123, 777), report mean ± std on 50 eval
+- **Interpretation:** S3+R measures whether supervision-free document exposure improves RAG generation. Delta vs S1 = CLM adapter value. Symmetric comparison with S2+R (same retrieval, same PEFT, different training data/objective).
 - **Metrics scope:** Q_main + grounding G + systems metrics
 
 ### S5 — Final Best Practical Hybrid (Reporting-Only Headline Conclusion)
@@ -75,48 +78,16 @@
 - **Results:** frozen from EXP-003b.
 - **Metrics scope:** Q_main + systems metrics (no grounding — no retrieval)
 
-### S3 — Doc-to-LoRA Monolithic (Control: Hypernetwork Parametric Limit)
+### S3 — CLM Monolithic (Control: Continued Pretraining Parametric Limit)
 
-- **Hypernetwork:** SakanaAI Doc-to-LoRA, Gemma-2-2b-it checkpoint
-- **Target modules:** MLP layers (as defined by hypernetwork)
-- **Packaging pipeline:**
-  1. Process each of 8 documents individually through hypernetwork (each fits single pass)
-  2. Get 8 per-document LoRA adapters
-  3. Merge 8 adapters into one global adapter
-- **Merge strategy:** simple average of delta weights (frozen).
+- **Role:** Negative control. Measures how far continued pretraining on document text can go without retrieval.
+- **Training objective:** Causal language modeling (next-token prediction) on all 8 corpus documents combined (~115K tokens)
+- **Adapter config:** QLoRA 4-bit NF4, rank 32, alpha 32, dropout 0.05, target q_proj + v_proj (same as S2+R and S3+R)
+- **Training hyperparams:** lr 2e-4, batch 1, grad_accum 4, 3 epochs, warmup 0.03, weight_decay 0.01, cosine schedule, paged AdamW 8-bit
+- **Variance:** 3 random seeds (42, 123, 777), report mean ± std on 50 eval
 - **Inference:** no retrieved context — adapter parameters only. Question → adapted model → answer.
-- **Key concern:** merge of 8 adapters may degrade quality. S3 is explicitly the *monolithic baseline*.
-- **Interpretation:** S3 tests the limit of hypernetwork parametric memory. Δ(S3+R, S3) = retrieval contribution.
+- **Interpretation:** S3 tests the limit of CLM parametric memory. Δ(S3+R, S3) = retrieval contribution to CLM system.
 - **Metrics scope:** Q_main + systems metrics (no grounding — no retrieval)
-
-### S4-doc — Per-Document Routed Doc-to-LoRA (Control: RQ2 Inner Study)
-
-- **Adapters:** 8 per-document adapters from EXP-004 (no merge)
-- **Router:** embed question → cosine similarity to 8 document embeddings → hard top-1
-- **Inference:** no retrieved context — routed adapter parameters only. Question → router → selected doc adapter → answer.
-- **Interpretation:** maximum specialization, zero merge. Expected to excel on single-doc questions, fail on multi-doc.
-- **Metrics scope:** Q_main + systems metrics + routing accuracy analysis (no grounding — no retrieval)
-
-### S4-cluster — Cluster-Routed Doc-to-LoRA (Control: RQ2 Inner Study)
-
-- **Clustering:**
-  - Granularity: **document-level** (8 docs → 4 clusters of ~2 docs each)
-  - Natural clustering: statutes / regulations / first-instance cases / appeal cases
-  - Alternative: embedding-based k-means (k=4) for data-driven clusters
-  - Diagnostics: cluster balance, semantic coherence, silhouette (diagnostic only)
-- **Per-cluster adapter generation:**
-  - For each cluster: process cluster documents through D2L → merge per-cluster adapters
-  - Merge of 2 adapters per cluster (much more tractable than S3's 8-way merge)
-- **Router:**
-  - Embed user question with same embedding model
-  - Cosine similarity to cluster centroids
-  - Activate top-1 cluster adapter
-  - Log similarity scores for all centroids
-- **Fallback:** if routing confidence is very low (all similarities near-equal), log warning but still pick top-1
-- **No learned router** in core scope
-- **Inference:** no retrieved context — routed adapter parameters only.
-- **Interpretation:** S4 tests whether document-level sharding + routing preserves more information than global merge (S3)
-- **Metrics scope:** Q_main + systems metrics + routing distribution analysis (no grounding — no retrieval)
 
 ---
 

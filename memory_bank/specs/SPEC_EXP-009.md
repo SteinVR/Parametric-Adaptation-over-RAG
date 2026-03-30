@@ -1,6 +1,6 @@
 # SPEC: EXP-009 — Refresh Final Thesis Package with S6 (Conditional)
 
-**Systems:** S6 refresh into final package | **Class:** Analysis | **Wave:** 5 (conditional) | **Depends on:** EXP-007, EXP-008 | **Blocks:** Nothing
+**Systems:** S6 refresh into final package | **Class:** Analysis | **Wave:** 4 (conditional) | **Depends on:** EXP-007, EXP-008 | **Blocks:** Nothing
 
 ## Goal
 

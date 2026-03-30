@@ -1,6 +1,6 @@
 # SPEC: EXP-008 — S6 End-to-End Naive Dense RAG Ablation (Conditional)
 
-**System:** S6 | **Wave:** 5 (conditional) | **Depends on:** EXP-006 (trigger evaluation) | **Blocks:** EXP-009 (conditional refresh)
+**System:** S6 | **Wave:** 4 (conditional) | **Depends on:** EXP-006 (trigger evaluation) | **Blocks:** EXP-009 (conditional refresh)
 
 ## Trigger Condition
 

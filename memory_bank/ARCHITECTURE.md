@@ -1,6 +1,6 @@
 # SSOT: Parametric Adaptation for Document-Grounded QA on Consumer Hardware
 
-**Version:** 8.0 | **Updated:** 2026-03-30 | **Shorthand:** `parametric-adaptation-consumer-hw`
+**Version:** 9.0 | **Updated:** 2026-03-30 | **Shorthand:** `parametric-adaptation-consumer-hw`
 
 > Authoritative source for scope, systems, metrics, and frozen decisions.
 > Detail specs live in `memory_bank/SPEC-*.md`.
@@ -10,11 +10,9 @@
 
 ## 1. Research Questions
 
-**RQ1 (main):** On a compact legal corpus under consumer hardware constraints, does parametric adaptation add value on top of a strong RAG baseline, and which adapter source — supervised RAFT-style QLoRA or Doc-to-LoRA hypernetwork packaging — is more effective as a retrieval-conditioned generator?
+**RQ1 (main):** On a compact legal corpus under consumer hardware constraints, does parametric adaptation add value on top of a strong RAG baseline, and which adapter source — supervised RAFT-style QLoRA or CLM continued pretraining — is more effective as a retrieval-conditioned generator?
 
-**RQ2 (inner study, D2L packaging):** Does cluster-routed Doc-to-LoRA outperform monolithic Doc-to-LoRA, and is the gain better explained by capacity relief / specialization than by simple adapter count increase?
-
-**RQ3 (limits of parametric memory):** How far can pure parametric systems go without retrieval on this benchmark, and where does retrieval remain irreplaceable?
+**RQ2 (limits of parametric memory):** How far can pure parametric systems go without retrieval on this benchmark, and where does retrieval remain irreplaceable?
 
 ---
 
@@ -28,26 +26,25 @@ These systems form the core comparison for RQ1.
 |----|--------|------|-----------|----------------|
 | S1 | Classical RAG | Strong nonparametric baseline | Yes | None |
 | S2+R | QLoRA RAFT + retrieval | Supervised adapter inside RAG | Yes | 150 QA RAFT training |
-| S3+R | Doc-to-LoRA + retrieval | Hypernetwork adapter inside RAG | Yes | 8 docs via D2L → merge |
+| S3+R | CLM + retrieval | Continued pretraining adapter inside RAG | Yes | Corpus-wide CLM (8 docs, causal LM) |
 
-**Key comparison:** S2+R vs S3+R — same retrieval backbone, different adapter source (supervised QA vs supervision-free document exposure). Delta isolates the value of each adaptation strategy.
+**Key comparison:** S2+R vs S3+R — same retrieval backbone, same PEFT architecture (QLoRA rank=32, q_proj+v_proj), different training signal (supervised QA vs unsupervised document text). Delta isolates the value of each adaptation strategy.
 
-### Controls (secondary analysis, RQ3)
+### Controls (secondary analysis, RQ2)
 
 Pure parametric systems without retrieval. Measure limits of internal memory, not expected to beat headline systems.
 
 | ID | System | Role | Retrieval |
 |----|--------|------|-----------|
 | S2 | QLoRA closed-book | Negative control: supervised parametric limit | No |
-| S3 | Doc-to-LoRA (monolithic) | Control: hypernetwork parametric limit | No |
-| S4-doc | Doc-to-LoRA per-doc routed | Inner study: routing vs merge (RQ2) | No |
-| S4-cluster | Doc-to-LoRA cluster-routed | Inner study: partial merge + routing (RQ2) | No |
+| S3 | CLM (monolithic) | Control: continued pretraining parametric limit | No |
 
 **Key deltas:**
 - Δ(S2+R, S2) = retrieval contribution to supervised system
-- Δ(S3+R, S3) = retrieval contribution to hypernetwork system
+- Δ(S3+R, S3) = retrieval contribution to CLM system
 - Δ(S2+R, S1) = value of supervised adapter on top of RAG
-- Δ(S3+R, S1) = value of hypernetwork adapter on top of RAG
+- Δ(S3+R, S1) = value of CLM adapter on top of RAG
+- Δ(S2+R, S3+R) = supervised vs supervision-free adapter, same retrieval + same PEFT
 
 ### Conditional Ablation
 
@@ -64,12 +61,10 @@ See `memory_bank/SPEC-systems.md` for detailed system definitions.
 ## 3. Working Hypotheses
 
 - **H1.** At least one of S2+R or S3+R outperforms S1, demonstrating that parametric adaptation adds value on top of RAG.
-- **H2.** S2+R outperforms S3+R — supervised RAFT training with gold contexts gives a stronger adapter than supervision-free D2L packaging.
-- **H3.** Pure parametric controls (S2, S3, S4) substantially underperform S1 — retrieval is a necessary memory component.
-- **H4.** S4-doc (per-doc routing) beats S3 (full merge) on single-doc questions; S3 may win on multi-doc.
-- **H4b.** S4-cluster sits between S3 and S4-doc — partial merge + routing is the D2L sweet spot.
-- **H5.** S1 RAG dominates on deterministic lookup (date, number, name) even over augmented systems.
-- **H6.** Even if no adapter improves RAG, quantifying the limits of parametric adaptation is a valid result.
+- **H2.** S2+R outperforms S3+R — supervised RAFT training with gold contexts gives a stronger adapter than supervision-free CLM continued pretraining.
+- **H3.** Pure parametric controls (S2, S3) substantially underperform S1 — retrieval is a necessary memory component.
+- **H4.** S1 RAG dominates on deterministic lookup (date, number, name) even over augmented systems.
+- **H5.** Even if no adapter improves RAG, quantifying the limits of parametric adaptation is a valid result.
 
 ---
 
@@ -77,24 +72,24 @@ See `memory_bank/SPEC-systems.md` for detailed system definitions.
 
 | Decision | Value | Rationale |
 |----------|-------|-----------|
-| Backbone | **Gemma-2-2b-it** | Only backbone with released Doc-to-LoRA hypernetwork checkpoint; used by all systems for fairness |
-| Hypernetwork | **SakanaAI Doc-to-LoRA** (checkpoint-80000) | Pre-trained, not retrained in this project |
-| Corpus | **8 PDF documents** (DIFC legal, ~115K tokens total) | Each fits D2L single pass; frozen before experiments |
+| Backbone | **Gemma-2-2b-it** | Kept for fairness with completed S1/S2+R experiments; used by all systems |
+| Corpus | **8 PDF documents** (DIFC legal, ~115K tokens total) | Frozen before experiments |
 | Goldset | **200 human-authored QA pairs** (100 per batch of 4 docs) | `data/goldset/goldset.benchmark.json` |
 | Split | **150 S2-train / 50 eval**, stratified by answer_type + difficulty | All systems evaluated on same 50. S2/S2+R train on 150. No CV. |
-| S2 variance | **3 random seeds**, report mean ± std | Replaces CV for supervised systems |
+| S2/S3 variance | **3 random seeds** (42, 123, 777), report mean ± std | Replaces CV for trained systems |
 | S2 training format | **Closed-book** (question → answer, no context) | Pure parametric control |
 | S2+R training format | **RAFT-style open-book** (question + gold chunks → answer) | Retrieval-conditioned headline system |
-| S3+R inference | S3 monolithic adapter + S1 retrieval pipeline | Symmetric to S2+R: same retrieval, different adapter |
+| S3 training objective | **Causal LM** on corpus text (next-token prediction) | Supervision-free document exposure |
+| S3 PEFT config | **QLoRA rank=32, alpha=32, q_proj+v_proj, 4-bit NF4** | Matches S2+R exactly — isolates training signal difference |
+| S3 training data | **8 documents combined** (~115K tokens), no QA pairs | Corpus-wide continued pretraining, no per-doc split |
+| S3+R inference | S3 CLM adapter + S1 retrieval pipeline | Symmetric to S2+R: same retrieval, same PEFT arch, different adapter source |
 | S5 practical slot | **Reporting-only best practical hybrid** chosen between S2+R and S3+R | No separate training/eval; summary conclusion after headline comparison |
 | Judge model | **gpt-5.4-mini** (OpenAI API, medium reasoning), version-pinned | External, not self-judging |
 | Hardware | **RTX 4060 8GB VRAM, 32GB RAM** | Hard constraint; QLoRA 4-bit default |
-| Quantization | **4-bit NF4** for QLoRA training | Standard QLoRA recipe |
-| Embedding model | **Qwen3-Embedding-0.6B** for retrieval index and document routing | Shared across retrieval-aware systems |
+| Quantization | **4-bit NF4** for all QLoRA training and inference | Standard QLoRA recipe |
+| Embedding model | **Qwen3-Embedding-0.6B** for retrieval index | Shared across retrieval-aware systems |
 | Reranker | **Qwen3-Reranker-0.6B** cross-encoder for S1 retrieval pipeline | Lexical fallback if model fails |
 | S1 retrieval stack | **Full hybrid pipeline** from `external/pdf_rag_pipeline/` | Dense+sparse, RRF, reranker, evidence compressor |
-| Routing (S4-doc) | **Hard top-1, cosine similarity to document embeddings** | Simplest per-doc routing |
-| Clustering (S4-cluster) | **k=4, document-level, k-means, cosine nearest centroid** | Simple, interpretable, no learned router |
 
 ---
 
@@ -107,10 +102,10 @@ See `memory_bank/SPEC-systems.md` for detailed system definitions.
 - `S_asst`: LLM-judge score on free_text (5 binary criteria, gpt-5.4-mini)
 
 **Grounding (retrieval-aware systems only: S1, S2+R, S3+R, S6):**
-`G = F_β(β=2.5)` on page-level grounding. Not computed for controls S2, S3, S4 (no retrieval).
+`G = F_β(β=2.5)` on page-level grounding. Not computed for controls S2, S3 (no retrieval).
 
 **Systems metrics (all):**
-TTFT, end-to-end latency, peak VRAM, offline packaging cost (index build / training / adapter generation time)
+TTFT, end-to-end latency, peak VRAM, offline packaging cost (index build / training time)
 
 **Breakdowns:** every metric reported aggregate + by answer_type.
 
@@ -118,7 +113,7 @@ TTFT, end-to-end latency, peak VRAM, offline packaging cost (index build / train
 - Quality claims require discussing cost + grounding trade-off, not quality alone.
 - Headline comparison is S1 vs S2+R vs S3+R (same retrieval, different adapter). Delta isolates adapter value.
 - Final best practical hybrid is a reporting conclusion over S2+R vs S3+R, not a separately validated system row.
-- Controls (S2, S3, S4) measure limits of parametric memory, not expected to win.
+- Controls (S2, S3) measure limits of parametric memory, not expected to win.
 - If S1 beats all augmented systems, this is a valid finding: retrieval engineering dominates over adaptation.
 
 See `memory_bank/SPEC-evaluation.md` for scoring rules, judge rubric, and reporting format.
@@ -127,11 +122,11 @@ See `memory_bank/SPEC-evaluation.md` for scoring rules, judge rubric, and report
 
 ## 6. Terminology Rules
 
-1. In precise prose use **"downstream supervision-free"** not "unsupervised" (hypernetwork is pre-trained upstream).
+1. S3/S3+R use **"supervision-free continued pretraining"** — the CLM adapter sees only document text, no QA labels.
 2. S2 learns from **goldset-style supervision**, not "the whole corpus."
 3. No claim of **full corpus internalization** — conclusions bounded to this benchmark, backbone, and hardware.
-4. "Unsupervised parametric" acceptable only in tables/diagrams as shorthand.
-5. **S2** = closed-book (control). **S2+R** = RAFT + retrieval (headline). **S3** = D2L mono (control). **S3+R** = D2L + retrieval (headline).
+4. "Unsupervised parametric" acceptable only in tables/diagrams as shorthand for CLM.
+5. **S2** = closed-book (control). **S2+R** = RAFT + retrieval (headline). **S3** = CLM (control). **S3+R** = CLM + retrieval (headline).
 
 ---
 
@@ -158,11 +153,10 @@ See `memory_bank/SPEC-data.md` for split protocol, schema, leakage rules.
 | EXP-002 | Headline | S1 Classical RAG baseline | Nonparametric baseline metrics |
 | EXP-003 | Headline | S2+R QLoRA RAFT + retrieval (3 seeds) | Supervised retrieval-augmented baseline |
 | EXP-003b | Control | S2 QLoRA closed-book (3 seeds) | Supervised parametric limit |
-| EXP-004 | Control + prep | S3 Doc-to-LoRA monolithic packaging + feasibility | D2L adapters + pure parametric control |
-| EXP-004b | Headline | S3+R Doc-to-LoRA + retrieval | Hypernetwork retrieval-augmented system |
-| EXP-005 | Control | S4 Clustering study + routed Doc-to-LoRA | Routing vs merge inner study (RQ2) |
-| EXP-006 | Analysis | Main comparison: headline S1 vs S2+R vs S3+R + all controls | Cross-system results table |
-| EXP-007 | Analysis | Error analysis + cost/quality/grounding trade-off (mandatory systems) | Final thesis tables + practical winner call for default path |
+| EXP-004 | Control | S3 CLM continued pretraining (3 seeds) | CLM adapter + pure parametric control |
+| EXP-004b | Headline | S3+R CLM + retrieval | CLM retrieval-augmented system |
+| EXP-006 | Analysis | Main comparison: headline S1 vs S2+R vs S3+R + controls S2, S3 | Cross-system results table |
+| EXP-007 | Analysis | Error analysis + cost/quality/grounding trade-off | Final thesis tables + practical winner call |
 | EXP-008 | Ablation | S6 E2E naive dense RAG (conditional: S2+R and S3+R < S1) | Retrieval engineering value |
 | EXP-009 | Analysis | Refresh final thesis package with S6 after EXP-008 (conditional) | Final thesis tables including S6 |
 
@@ -171,9 +165,9 @@ See `memory_bank/SPEC-data.md` for split protocol, schema, leakage rules.
 ## 9. Technology Stack
 
 - **Python 3.12**, `uv` for env management, single `.venv` for all experiments
-- **DL:** `torch==2.6.0+cu124`, `transformers==4.51.3`, `accelerate==1.6.0`, `peft`, `bitsandbytes` (versions pinned for Doc-to-LoRA compatibility)
+- **DL:** `torch==2.6.0+cu124`, `transformers==4.51.3`, `accelerate==1.6.0`, `peft`, `bitsandbytes`
 - **Retrieval:** `sentence-transformers`, `qdrant-client`, `faiss` (S6 ablation only)
-- **Doc-to-LoRA:** SakanaAI repo cloned to `external/doc-to-lora/`, installed as editable `--no-deps` (skips vllm/deepspeed); re-install after every `uv sync`
+- **CLM training:** same QLoRA stack as S2+R — `peft` LoRA + `bitsandbytes` 4-bit + `transformers` Trainer
 - **Evaluation:** custom metrics + OpenAI API client (`openai`) for judge
 - **Viz:** `matplotlib`
 
@@ -182,4 +176,11 @@ See `memory_bank/SPEC-data.md` for split protocol, schema, leakage rules.
 ## 10. Change Control
 
 Updates to this file required before new experiments if changing:
-research questions, system inventory, headline/control classification, backbone, goldset size/split, Doc-to-LoRA packaging strategy, routing protocol, primary metric definition.
+research questions, system inventory, headline/control classification, backbone, goldset size/split, CLM training strategy, primary metric definition.
+
+### Change Log
+
+| Version | Date | Change |
+|---------|------|--------|
+| 8.0 | 2026-03-30 | Headline/control split. S2+R and S3+R promoted to headline. |
+| 9.0 | 2026-03-30 | **D2L → CLM pivot.** Doc-to-LoRA hypernetwork non-viable for corpus (EXP-004 negative finding, Q_main=0.210). S3 redefined as CLM continued pretraining. S4-doc, S4-cluster, RQ2 (routing study) dropped. CLM PEFT matches S2+R exactly (rank=32, q_proj+v_proj) to isolate training signal difference. |

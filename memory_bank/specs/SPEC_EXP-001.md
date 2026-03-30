@@ -22,7 +22,7 @@ Validate corpus and goldset, merge 2 QA batches, create frozen 150 train / 50 ev
 - [x] All 8 corpus PDFs validated and present
 
 ## Key Results
-- 200 QA, 8 docs, 176 pages, ~141K tokens
+- 200 QA, 8 docs, 176 pages, ~115K tokens
 - 1 near-duplicate pair (grouped in same split)
 - All answer types and difficulty levels represented in both splits
-- Each document fits Doc-to-LoRA single pass
+- Each document ≤30K tokens

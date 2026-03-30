@@ -8,7 +8,7 @@
 
 `Q_main = 0.7 × S_det + 0.3 × S_asst`
 
-Applied universally to all systems: S1, S2+R, S3+R, S2, S3, S4-doc, S4-cluster (and S6 if triggered).
+Applied universally to all systems: S1, S2+R, S3+R, S2, S3 (and S6 if triggered).
 
 ---
 
@@ -75,7 +75,7 @@ Return JSON: {"correctness": 0|1, "completeness": 0|1, "grounding": 0|1, "calibr
 
 ## Retrieval-Aware Metrics (S1, S2+R, S3+R — always; S6 if triggered)
 
-S2, S3, S4-doc, S4-cluster: G = N/A (no retrieval).
+S2, S3: G = N/A (no retrieval).
 
 **Grounding:**
 `G = F_β(β=2.5)` on `(doc_id, page_number)` pairs.
@@ -97,8 +97,8 @@ S2, S3, S4-doc, S4-cluster: G = N/A (no retrieval).
 | TTFT | ms (median, p95) | All |
 | End-to-end latency | ms (median, p95) | All |
 | Peak VRAM (inference) | MB | All |
-| Peak VRAM (training/generation) | MB | S2-S4 |
-| Offline packaging cost | seconds | All (index build / train time / adapter gen time) |
+| Peak VRAM (training) | MB | S2, S3 |
+| Offline packaging cost | seconds | All (index build / training time) |
 | Malformed output rate | % | All (parser fails to extract valid answer → `_malformed_` marker, scored as 0) |
 | Storage footprint | MB | Adapter / index size |
 
@@ -119,10 +119,8 @@ Tables saved as CSV in experiment artifacts + rendered in REPORT.md.
 | Outcome | Interpretation |
 |---------|---------------|
 | S2+R or S3+R best on Q_main | Parametric adaptation adds value on top of RAG (H1 confirmed) |
-| S2+R beats S3+R | Supervised RAFT adapter > supervision-free D2L adapter on this benchmark; goldset worth the cost |
-| S3+R beats S2+R | Supervision-free D2L adapter viable without QA supervision; practical win |
-| S4 beats S3 | Routing + sharding > monolithic merge; capacity bottleneck confirmed |
-| S3 beats S4 | Routing overhead / clustering noise hurts; monolithic sufficient |
+| S2+R beats S3+R | Supervised RAFT adapter > supervision-free CLM adapter on this benchmark; goldset worth the cost |
+| S3+R beats S2+R | Supervision-free CLM adapter viable without QA supervision; practical win |
 | S1 beats all augmented systems | Retrieval engineering dominates over adaptation on this corpus; valid finding |
 | S1 >> S6 | Full pipeline (hybrid+rerank+compression+chunk topology) materially contributes beyond naive dense RAG |
 | S1 ≈ S6 | Full pipeline marginal on this corpus scale; naive dense RAG sufficient |
@@ -130,5 +128,5 @@ Tables saved as CSV in experiment artifacts + rendered in REPORT.md.
 
 **Mandatory caveats in all conclusions:**
 - Bounded to this corpus, goldset, backbone, hardware
-- Doc-to-LoRA hypernetwork is pre-trained, not project-trained
+- CLM continued pretraining uses only corpus text, no QA supervision
 - S2's advantage on answer format is expected, not evidence of corpus internalization
