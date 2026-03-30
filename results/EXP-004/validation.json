@@ -1,0 +1,8 @@
+{
+  "document_count": 8,
+  "goldset_count": 200,
+  "train_count": 150,
+  "eval_count": 50,
+  "checkpoint_exists": false,
+  "checkpoint_status": "missing: /home/xeliaray/Projects/Term-Paper/trained_d2l/gemma_demo/checkpoint-80000/pytorch_model.bin"
+}
