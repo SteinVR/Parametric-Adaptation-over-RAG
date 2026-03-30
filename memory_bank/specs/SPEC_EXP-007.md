@@ -1,60 +1,66 @@
-# SPEC: EXP-007 — S5 Hybrid (RAG + Best Adapter)
+# SPEC: EXP-007 — Error Analysis + Cost/Quality/Grounding Trade-off
 
-**System:** S5 | **Wave:** 5 | **Depends on:** EXP-006 (best adapter selected) | **Blocks:** EXP-008, EXP-009
+**Systems:** All (S1, S2+R, S3+R, S2, S3, S4-doc, S4-cluster; S6 if triggered) | **Class:** Analysis | **Wave:** 4 | **Depends on:** EXP-006 | **Blocks:** Nothing (terminal after S6 trigger is resolved)
 
 ## Goal
 
-Combine S1 retriever with the best-performing **single** adapter (S2 or S3, selected in EXP-006). S4-doc/S4-cluster are multi-adapter routed systems — not eligible for S5. Test raw query (S5a) and HyDE (S5b).
+Consolidate results from all prior experiments into final thesis tables and figures. Error analysis on system failures. Cost/quality/grounding trade-off analysis.
 
-## Pipeline
+This spec has two modes:
+- **Default path:** if EXP-008 is skipped, finalize from EXP-002..006 artifacts.
+- **Ablation path:** if EXP-008 runs, refresh the consolidated tables/figures after EXP-008 completes so the final thesis package includes S6.
 
-### S5a — Raw query + adapter
-1. Question → S1 retrieval pipeline (hybrid search + RRF + reranker + evidence compressor)
-2. Retrieved evidence + question → best adapter on Gemma-2-2b-it → answer
-3. Prompt: same RAG template as EXP-002 (with context)
+No fresh inference — reuse existing artifacts only.
 
-### S5b — HyDE + adapter
-1. Question → best adapter on Gemma-2-2b-it → hypothetical answer (HyDE generation)
-2. HyDE text → S1 retrieval pipeline (hybrid search + RRF + reranker + evidence compressor)
-3. Retrieved evidence + question → best adapter → final answer
-4. HyDE prompt:
+## Analysis Steps
 
-```
-<start_of_turn>user
-Write a brief answer to this legal question as if you had the source document in front of you.
-Question: {question}
-<end_of_turn>
-<start_of_turn>model
-```
+1. **Consolidate mandatory results** from EXP-002..006. S2/S2+R: use mean ± std across 3 seeds.
+2. **Error categorization:** label failures by type (see protocol below)
+3. **Cost/quality scatter:** offline packaging cost (x) vs Q_main (y) per system
+4. **Per-type breakdown:** S_det per answer_type per system (heatmap)
+5. **Grounding analysis:** G per system (S1, S2+R, S3+R, S6 if triggered); latency vs G scatter
+6. **If EXP-008 ran:** re-open `consolidated_results.csv`, append S6 outputs, and refresh every figure/table that depends on the full system set before marking this spec complete.
 
-Then use the generated text as retrieval query (not the original question).
+## Error Analysis Protocol
 
-### Evaluation
-Both S5a and S5b on 50 eval questions. Headline S5 = variant with higher Q_main.
+Hypotheses for manual inspection (verify each manually — not deterministic labels):
+- Questions ALL systems got wrong → hypothesis: ambiguous, too hard, or goldset issue
+- Questions ONLY S1 got right → hypothesis: retrieval-critical; parametric systems lack this info
+- Questions ONLY S2+R got right → hypothesis: supervised adapter gave an edge; check if answer was in training set
+- S4-doc failures on multi-doc questions → hypothesis: routing limitation; confirm routed doc was wrong
+- S3 vs per-doc adapter on same question → hypothesis: merge degradation
+- S1 vs S6 (if triggered) → hypothesis: full pipeline (hybrid+rerank+compression+chunk topology) accounts for Δ vs naive dense RAG
 
-## Metrics
+Manually inspect top-5 worst failures per headline system (S1, S2+R, S3+R). Document: question text, expected answer, system answer, likely failure cause.
 
-- Q_main, S_det, S_asst, G (F_β=2.5) for both variants
-- Grounding delta: S5a vs S1, S5b vs S1
-- TTFT, end-to-end latency (S5b has extra generation step)
-- HyDE retrieval quality: Recall@k improvement vs raw query (k = evidence_budget from S1 pipeline config)
-- Breakdown by answer_type
+## Key Outputs
+
+| Output | Content |
+|--------|---------|
+| Table A | Final comparison: headline systems (S1, S2+R, S3+R) × all metrics |
+| Table B | Controls (S2, S3, S4-doc, S4-cluster) — parametric limits |
+| Table C | Per answer_type S_det heatmap (all systems) |
+| Table D | Cost/quality/grounding trade-off: packaging cost, Q_main, G, latency |
+| `error_analysis.md` | Categorized failures, top-5 per headline system |
 
 ## Output
 
-- S5a and S5b results: `results/EXP-007/`
+- `results/EXP-007/consolidated_results.csv`
+- `results/EXP-007/error_analysis.md`
+- `results/figures/main_results_table.png`
+- `results/figures/cost_quality_scatter.png`
+- `results/figures/per_type_heatmap.png`
+- `results/figures/merge_route_gradient.png`
 - `experiments/EXP-007/REPORT.md`
 
 ## Definition of Done
 
-- [ ] S5a: full 50-question eval — predictions.json has 50 entries
-- [ ] S5b: full 50-question eval — predictions.json has 50 entries
-- [ ] Judge scored all free_text questions for both variants
-- [ ] Q_main, S_det, S_asst, G reported for both S5a and S5b
-- [ ] Headline S5 selected (higher Q_main variant)
-- [ ] Grounding delta vs S1 computed for both variants
-- [ ] HyDE retrieval quality: Recall@k comparison vs raw query
-- [ ] Breakdown by answer_type for both variants
+- [ ] `consolidated_results.csv` has all mandatory systems × all metrics; if EXP-008 ran, S6 is appended before final handoff
+- [ ] Error analysis: top-5 worst failures per headline system documented in `error_analysis.md`
+- [ ] Error hypotheses from spec checked (all wrong, only S1 right, only S2+R right, etc.)
+- [ ] Cost/quality/grounding scatter generated (`cost_quality_scatter.png`)
+- [ ] Per-type heatmap generated (`per_type_heatmap.png`)
+- [ ] Merge↔Route gradient figure generated (`merge_route_gradient.png`)
+- [ ] Tables A–D present in REPORT.md and refreshed after EXP-008 if S6 was triggered
 - [ ] All results committed to git
-- [ ] `experiments/EXP-007/REPORT.md` written
-- [ ] Trigger condition for EXP-009 evaluated: headline S5 vs S1 Q_main
+- [ ] `experiments/EXP-007/REPORT.md` written with final conclusions and mandatory caveats

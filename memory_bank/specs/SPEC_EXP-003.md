@@ -1,9 +1,9 @@
-# SPEC: EXP-003 — S2+R QLoRA RAFT + Retrieval (Axis 2)
+# SPEC: EXP-003 — S2+R QLoRA RAFT + Retrieval (Headline)
 
-> **Architecture note:** This experiment produces **S2+R** results (Axis 2: retrieval augmentation).
-> For Axis 1 paradigm comparison (S2 closed-book), see EXP-003b.
+> **Architecture note:** This experiment produces **S2+R** results (Headline system).
+> For S2 closed-book (Control), see EXP-003b.
 
-**System:** S2+R | **Axis:** 2 (Retrieval Augmentation) | **Wave:** 2 | **Depends on:** EXP-002 (retriever, prompt, parser) | **Blocks:** EXP-006, EXP-007
+**System:** S2+R | **Class:** Headline | **Wave:** 2 | **Depends on:** EXP-002 (retriever, prompt, parser) | **Blocks:** EXP-006, EXP-007
 
 ## Goal
 
@@ -13,7 +13,7 @@ Fine-tune Gemma-2-2b-it with QLoRA in RAFT-style. At inference S2+R uses same re
 
 From 200 QA total:
 - **150 S2-train:** used for QLoRA training
-- **50 eval:** held out, never seen during S2 training. ALL systems (S1–S5) evaluated on these same 50.
+- **50 eval:** held out, never seen during S2 training. ALL systems evaluated on these same 50.
 
 Split stratified by answer_type + difficulty, frozen in `data/splits/split_v1.json`.
 
@@ -82,7 +82,7 @@ No hyperparameter sweep. Fixed values.
 
 ## Inference
 
-S2 at inference = S1 retrieval pipeline (hybrid search + RRF + reranker + evidence compressor) + QLoRA-adapted Gemma-2-2b-it. Reuses the Qdrant index built in EXP-002 (no rebuild). Same RAG prompt template, same answer parser.
+S2+R at inference = S1 retrieval pipeline (hybrid search + RRF + reranker + evidence compressor) + QLoRA-adapted Gemma-2-2b-it. Reuses the Qdrant index built in EXP-002 (no rebuild). Same RAG prompt template, same answer parser.
 
 ## Metrics (on 50 eval questions)
 

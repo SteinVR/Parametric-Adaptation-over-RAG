@@ -1,6 +1,6 @@
 # SPEC: EXP-005a — S4-doc Per-Document Routing
 
-**System:** S4-doc | **Wave:** 3 | **Depends on:** EXP-004 (8 per-doc adapters) | **Blocks:** EXP-006
+**System:** S4-doc | **Class:** Control (RQ2) | **Wave:** 3 | **Depends on:** EXP-004 (8 per-doc adapters) | **Blocks:** EXP-006
 
 ## Goal
 

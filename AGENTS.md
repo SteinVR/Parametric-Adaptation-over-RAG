@@ -31,6 +31,12 @@
 - Use skill `apm-subagent` to form role-appropriate delegation requests.
 - Before final integration, normalize outputs and run comparison checks.
 
+## Context management
+- `memory_bank/` files, active task specs, and loaded skill files — always read directly. These are compact, known-path files that form your working context.
+- Codebase exploration — searching for files, understanding unfamiliar modules, tracing dependencies, scanning directory trees, reading implementation code for orientation — delegate to Explorer subagents. Do not manually traverse
+or bulk-read source files for orientation purposes.
+- Decision rule: if you already know the exact file path and need its content for your current action, read it directly. If you are searching, scanning, or orienting — spawn an Explorer.
+
 ## Environment
 - After every `uv sync`, re-install Doc-to-LoRA: `uv pip install --no-deps -e ./external/doc-to-lora` (it is excluded from `pyproject.toml` to avoid pulling vllm/deepspeed).
 

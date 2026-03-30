@@ -1,6 +1,6 @@
 # SPEC: EXP-004 — S3 Doc-to-LoRA Monolithic
 
-**System:** S3 | **Wave:** 2 | **Depends on:** EXP-002 (prompt, parser) | **Blocks:** EXP-005a, EXP-005b, EXP-006
+**System:** S3 | **Class:** Control + prep | **Wave:** 2 | **Depends on:** EXP-002 (prompt, parser) | **Blocks:** EXP-004b, EXP-005a, EXP-005b, EXP-006
 
 ## Goal
 

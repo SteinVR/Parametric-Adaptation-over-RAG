@@ -44,19 +44,19 @@
 
 ## Split Protocol
 
-- **S2-train:** 150 questions — used exclusively for S2 QLoRA training
+- **Train-150 (`S2-train`):** 150 questions — used for both S2 closed-book and S2+R RAFT training
 - **Eval:** 50 questions — ALL systems evaluated on these same 50
 - **Stratification:** by answer_type + difficulty + single/multi-doc
 - **Near-duplicate pair grouped** in same split
 - **Split is created once and frozen** in `data/splits/split_v1.json`
 - **No cross-validation.** S2 uses 3 random seeds for variance estimation.
-- **Split needed because:** S2 trains on QA pairs → must not evaluate on training data. Single eval set for all systems eliminates selection bias.
+- **Split needed because:** supervised QLoRA systems (S2 and S2+R) train on QA pairs → must not evaluate on training data. Single eval set for all systems eliminates selection bias.
 
 ---
 
-## S2 Training Data Format (RAFT-style)
+## S2+R Training Data Format (RAFT-style)
 
-From 150 S2-train questions:
+From 150 Train-150 (`S2-train`) questions:
 
 ```
 Input:  RAG prompt template(question, [gold_chunks..., distractor_1, distractor_2])
@@ -83,8 +83,8 @@ Output: answer
 
 ## Leakage Rules
 
-1. No eval question (50) may influence: prompt tuning, hyperparameter selection, routing calibration. **Exception:** S5 adapter choice uses eval-50 Q_main (acknowledged limitation — 2 candidates, minimal bias; see EXP-006 spec).
+1. No eval question (50) may influence: prompt tuning, hyperparameter selection, routing calibration.
 2. Clustering (S4) uses document embeddings only — no QA-derived features
 3. Near-duplicate questions grouped before splitting
-4. S2 trains only on 150 S2-train questions, never on 50 eval
+4. S2 and S2+R train only on Train-150 (`S2-train`), never on 50 eval
 5. Doc-to-LoRA (S3/S4) ingests documents, not QA pairs — no QA leakage by design

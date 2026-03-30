@@ -8,7 +8,7 @@
 
 `Q_main = 0.7 × S_det + 0.3 × S_asst`
 
-Applied universally to S1-S5 (and S6 if triggered).
+Applied universally to all systems: S1, S2+R, S3+R, S2, S3, S4-doc, S4-cluster (and S6 if triggered).
 
 ---
 
@@ -73,14 +73,14 @@ Return JSON: {"correctness": 0|1, "completeness": 0|1, "grounding": 0|1, "calibr
 
 ---
 
-## Retrieval-Aware Metrics (S1, S2+R, S5 — always; S6 if triggered)
+## Retrieval-Aware Metrics (S1, S2+R, S3+R — always; S6 if triggered)
 
 S2, S3, S4-doc, S4-cluster: G = N/A (no retrieval).
 
 **Grounding:**
 `G = F_β(β=2.5)` on `(doc_id, page_number)` pairs.
 
-**Building predicted set P:** deduplicated union of all `(doc_id, page_number)` from **final evidence chunks** — i.e. after the full retrieval pipeline completes (search → rerank → evidence compression → page lifting). For S1/S2+R/S5 this is `RetrievalService.retrieve().page_references`. For S6 this is the naive top-k output. P is NOT built from raw pre-compression candidates.
+**Building predicted set P:** deduplicated union of all `(doc_id, page_number)` from **final evidence chunks** — i.e. after the full retrieval pipeline completes (search → rerank → evidence compression → page lifting). For S1/S2+R/S3+R this is `RetrievalService.retrieve().page_references`. For S6 this is the naive top-k output. P is NOT built from raw pre-compression candidates.
 
 - precision = |P ∩ G_ref| / |P|
 - recall = |P ∩ G_ref| / |G_ref|
@@ -118,12 +118,12 @@ Tables saved as CSV in experiment artifacts + rendered in REPORT.md.
 
 | Outcome | Interpretation |
 |---------|---------------|
-| S5 best on Q_main | Hybrid approach justified; discuss grounding + latency cost |
-| S2 beats S3/S4 | Supervised adaptation > hypernetwork on this benchmark; goldset worth the cost |
-| S3/S4 beats S2 | Hypernetwork viable without QA supervision; practical win |
+| S2+R or S3+R best on Q_main | Parametric adaptation adds value on top of RAG (H1 confirmed) |
+| S2+R beats S3+R | Supervised RAFT adapter > supervision-free D2L adapter on this benchmark; goldset worth the cost |
+| S3+R beats S2+R | Supervision-free D2L adapter viable without QA supervision; practical win |
 | S4 beats S3 | Routing + sharding > monolithic merge; capacity bottleneck confirmed |
 | S3 beats S4 | Routing overhead / clustering noise hurts; monolithic sufficient |
-| S1 beats all parametric | Parametric injection not justified on small corpus; retrieval sufficient |
+| S1 beats all augmented systems | Retrieval engineering dominates over adaptation on this corpus; valid finding |
 | S1 >> S6 | Full pipeline (hybrid+rerank+compression+chunk topology) materially contributes beyond naive dense RAG |
 | S1 ≈ S6 | Full pipeline marginal on this corpus scale; naive dense RAG sufficient |
 | All close | Main result is the cost/quality trade-off analysis, not a winner |
@@ -131,5 +131,4 @@ Tables saved as CSV in experiment artifacts + rendered in REPORT.md.
 **Mandatory caveats in all conclusions:**
 - Bounded to this corpus, goldset, backbone, hardware
 - Doc-to-LoRA hypernetwork is pre-trained, not project-trained
-- S2's advantage on format is expected, not evidence of corpus internalization
-- S5 adapter selection uses eval-50 (same set as final evaluation) — mild optimistic bias with 2 candidates; no separate validation split due to small dataset
+- S2's advantage on answer format is expected, not evidence of corpus internalization

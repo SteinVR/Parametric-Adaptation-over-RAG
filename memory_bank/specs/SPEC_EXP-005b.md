@@ -1,6 +1,6 @@
 # SPEC: EXP-005b — S4-cluster Cluster-Routed Doc-to-LoRA
 
-**System:** S4-cluster | **Wave:** 3 | **Depends on:** EXP-004 (per-doc adapters, frozen merge strategy) | **Blocks:** EXP-006
+**System:** S4-cluster | **Class:** Control (RQ2) | **Wave:** 3 | **Depends on:** EXP-004 (per-doc adapters, frozen merge strategy) | **Blocks:** EXP-006
 
 ## Goal
 

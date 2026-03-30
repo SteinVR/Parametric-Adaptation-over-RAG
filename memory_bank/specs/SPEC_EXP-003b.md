@@ -1,10 +1,10 @@
-# SPEC: EXP-003b — S2 QLoRA Closed-Book (Axis 1)
+# SPEC: EXP-003b — S2 QLoRA Closed-Book (Control)
 
-**System:** S2 | **Axis:** 1 (Paradigm in Isolation) | **Wave:** 2 | **Depends on:** EXP-002 (prompt/parser reuse), EXP-003 (shared QLoRA config, delta computation) | **Blocks:** EXP-006, EXP-007
+**System:** S2 | **Class:** Control | **Wave:** 2 | **Depends on:** EXP-002 (prompt/parser reuse), EXP-003 (shared QLoRA config, delta computation) | **Blocks:** EXP-006, EXP-007
 
 ## Goal
 
-Fine-tune Gemma-2-2b-it with QLoRA on question→answer pairs **without any retrieved context**. At inference, the model answers from weights alone — no retrieval pipeline. Establishes supervised parametric baseline for Axis 1 paradigm comparison.
+Fine-tune Gemma-2-2b-it with QLoRA on question→answer pairs **without any retrieved context**. At inference, the model answers from weights alone — no retrieval pipeline. Establishes supervised parametric limit (negative control).
 
 Key delta: Δ(S2+R, S2) = retrieval contribution to the supervised system (computed against EXP-003 results).
 
@@ -94,8 +94,8 @@ S2 closed-book at inference: question → same closed-book prompt template → Q
 - Variance: mean ± std across 3 seeds
 - Training time per seed, peak VRAM during training and inference
 - Breakdown by answer_type
-- Delta vs S1 baseline (Axis 1 comparison)
-- Delta vs S2+R (Axis 2 ablation: retrieval contribution). This is a post-hoc reporting step computed after both EXP-003 and EXP-003b complete; it does not block EXP-003b eval.
+- Delta vs S1 baseline
+- Delta vs S2+R (retrieval contribution). This is a post-hoc reporting step computed after both EXP-003 and EXP-003b complete; it does not block EXP-003b eval.
 
 ## Output
 
