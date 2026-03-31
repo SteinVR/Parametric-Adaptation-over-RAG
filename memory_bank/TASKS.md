@@ -1,7 +1,7 @@
 # Task Board
 
 > Ordered task list. Details in `memory_bank/tasks/{TASK_ID}.md`.
-> Architecture v9.0: Headline systems (S1, S2+R, S3+R) vs Controls (S2, S3).
+> Architecture v9.2: Headline systems (S1, S2+R, S3+R), post-hoc S7, controls (S2, S3, S3-legacy D2L).
 
 ## Active Queue
 
@@ -16,23 +16,24 @@
 - [x] EXP-004b — S3+R CLM + retrieval (Headline) ([spec](./specs/SPEC_EXP-004b.md))
 
 ### Wave 3: Comparison + Analysis
-- [x] EXP-006 — Main comparison: all systems ([spec](./specs/SPEC_EXP-006.md))
+- [x] EXP-006 — Main comparison: headline + controls + post-hoc S7 row ([spec](./specs/SPEC_EXP-006.md))
 - [x] EXP-007 — Error analysis + cost/quality/grounding trade-off ([spec](./specs/SPEC_EXP-007.md))
 
-### Wave 4: Ablation
-- [x] EXP-008 — S6 naive dense RAG (run by user request) ([spec](./specs/SPEC_EXP-008.md))
-
 ### Wave 5: Post-hoc
-- [x] EXP-010 — S7 adapter merge (0.5×CLM + 0.5×RAFT), eval-only, no retraining
+- [x] EXP-010 — S7 adapter merge (0.5×CLM + 0.5×RAFT), eval-only, no retraining ([spec](./specs/SPEC_EXP-010.md))
 
-### Not triggered
-- ~~EXP-009 — Refresh with S6~~ (S6 results integrated directly in EXP-006/007)
+## Archived / Out of Scope
 
-### Dropped (v9.0)
-- ~~EXP-005a — S4-doc~~ ([spec](./specs/SPEC_EXP-005a.md))
-- ~~EXP-005b — S4-cluster~~ ([spec](./specs/SPEC_EXP-005b.md))
+- [x] EXP-008 — S6 naive dense RAG (archived from active thesis narrative) ([spec](./specs/SPEC_EXP-008.md))
+- [x] EXP-009 — Conditional S6 refresh (archived/deprecated) ([spec](./specs/SPEC_EXP-009.md))
+
+## Dropped (v9.0)
+
+- ~~EXP-005a — S4-doc~~
+- ~~EXP-005b — S4-cluster~~
 
 ## Reference Docs (in memory_bank/)
-- [SPEC-systems](./SPEC-systems.md) — Detailed system definitions (Headline / Control)
+
+- [SPEC-systems](./SPEC-systems.md) — Detailed system definitions (Headline / Post-hoc / Control / Archived)
 - [SPEC-evaluation](./SPEC-evaluation.md) — Evaluation protocol, judge config, scoring rules
 - [SPEC-data](./SPEC-data.md) — Corpus, goldset, splits, leakage rules

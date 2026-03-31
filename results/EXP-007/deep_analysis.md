@@ -27,9 +27,3 @@
 
 - Pareto-optimal systems on (offline cost, Q_main): `S7`.
 - Systems outside Pareto front are strictly dominated and can be deprioritized in practical deployment decisions.
-
-## 6. Practical Recommendations
-
-- Keep S2+R and S3+R both in discussion as base hybrids; they encode different strengths and should not be collapsed into a single narrative.
-- Promote S7 as best observed post-hoc merged configuration, but preserve caveat: it is a merge-based conclusion, not independent retraining evidence.
-- Use question-level win-rate and overlap artifacts to motivate targeted ensemble/routing hypotheses in future work.

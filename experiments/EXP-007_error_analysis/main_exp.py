@@ -60,6 +60,7 @@ SYSTEM_SPECS: dict[str, SystemSpec] = {
     "S7": SystemSpec("S7", "Post-hoc", exp_cfg.S7_DIR, exp_cfg.S7_AGGREGATE, True, True),
     "S2": SystemSpec("S2", "Control", exp_cfg.S2_DIR, exp_cfg.S2_AGGREGATE, True, False),
     "S3": SystemSpec("S3", "Control", exp_cfg.S3_DIR, exp_cfg.S3_AGGREGATE, True, False),
+    "S3-legacy": SystemSpec("S3-legacy", "Control", exp_cfg.S3_LEGACY_DIR, None, False, False),
 }
 
 
@@ -97,6 +98,31 @@ def _extract_stat(value: Any) -> tuple[float | None, float | None]:
         return mean_value, (std_value if std_value is not None else 0.0)
     cast_value = _as_float(value)
     return cast_value, (0.0 if cast_value is not None else None)
+
+
+def _extract_peak_infer_vram(systems_metrics: dict[str, Any]) -> tuple[float | None, float | None]:
+    for key in ("peak_vram_mb", "peak_infer_vram_mb"):
+        value, std = _extract_stat(systems_metrics.get(key))
+        if value is not None:
+            return value, std
+    return None, None
+
+
+def _d2l_legacy_offline_cost_seconds() -> float:
+    total_seconds = 0.0
+    if exp_cfg.S3_LEGACY_DOC_GENERATION.exists():
+        generation_rows = load_json(exp_cfg.S3_LEGACY_DOC_GENERATION)
+        total_seconds += sum(
+            float(row.get("generation_seconds", 0.0))
+            for row in generation_rows
+            if isinstance(row, dict)
+        )
+    if exp_cfg.S3_LEGACY_MERGE_SUMMARY.exists():
+        merge_summary = load_json(exp_cfg.S3_LEGACY_MERGE_SUMMARY)
+        merge_seconds = _as_float(merge_summary.get("merge_seconds"))
+        if merge_seconds is not None:
+            total_seconds += merge_seconds
+    return total_seconds
 
 
 def _seed_dir(spec: SystemSpec, seed: int) -> Path:
@@ -203,9 +229,12 @@ def _collect_consolidated() -> tuple[pd.DataFrame, pd.DataFrame]:
             s_det, s_det_std = _extract_stat(report.get("s_det"))
             s_asst, s_asst_std = _extract_stat(report.get("s_asst"))
             g, g_std = _extract_stat(report.get("grounding_f_beta"))
-            peak_infer, peak_infer_std = _extract_stat(systems_metrics.get("peak_vram_mb"))
+            peak_infer, peak_infer_std = _extract_peak_infer_vram(systems_metrics)
             peak_train, peak_train_std = None, None
-            offline_cost, offline_cost_std = 0.0, 0.0
+            if system_id == "S3-legacy":
+                offline_cost, offline_cost_std = _d2l_legacy_offline_cost_seconds(), 0.0
+            else:
+                offline_cost, offline_cost_std = 0.0, 0.0
             breakdown_source = report.get("breakdown_by_type", {})
 
         ttft_median, ttft_median_std = _mean_std([
@@ -987,6 +1016,9 @@ def _write_report(
     s2r = consolidated_df[consolidated_df["system"] == "S2+R"].iloc[0]
     s3r = consolidated_df[consolidated_df["system"] == "S3+R"].iloc[0]
     s7 = consolidated_df[consolidated_df["system"] == "S7"].iloc[0]
+    s2 = consolidated_df[consolidated_df["system"] == "S2"].iloc[0]
+    s3 = consolidated_df[consolidated_df["system"] == "S3"].iloc[0]
+    s3_legacy = consolidated_df[consolidated_df["system"] == "S3-legacy"].iloc[0]
 
     lines = [
         "# EXP-007: Error Analysis + Trade-off",
@@ -995,7 +1027,7 @@ def _write_report(
         "",
         "## Scope",
         "",
-        "- Consolidation includes S1, S2+R, S3+R, S7, S2, S3.",
+        "- Consolidation includes S1, S2+R, S3+R, S7, S2, S3, S3-legacy (D2L from EXP-004).",
         "- S6 (Naive RAG) intentionally excluded from this refresh.",
         "",
         "## Practical Winner Call (S2+R vs S3+R)",
@@ -1014,6 +1046,17 @@ def _write_report(
         "",
         f"- S7 reaches `Q_main={float(s7['q_main']):.4f}`, best among all included systems.",
         f"- Relative to S2+R: `ΔQ_main={float(s7['q_main'] - s2r['q_main']):+.4f}`, `ΔS_det={float(s7['s_det'] - s2r['s_det']):+.4f}`, `ΔS_asst={float(s7['s_asst'] - s2r['s_asst']):+.4f}`.",
+        "",
+        "## Control Systems (with Legacy Anchor)",
+        "",
+        "| System | Q_main | S_det | S_asst | Offline cost (s) |",
+        "|--------|--------|-------|--------|------------------|",
+        f"| S2 | {float(s2['q_main']):.3f} | {float(s2['s_det']):.3f} | {float(s2['s_asst']):.3f} | {float(s2['offline_cost_seconds']):.1f} |",
+        f"| S3 | {float(s3['q_main']):.3f} | {float(s3['s_det']):.3f} | {float(s3['s_asst']):.3f} | {float(s3['offline_cost_seconds']):.1f} |",
+        f"| S3-legacy (D2L) | {float(s3_legacy['q_main']):.3f} | {float(s3_legacy['s_det']):.3f} | {float(s3_legacy['s_asst']):.3f} | {float(s3_legacy['offline_cost_seconds']):.1f} |",
+        "",
+        f"- ΔQ_main (S3 - S3-legacy): {float(s3['q_main'] - s3_legacy['q_main']):+.4f}.",
+        f"- ΔQ_main (S3+R - S3-legacy): {float(s3r['q_main'] - s3_legacy['q_main']):+.4f}.",
         "",
         "## Error Analysis",
         "",

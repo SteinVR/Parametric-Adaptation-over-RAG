@@ -1,6 +1,6 @@
 # SSOT: Parametric Adaptation for Document-Grounded QA on Consumer Hardware
 
-**Version:** 9.0 | **Updated:** 2026-03-30 | **Shorthand:** `parametric-adaptation-consumer-hw`
+**Version:** 9.2 | **Updated:** 2026-03-31 | **Shorthand:** `parametric-adaptation-consumer-hw`
 
 > Authoritative source for scope, systems, metrics, and frozen decisions.
 > Detail specs live in `memory_bank/SPEC-*.md`.
@@ -18,7 +18,7 @@
 
 ## 2. System Structure
 
-### Headline Systems (main results table)
+### Headline Systems (main thesis comparison)
 
 These systems form the core comparison for RQ1.
 
@@ -30,6 +30,14 @@ These systems form the core comparison for RQ1.
 
 **Key comparison:** S2+R vs S3+R — same retrieval backbone, same PEFT architecture (QLoRA rank=32, q_proj+v_proj), different training signal (supervised QA vs unsupervised document text). Delta isolates the value of each adaptation strategy.
 
+### Post-hoc System (reported separately)
+
+| ID | System | Role | Retrieval |
+|----|--------|------|-----------|
+| S7 | CLM+QLoRA adapter merge | Post-hoc merged adapter (no retraining) | Yes |
+
+S7 comes from EXP-010 (`alpha=0.5`, seed-matched linear interpolation), evaluated with the same S1 retrieval stack. It is reported as post-hoc champion, not as a new training pipeline.
+
 ### Controls (secondary analysis, RQ2)
 
 Pure parametric systems without retrieval. Measure limits of internal memory, not expected to beat headline systems.
@@ -38,21 +46,15 @@ Pure parametric systems without retrieval. Measure limits of internal memory, no
 |----|--------|------|-----------|
 | S2 | QLoRA closed-book | Negative control: supervised parametric limit | No |
 | S3 | CLM (monolithic) | Control: continued pretraining parametric limit | No |
+| S3-legacy (D2L) | Doc-to-LoRA monolithic | Legacy diagnostic control (negative finding) | No |
 
-**Key deltas:**
-- Δ(S2+R, S2) = retrieval contribution to supervised system
-- Δ(S3+R, S3) = retrieval contribution to CLM system
-- Δ(S2+R, S1) = value of supervised adapter on top of RAG
-- Δ(S3+R, S1) = value of CLM adapter on top of RAG
-- Δ(S2+R, S3+R) = supervised vs supervision-free adapter, same retrieval + same PEFT
+`S3-legacy (D2L)` is retained as a valid negative finding from `experiments/EXP-004_d2l_monolithic/REPORT.md` (`Q_main=0.2100`) and stays in documentation as a historical control.
 
-### Conditional Ablation
+### Archived / Not Active in Thesis Narrative
 
-| ID | System | Trigger |
-|----|--------|---------|
-| S6 | Naive Dense RAG | Only if both S2+R and S3+R < S1 on eval Q_main |
-
-S6 measures combined retrieval engineering + chunk topology contribution.
+| ID | System | Status | Note |
+|----|--------|--------|------|
+| S6 | Naive Dense RAG | Archived | Run in EXP-008 by user request; excluded from active thesis system set |
 
 See `memory_bank/SPEC-systems.md` for detailed system definitions.
 
@@ -62,9 +64,10 @@ See `memory_bank/SPEC-systems.md` for detailed system definitions.
 
 - **H1.** At least one of S2+R or S3+R outperforms S1, demonstrating that parametric adaptation adds value on top of RAG.
 - **H2.** S2+R outperforms S3+R — supervised RAFT training with gold contexts gives a stronger adapter than supervision-free CLM continued pretraining.
-- **H3.** Pure parametric controls (S2, S3) substantially underperform S1 — retrieval is a necessary memory component.
+- **H3.** Pure parametric controls (S2, S3, S3-legacy D2L) substantially underperform S1 — retrieval is a necessary memory component.
 - **H4.** S1 RAG dominates on deterministic lookup (date, number, name) even over augmented systems.
 - **H5.** Even if no adapter improves RAG, quantifying the limits of parametric adaptation is a valid result.
+- **H6 (post-hoc).** Adapter interpolation (S7) may combine complementary strengths of S2+R and S3+R without additional training.
 
 ---
 
@@ -83,7 +86,9 @@ See `memory_bank/SPEC-systems.md` for detailed system definitions.
 | S3 PEFT config | **QLoRA rank=32, alpha=32, q_proj+v_proj, 4-bit NF4** | Matches S2+R exactly — isolates training signal difference |
 | S3 training data | **8 documents combined** (~115K tokens), no QA pairs | Corpus-wide continued pretraining, no per-doc split |
 | S3+R inference | S3 CLM adapter + S1 retrieval pipeline | Symmetric to S2+R: same retrieval, same PEFT arch, different adapter source |
+| S7 merge rule | **alpha=0.5** linear interpolation of CLM and RAFT adapters (same seed) | EXP-010 post-hoc eval-only; no retraining |
 | S5 practical slot | **Reporting-only best practical hybrid** chosen between S2+R and S3+R | No separate training/eval; summary conclusion after headline comparison |
+| S6 policy | **Archived from active thesis system set** | Avoids noise in core narrative while preserving historical trace |
 | Judge model | **gpt-5.4-mini** (OpenAI API, medium reasoning), version-pinned | External, not self-judging |
 | Hardware | **RTX 4060 8GB VRAM, 32GB RAM** | Hard constraint; QLoRA 4-bit default |
 | Quantization | **4-bit NF4** for all QLoRA training and inference | Standard QLoRA recipe |
@@ -95,14 +100,16 @@ See `memory_bank/SPEC-systems.md` for detailed system definitions.
 
 ## 5. Evaluation Protocol (Compact)
 
-**Primary metric (all systems):**
+**Primary metric (all active systems):**
 `Q_main = 0.7 × S_det + 0.3 × S_asst`
 
 - `S_det`: deterministic accuracy (number, boolean, name, names, date). Unanswerable: expected `[]`, system returns `[]` → 1.0.
 - `S_asst`: LLM-judge score on free_text (5 binary criteria, gpt-5.4-mini)
 
-**Grounding (retrieval-aware systems only: S1, S2+R, S3+R, S6):**
-`G = F_β(β=2.5)` on page-level grounding. Not computed for controls S2, S3 (no retrieval).
+**Grounding (retrieval-aware systems only):**
+`G = F_β(β=2.5)` on page-level grounding for S1, S2+R, S3+R, S7.
+
+Grounding is not computed for controls S2, S3, S3-legacy (no retrieval).
 
 **Systems metrics (all):**
 TTFT, end-to-end latency, peak VRAM, offline packaging cost (index build / training time)
@@ -110,11 +117,11 @@ TTFT, end-to-end latency, peak VRAM, offline packaging cost (index build / train
 **Breakdowns:** every metric reported aggregate + by answer_type.
 
 **Interpretation guidelines** (not targets):
-- Quality claims require discussing cost + grounding trade-off, not quality alone.
-- Headline comparison is S1 vs S2+R vs S3+R (same retrieval, different adapter). Delta isolates adapter value.
-- Final best practical hybrid is a reporting conclusion over S2+R vs S3+R, not a separately validated system row.
-- Controls (S2, S3) measure limits of parametric memory, not expected to win.
-- If S1 beats all augmented systems, this is a valid finding: retrieval engineering dominates over adaptation.
+- Headline comparison is S1 vs S2+R vs S3+R.
+- S7 is reported as post-hoc adapter-merge result, not a retrained fourth headline system.
+- Final best practical hybrid call remains a reporting conclusion over S2+R vs S3+R.
+- Controls (S2, S3, S3-legacy D2L) measure limits of parametric memory.
+- If S1 beats all augmented systems, this is still a valid finding.
 
 See `memory_bank/SPEC-evaluation.md` for scoring rules, judge rubric, and reporting format.
 
@@ -122,11 +129,12 @@ See `memory_bank/SPEC-evaluation.md` for scoring rules, judge rubric, and report
 
 ## 6. Terminology Rules
 
-1. S3/S3+R use **"supervision-free continued pretraining"** — the CLM adapter sees only document text, no QA labels.
-2. S2 learns from **goldset-style supervision**, not "the whole corpus."
+1. S3/S3+R use **"supervision-free continued pretraining"** — CLM adapter sees only document text, no QA labels.
+2. S2 learns from **goldset-style supervision**, not "the whole corpus".
 3. No claim of **full corpus internalization** — conclusions bounded to this benchmark, backbone, and hardware.
-4. "Unsupervised parametric" acceptable only in tables/diagrams as shorthand for CLM.
-5. **S2** = closed-book (control). **S2+R** = RAFT + retrieval (headline). **S3** = CLM (control). **S3+R** = CLM + retrieval (headline).
+4. "Unsupervised parametric" is acceptable only as CLM shorthand in tables/diagrams.
+5. **S3 = CLM control.** **S3-legacy (D2L) = historical negative control from EXP-004 D2L.**
+6. **S7 = post-hoc CLM+RAFT merge**, eval-only, no retraining.
 
 ---
 
@@ -149,16 +157,18 @@ See `memory_bank/SPEC-data.md` for split protocol, schema, leakage rules.
 
 | Phase | Role | Goal | Key output |
 |-------|------|------|------------|
-| EXP-001 | — | Data audit + goldset merge + split freeze | `data/goldset/`, `data/splits/` |
+| EXP-001 | Foundation | Data audit + goldset merge + split freeze | `data/goldset/`, `data/splits/` |
 | EXP-002 | Headline | S1 Classical RAG baseline | Nonparametric baseline metrics |
 | EXP-003 | Headline | S2+R QLoRA RAFT + retrieval (3 seeds) | Supervised retrieval-augmented baseline |
 | EXP-003b | Control | S2 QLoRA closed-book (3 seeds) | Supervised parametric limit |
-| EXP-004 | Control | S3 CLM continued pretraining (3 seeds) | CLM adapter + pure parametric control |
+| EXP-004 D2L | Legacy control | Doc-to-LoRA monolithic feasibility | Negative finding (`Q_main=0.2100`) |
+| EXP-004 CLM | Control | S3 CLM continued pretraining (3 seeds) | CLM pure-parametric control |
 | EXP-004b | Headline | S3+R CLM + retrieval | CLM retrieval-augmented system |
-| EXP-006 | Analysis | Main comparison: headline S1 vs S2+R vs S3+R + controls S2, S3 | Cross-system results table |
+| EXP-006 | Analysis | Main comparison with headline + controls (+ post-hoc S7 row) | Cross-system results table |
 | EXP-007 | Analysis | Error analysis + cost/quality/grounding trade-off | Final thesis tables + practical winner call |
-| EXP-008 | Ablation | S6 E2E naive dense RAG (conditional: S2+R and S3+R < S1) | Retrieval engineering value |
-| EXP-009 | Analysis | Refresh final thesis package with S6 after EXP-008 (conditional) | Final thesis tables including S6 |
+| EXP-008 | Archived | S6 e2e naive dense RAG | Historical ablation result (not active thesis set) |
+| EXP-009 | Archived | Conditional refresh with S6 | Archived/out-of-scope for thesis narrative |
+| EXP-010 | Post-hoc | CLM+RAFT adapter merge (S7), eval-only | Post-hoc champion row (`Q_main=0.7045±0.0345`) |
 
 ---
 
@@ -166,8 +176,8 @@ See `memory_bank/SPEC-data.md` for split protocol, schema, leakage rules.
 
 - **Python 3.12**, `uv` for env management, single `.venv` for all experiments
 - **DL:** `torch==2.6.0+cu124`, `transformers==4.51.3`, `accelerate==1.6.0`, `peft`, `bitsandbytes`
-- **Retrieval:** `sentence-transformers`, `qdrant-client`, `faiss` (S6 ablation only)
-- **CLM training:** same QLoRA stack as S2+R — `peft` LoRA + `bitsandbytes` 4-bit + `transformers` Trainer
+- **Retrieval:** `sentence-transformers`, `qdrant-client`
+- **Training:** QLoRA 4-bit pipeline for S2/S3 families
 - **Evaluation:** custom metrics + OpenAI API client (`openai`) for judge
 - **Viz:** `matplotlib`
 
@@ -175,12 +185,14 @@ See `memory_bank/SPEC-data.md` for split protocol, schema, leakage rules.
 
 ## 10. Change Control
 
-Updates to this file required before new experiments if changing:
-research questions, system inventory, headline/control classification, backbone, goldset size/split, CLM training strategy, primary metric definition.
+Updates to this file are required before new experiments if changing:
+research questions, system inventory, headline/control classification, backbone, goldset size/split, training strategy, primary metric definition.
 
 ### Change Log
 
 | Version | Date | Change |
 |---------|------|--------|
 | 8.0 | 2026-03-30 | Headline/control split. S2+R and S3+R promoted to headline. |
-| 9.0 | 2026-03-30 | **D2L → CLM pivot.** Doc-to-LoRA hypernetwork non-viable for corpus (EXP-004 negative finding, Q_main=0.210). S3 redefined as CLM continued pretraining. S4-doc, S4-cluster, RQ2 (routing study) dropped. CLM PEFT matches S2+R exactly (rank=32, q_proj+v_proj) to isolate training signal difference. |
+| 9.0 | 2026-03-30 | D2L → CLM pivot. S4/old RQ2 dropped. |
+| 9.1 | 2026-03-31 | Added post-hoc S7 (EXP-010) to project narrative and reporting stack. |
+| 9.2 | 2026-03-31 | S6 archived from active thesis set; restored S3-legacy (D2L) as documented negative control; aligned EXP-006/007/010 system taxonomy. |

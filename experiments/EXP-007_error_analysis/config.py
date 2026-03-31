@@ -29,12 +29,15 @@ S3R_DIR = base_cfg.RESULTS_DIR / "EXP-004b"
 S7_DIR = base_cfg.RESULTS_DIR / "EXP-010" / "alpha_0.5"
 S2_DIR = base_cfg.RESULTS_DIR / "EXP-003b"
 S3_DIR = base_cfg.RESULTS_DIR / "EXP-004_clm"
+S3_LEGACY_DIR = base_cfg.RESULTS_DIR / "EXP-004"
 
 S2R_AGGREGATE = S2R_DIR / "aggregate_summary.json"
 S3R_AGGREGATE = S3R_DIR / "aggregate_summary.json"
 S7_AGGREGATE = S7_DIR / "aggregate_summary.json"
 S2_AGGREGATE = S2_DIR / "aggregate_summary.json"
 S3_AGGREGATE = S3_DIR / "aggregate_summary.json"
+S3_LEGACY_DOC_GENERATION = S3_LEGACY_DIR / "document_generation.json"
+S3_LEGACY_MERGE_SUMMARY = S3_LEGACY_DIR / "merge_summary.json"
 
 # ---------------------------------------------------------------------------
 # Output artifacts
@@ -72,5 +75,5 @@ DIFFICULTY_LEVELS = ["easy", "medium", "hard"]
 Q_MAIN_WEIGHTS = base_cfg.Q_MAIN_WEIGHTS
 
 HEADLINE_SYSTEMS = ["S1", "S2+R", "S3+R", "S7"]
-CONTROL_SYSTEMS = ["S2", "S3"]
+CONTROL_SYSTEMS = ["S2", "S3", "S3-legacy"]
 ALL_SYSTEMS = HEADLINE_SYSTEMS + CONTROL_SYSTEMS

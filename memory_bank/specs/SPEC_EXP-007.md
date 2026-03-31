@@ -1,47 +1,50 @@
 # SPEC: EXP-007 — Error Analysis + Cost/Quality/Grounding Trade-off
 
-**Systems:** S1, S2+R, S3+R, S2, S3 | **Class:** Analysis | **Wave:** 3 | **Depends on:** EXP-006 | **Blocks:** EXP-009 (conditional refresh only)
+**Systems:** S1, S2+R, S3+R, S7, S2, S3, S3-legacy (D2L) | **Class:** Analysis | **Wave:** 3 | **Depends on:** EXP-006 | **Blocks:** None
 
 ## Goal
 
-Consolidate mandatory-system results from EXP-002..006 into the default thesis tables and figures. Error analysis on system failures. Cost/quality/grounding trade-off analysis.
+Consolidate the final thesis tables and figures from completed experiments and perform error analysis.
 
-If EXP-008 later runs, EXP-009 owns the post-S6 refresh. EXP-007 itself must be completable without waiting for any later wave.
-
-This spec also owns the **practical winner call** between S2+R and S3+R: declare the final best practical hybrid only as a reporting conclusion, never as a new independently validated system.
+This spec owns:
+- practical winner call between S2+R and S3+R,
+- explicit post-hoc impact block for S7,
+- mandatory legacy control visibility for S3-legacy (D2L).
 
 No fresh inference — reuse existing artifacts only.
 
 ## Analysis Steps
 
-1. **Consolidate mandatory results** from EXP-002..006. S2/S2+R: use mean ± std across 3 seeds.
-2. **Error categorization:** label failures by type (see protocol below)
-3. **Cost/quality scatter:** offline packaging cost (x) vs Q_main (y) per system
-4. **Per-type breakdown:** S_det per answer_type per system (heatmap)
-5. **Grounding analysis:** G per system (S1, S2+R, S3+R); latency vs G scatter
-6. **Practical winner call:** compare S2+R vs S3+R on Q_main, grounding, latency, and offline packaging cost; either name the final best practical hybrid or explicitly state that the trade-off is ambiguous.
+1. **Consolidate results** from EXP-002..006 (+ S7 from EXP-010 and D2L legacy row from EXP-004 report).
+2. **Error categorization:** label failures by type.
+3. **Cost/quality scatter:** offline packaging cost (x) vs Q_main (y) per system.
+4. **Per-type breakdown:** score profile by answer_type per system.
+5. **Grounding analysis:** G per retrieval-aware system (S1, S2+R, S3+R, S7).
+6. **Practical winner call:** compare S2+R vs S3+R on Q_main, G, latency, and offline cost.
+7. **Post-hoc block:** quantify S7 deltas vs S1/S2+R/S3+R and state non-retraining caveat.
 
 ## Error Analysis Protocol
 
-Hypotheses for manual inspection (verify each manually — not deterministic labels):
-- Questions ALL systems got wrong → hypothesis: ambiguous, too hard, or goldset issue
-- Questions ONLY S1 got right → hypothesis: retrieval-critical; parametric systems lack this info
-- Questions ONLY S2+R got right → hypothesis: supervised adapter gave an edge; check if answer was in training set
-- Questions ONLY S3+R got right → hypothesis: CLM document exposure helped where RAFT didn't
-- S1 vs S6 belongs to EXP-009 manual refresh scope if EXP-008 is triggered
+Hypotheses for manual inspection:
+- Questions all systems got wrong → ambiguous/hard/goldset issue
+- Questions only S1 got right → retrieval-critical
+- Questions only S2+R got right → supervised RAFT edge
+- Questions only S3+R got right → CLM exposure edge
+- Questions only S7 got right → merge-level complementarity effect
 
-Manually inspect top-5 worst failures per headline system (S1, S2+R, S3+R). Document: question text, expected answer, system answer, likely failure cause.
+Manually inspect top-5 worst failures per headline family (S1, S2+R, S3+R, S7).
 
 ## Key Outputs
 
 | Output | Content |
 |--------|---------|
-| Table A | Final comparison: headline systems (S1, S2+R, S3+R) × all metrics |
-| Table B | Controls (S2, S3) — parametric limits |
-| Table C | Per answer_type S_det heatmap (all systems) |
+| Table A | Final comparison: headline + post-hoc (S1, S2+R, S3+R, S7) |
+| Table B | Controls table including S2, S3, S3-legacy (D2L) |
+| Table C | Per answer_type score heatmap (all systems) |
 | Table D | Cost/quality/grounding trade-off: packaging cost, Q_main, G, latency |
-| Callout | Final best practical hybrid: S2+R or S3+R, or "no single winner" |
-| `error_analysis.md` | Categorized failures, top-5 per headline system |
+| Callout | Practical winner call between S2+R and S3+R (or no single winner) |
+| Block | S7 post-hoc impact summary with caveats |
+| `error_analysis.md` | Categorized failures, top-5 per headline family |
 
 ## Output
 
@@ -50,16 +53,17 @@ Manually inspect top-5 worst failures per headline system (S1, S2+R, S3+R). Docu
 - `results/figures/main_results_table.png`
 - `results/figures/cost_quality_scatter.png`
 - `results/figures/per_type_heatmap.png`
-- `experiments/EXP-007/REPORT.md`
+- `experiments/EXP-007_error_analysis/REPORT.md`
 
 ## Definition of Done
 
-- [ ] `consolidated_results.csv` has all mandatory systems (S1, S2+R, S3+R, S2, S3) × all metrics
-- [ ] Error analysis: top-5 worst failures per headline system documented in `error_analysis.md`
-- [ ] Error hypotheses from spec checked (all wrong, only S1 right, only S2+R right, etc.)
-- [ ] Cost/quality/grounding scatter generated (`cost_quality_scatter.png`)
-- [ ] Per-type heatmap generated (`per_type_heatmap.png`)
-- [ ] Tables A–D present in REPORT.md for the mandatory system set
-- [ ] REPORT.md states the final best practical hybrid call between S2+R and S3+R, or explicitly states that no single winner exists
-- [ ] All results committed to git
-- [ ] `experiments/EXP-007/REPORT.md` written with final conclusions and mandatory caveats
+- [x] `consolidated_results.csv` includes S1, S2+R, S3+R, S7, S2, S3, S3-legacy
+- [x] Legacy control row S3-legacy (D2L) present in control tables/narrative
+- [x] Error analysis documented in `error_analysis.md`
+- [x] Cost/quality/grounding scatter generated
+- [x] Per-type heatmap generated
+- [x] Tables A–D present in REPORT.md
+- [x] Practical winner call between S2+R and S3+R explicitly stated
+- [x] S7 post-hoc impact block included with non-retraining caveat
+- [x] Results committed to git
+- [x] `experiments/EXP-007_error_analysis/REPORT.md` written

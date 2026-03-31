@@ -40,6 +40,13 @@ S2_RESULTS_DIR = base_cfg.RESULTS_DIR / "EXP-003b"
 S3_AGGREGATE = base_cfg.RESULTS_DIR / "EXP-004_clm" / "aggregate_summary.json"
 S3_RESULTS_DIR = base_cfg.RESULTS_DIR / "EXP-004_clm"
 
+# S3-legacy (D2L) — single run, EXP-004
+S3_LEGACY_EVAL_REPORT = base_cfg.RESULTS_DIR / "EXP-004" / "eval_report.json"
+S3_LEGACY_EVAL_RESULTS = base_cfg.RESULTS_DIR / "EXP-004" / "eval_results.json"
+S3_LEGACY_SYSTEMS_METRICS = base_cfg.RESULTS_DIR / "EXP-004" / "systems_metrics.json"
+S3_LEGACY_DOC_GENERATION = base_cfg.RESULTS_DIR / "EXP-004" / "document_generation.json"
+S3_LEGACY_MERGE_SUMMARY = base_cfg.RESULTS_DIR / "EXP-004" / "merge_summary.json"
+
 # S7 — 3 seeds, EXP-010 adapter merge
 S7_AGGREGATE = base_cfg.RESULTS_DIR / "EXP-010" / "alpha_0.5" / "aggregate_summary.json"
 S7_RESULTS_DIR = base_cfg.RESULTS_DIR / "EXP-010" / "alpha_0.5"
@@ -67,5 +74,5 @@ ANSWER_TYPES = ["boolean", "number", "name", "names", "date", "free_text"]
 DETERMINISTIC_TYPES = ["boolean", "number", "name", "names", "date"]
 
 HEADLINE_SYSTEMS = ["S1", "S2+R", "S3+R", "S7"]
-CONTROL_SYSTEMS = ["S2", "S3"]
+CONTROL_SYSTEMS = ["S2", "S3", "S3-legacy"]
 SYSTEMS_ORDER = HEADLINE_SYSTEMS + CONTROL_SYSTEMS

@@ -4,7 +4,7 @@
 
 ## Scope
 
-- Consolidation includes S1, S2+R, S3+R, S7, S2, S3.
+- Consolidation includes S1, S2+R, S3+R, S7, S2, S3, S3-legacy (D2L from EXP-004).
 - S6 (Naive RAG) intentionally excluded from this refresh.
 
 ## Practical Winner Call (S2+R vs S3+R)
@@ -23,6 +23,17 @@
 
 - S7 reaches `Q_main=0.7045`, best among all included systems.
 - Relative to S2+R: `ΔQ_main=+0.0356`, `ΔS_det=+0.0310`, `ΔS_asst=+0.0462`.
+
+## Control Systems (with Legacy Anchor)
+
+| System | Q_main | S_det | S_asst | Offline cost (s) |
+|--------|--------|-------|--------|------------------|
+| S2 | 0.263 | 0.270 | 0.246 | 87.9 |
+| S3 | 0.185 | 0.135 | 0.303 | 581.4 |
+| S3-legacy (D2L) | 0.210 | 0.135 | 0.385 | 3932.3 |
+
+- ΔQ_main (S3 - S3-legacy): -0.0246.
+- ΔQ_main (S3+R - S3-legacy): +0.4571.
 
 ## Error Analysis
 

@@ -104,6 +104,31 @@ def _extract_breakdown_scores(raw_breakdown: dict[str, Any]) -> dict[str, float]
     return scores
 
 
+def _extract_peak_infer_vram(systems_metrics: dict[str, Any]) -> float | None:
+    for key in ("peak_vram_mb", "peak_infer_vram_mb"):
+        value = _extract_float(systems_metrics.get(key))
+        if value is not None:
+            return value
+    return None
+
+
+def _load_d2l_offline_cost_seconds() -> float:
+    total_seconds = 0.0
+    if exp_cfg.S3_LEGACY_DOC_GENERATION.exists():
+        generation_rows = load_json(exp_cfg.S3_LEGACY_DOC_GENERATION)
+        total_seconds += sum(
+            float(row.get("generation_seconds", 0.0))
+            for row in generation_rows
+            if isinstance(row, dict)
+        )
+    if exp_cfg.S3_LEGACY_MERGE_SUMMARY.exists():
+        merge_summary = load_json(exp_cfg.S3_LEGACY_MERGE_SUMMARY)
+        merge_seconds = _extract_float(merge_summary.get("merge_seconds"))
+        if merge_seconds is not None:
+            total_seconds += merge_seconds
+    return total_seconds
+
+
 def _load_seed_reports(results_dir: Path) -> list[dict[str, Any]]:
     reports: list[dict[str, Any]] = []
     for seed in exp_cfg.SEEDS:
@@ -126,9 +151,21 @@ def _load_seed_eval_results(results_dir: Path) -> list[list[dict[str, Any]]]:
     return eval_runs
 
 
-def _load_single_run(report_path: Path, system_id: str, system_class: str) -> SystemResult:
+def _load_single_run(
+    report_path: Path,
+    system_id: str,
+    system_class: str,
+    *,
+    systems_metrics_path: Path | None = None,
+    offline_cost_seconds: float = 0.0,
+) -> SystemResult:
     report = load_json(report_path)
-    systems_metrics = load_json(exp_cfg.S1_SYSTEMS_METRICS) if exp_cfg.S1_SYSTEMS_METRICS.exists() else {}
+    systems_metrics = (
+        load_json(systems_metrics_path)
+        if systems_metrics_path is not None and systems_metrics_path.exists()
+        else {}
+    )
+    peak_infer_vram = _extract_peak_infer_vram(systems_metrics)
     breakdown = _extract_breakdown_scores(report.get("breakdown_by_type", {}))
 
     return SystemResult(
@@ -150,11 +187,11 @@ def _load_single_run(report_path: Path, system_id: str, system_class: str) -> Sy
         latency_median_std=0.0,
         latency_p95_ms=_extract_float(report.get("latency_p95_ms")),
         latency_p95_std=0.0,
-        peak_infer_vram_mb=_extract_float(systems_metrics.get("peak_vram_mb")),
-        peak_infer_vram_std=0.0 if systems_metrics.get("peak_vram_mb") is not None else None,
+        peak_infer_vram_mb=peak_infer_vram,
+        peak_infer_vram_std=0.0 if peak_infer_vram is not None else None,
         peak_train_vram_mb=None,
         peak_train_vram_std=None,
-        offline_cost_seconds=0.0,
+        offline_cost_seconds=offline_cost_seconds,
         offline_cost_std=0.0,
         malformed_rate=_extract_float(report.get("malformed_rate")),
         malformed_rate_std=0.0,
@@ -216,12 +253,24 @@ def _load_aggregate(agg_path: Path, results_dir: Path, system_id: str, system_cl
 
 def collect_all() -> dict[str, SystemResult]:
     results: dict[str, SystemResult] = {}
-    results["S1"] = _load_single_run(exp_cfg.S1_EVAL_REPORT, "S1", "Headline")
+    results["S1"] = _load_single_run(
+        exp_cfg.S1_EVAL_REPORT,
+        "S1",
+        "Headline",
+        systems_metrics_path=exp_cfg.S1_SYSTEMS_METRICS,
+    )
     results["S2+R"] = _load_aggregate(exp_cfg.S2R_AGGREGATE, exp_cfg.S2R_RESULTS_DIR, "S2+R", "Headline")
     results["S3+R"] = _load_aggregate(exp_cfg.S3R_AGGREGATE, exp_cfg.S3R_RESULTS_DIR, "S3+R", "Headline")
     results["S7"] = _load_aggregate(exp_cfg.S7_AGGREGATE, exp_cfg.S7_RESULTS_DIR, "S7", "Post-hoc")
     results["S2"] = _load_aggregate(exp_cfg.S2_AGGREGATE, exp_cfg.S2_RESULTS_DIR, "S2", "Control")
     results["S3"] = _load_aggregate(exp_cfg.S3_AGGREGATE, exp_cfg.S3_RESULTS_DIR, "S3", "Control")
+    results["S3-legacy"] = _load_single_run(
+        exp_cfg.S3_LEGACY_EVAL_REPORT,
+        "S3-legacy",
+        "Control",
+        systems_metrics_path=exp_cfg.S3_LEGACY_SYSTEMS_METRICS,
+        offline_cost_seconds=_load_d2l_offline_cost_seconds(),
+    )
     log.info("Collected %d systems", len(results))
     return results
 
@@ -368,6 +417,7 @@ def _collect_eval_runs_by_system() -> dict[str, list[list[dict[str, Any]]]]:
         "S7": _load_seed_eval_results(exp_cfg.S7_RESULTS_DIR),
         "S2": _load_seed_eval_results(exp_cfg.S2_RESULTS_DIR),
         "S3": _load_seed_eval_results(exp_cfg.S3_RESULTS_DIR),
+        "S3-legacy": [load_json(exp_cfg.S3_LEGACY_EVAL_RESULTS)],
     }
 
 
@@ -432,6 +482,8 @@ def compute_deltas(results: dict[str, SystemResult]) -> dict[str, dict[str, floa
         ("S7_vs_S3+R", "S7", "S3+R"),
         ("S2+R_vs_S2", "S2+R", "S2"),
         ("S3+R_vs_S3", "S3+R", "S3"),
+        ("S3_vs_S3-legacy", "S3", "S3-legacy"),
+        ("S3+R_vs_S3-legacy", "S3+R", "S3-legacy"),
     ]
     deltas: dict[str, dict[str, float]] = {}
     for label, a, b in pairs:
@@ -502,7 +554,7 @@ def write_report(
         "",
         "## Scope",
         "",
-        "- Systems: S1, S2+R, S3+R, S7 (post-hoc from EXP-010), S2, S3.",
+        "- Systems: S1, S2+R, S3+R, S7 (post-hoc from EXP-010), S2, S3, S3-legacy (D2L).",
         "- S6 (Naive RAG) is intentionally excluded from EXP-006 outputs.",
         "",
         "## Table 1: Unified System Metrics",
@@ -580,6 +632,10 @@ def write_report(
         f"- Retrieval contribution stays dominant: "
         f"S2→S2+R {deltas['S2+R_vs_S2']['Q_main']:+.4f}, "
         f"S3→S3+R {deltas['S3+R_vs_S3']['Q_main']:+.4f}.",
+        f"- Legacy D2L anchor shows stronger no-retrieval baseline than S3: "
+        f"S3-S3-legacy {deltas['S3_vs_S3-legacy']['Q_main']:+.4f}, "
+        f"while retrieval-adapted S3+R regains a large margin over legacy "
+        f"({deltas['S3+R_vs_S3-legacy']['Q_main']:+.4f}, Q_main).",
         "",
         "## Artifacts",
         "",
