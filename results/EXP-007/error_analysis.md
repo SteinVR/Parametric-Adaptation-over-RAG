@@ -1,72 +1,136 @@
 # Error Analysis
 
-- **All headlines wrong:** 13
-- **Only S1 correct:** 1 (retrieval-critical)
-- **Only S2+R correct:** 4 (supervised advantage)
-- **Only S3+R correct:** 0 (CLM advantage)
+- **All headline systems wrong (S1, S2+R, S3+R, S7):** 15
+- **Only S1 correct:** 2
+- **Only S2+R correct:** 0
+- **Only S3+R correct:** 2
+- **Only S7 correct:** 0
 
 ## Top-5 failures: S1
 
-**Q:** On what date did Bond commence these proceedings?
-- Type: date, Gold: 2023-03-09
-- System: 1993-03-09, Malformed: False
-
-**Q:** On what date was the order with reasons issued?
-- Type: date, Gold: 2026-01-21
-- System: 2025-07-22, Malformed: False
-
-**Q:** Name the two private-rule mechanisms that the two statutes treat as relevant to transaction processing or validity: one 
-- Type: names, Gold: ['Approved Form', 'Business Rules of an Authorised Market Institution']
-- System: ['Business Rules', 'endorsement or instruction'], Malformed: False
-
-**Q:** What legal principle did the Claimant rely on in support of the proposed cross-appeal?
-- Type: name, Gold: The Crabtree principle
-- System: Crabtree principle, Malformed: False
+**Q:** Who is the single judge common to both judgments?
+- Type: name, Difficulty: hard, Score: 0.000
+- Gold: null
+- System: [Not available]
+- Malformed: False
 
 **Q:** How many Parts are listed in the contents before Schedule 1?
-- Type: number, Gold: 8
-- System: 4, Malformed: False
+- Type: number, Difficulty: easy, Score: 0.000
+- Gold: 8
+- System: 4
+- Malformed: False
+
+**Q:** Does only one of the two statutes contain a substantive Digital Assets carve-out, while the other addresses only the medium of communication?
+- Type: boolean, Difficulty: hard, Score: 0.000
+- Gold: True
+- System: False
+- Malformed: False
+
+**Q:** On what date was the order with reasons issued?
+- Type: date, Difficulty: easy, Score: 0.000
+- Gold: 2026-01-21
+- System: 2025-07-22
+- Malformed: False
+
+**Q:** Name the seven approved forms promulgated in Regulation 2.3.1.
+- Type: names, Difficulty: medium, Score: 0.000
+- Gold: ['Financing Statement (Form 1)', 'Financing Statement Amendment - Encumbered Asset Change (Form 2)', 'Financing Statement Amendment - Encumbered Asset Restatement (Form 3)', 'Financing Statement Amendment (Form 4)', 'Financing Statement Amendment - Party Details (Form 5)', 'Correction Statement (Form 6)', 'Information Request (Form 7)']
+- System: ['Financing Statement', 'Financing Statement Amendment – Encumbered Asset Change', 'Financing Statement Amendment – Encumbered Asset Restatement', 'Financing Statement Amendment', 'Financing Statement Amendment – Party Details', 'Correction Statement', 'Information Request']
+- Malformed: False
 
 ## Top-5 failures: S2+R
 
-**Q:** Which two parties can a Reporting Financial Institution rely on for self-certification under Section IX B?
-- Type: names, Gold: ['Account Holder', 'Controlling Person']
-- System: ['Account Holder', 'Controlling Person of a Passive NFE'], Malformed: False
+**Q:** In one sentence, what is the main functional contrast between the two statutes?
+- Type: free_text, Difficulty: hard, Score: 0.000
+- Gold: The CRS regulations set reporting and due-diligence rules for financial accounts, while the partnership law governs formation, administration, and dissolution of general partnerships.
+- System: The Common Reporting Standard Regulations regulate financial institutions' reporting of cross-border financial transactions, while the Law on the Administration of the Law on the Administration of the Law on the Administration of the Law on the Administration of the Law on the Ad
+- Malformed: False
 
-**Q:** On what date was the order with reasons issued?
-- Type: date, Gold: 2026-01-21
-- System: 2025-03-19, Malformed: False
-
-**Q:** Name the two private-rule mechanisms that the two statutes treat as relevant to transaction processing or validity: one 
-- Type: names, Gold: ['Approved Form', 'Business Rules of an Authorised Market Institution']
-- System: ['Specific performance', 'Transfer of title to property'], Malformed: False
-
-**Q:** What legal principle did the Claimant rely on in support of the proposed cross-appeal?
-- Type: name, Gold: The Crabtree principle
-- System: Crabtree principle, Malformed: False
+**Q:** Who is the single judge common to both judgments?
+- Type: name, Difficulty: hard, Score: 0.000
+- Gold: null
+- System: Mr Ori
+- Malformed: False
 
 **Q:** How many Parts are listed in the contents before Schedule 1?
-- Type: number, Gold: 8
-- System: 4, Malformed: False
+- Type: number, Difficulty: easy, Score: 0.000
+- Gold: 8
+- System: 4
+- Malformed: False
+
+**Q:** Which organization’s explanatory material is integral to the Common Reporting Standard for these Regulations?
+- Type: name, Difficulty: easy, Score: 0.000
+- Gold: OECD
+- System: OECD explanatory material on the Common Reporting Standard
+- Malformed: False
+
+**Q:** On what date was the order with reasons issued?
+- Type: date, Difficulty: easy, Score: 0.000
+- Gold: 2026-01-21
+- System: 2025-03-19
+- Malformed: False
 
 ## Top-5 failures: S3+R
 
-**Q:** On what date was the order with reasons issued?
-- Type: date, Gold: 2026-01-21
-- System: 2025-08-08, Malformed: False
-
-**Q:** Name the two private-rule mechanisms that the two statutes treat as relevant to transaction processing or validity: one 
-- Type: names, Gold: ['Approved Form', 'Business Rules of an Authorised Market Institution']
-- System: ['Authorised Market Institution', 'Authorised person'], Malformed: False
-
-**Q:** What legal principle did the Claimant rely on in support of the proposed cross-appeal?
-- Type: name, Gold: The Crabtree principle
-- System: Crabtree principle, Malformed: False
+**Q:** Who is the single judge common to both judgments?
+- Type: name, Difficulty: hard, Score: 0.000
+- Gold: null
+- System: Judge
+- Malformed: False
 
 **Q:** How many Parts are listed in the contents before Schedule 1?
-- Type: number, Gold: 8
-- System: 4, Malformed: False
+- Type: number, Difficulty: easy, Score: 0.000
+- Gold: 8
+- System: 4
+- Malformed: False
 
-**Q:** What was the name of the agreement under which the Claimant provided marketing and branding services?
-- Type: name, Gold: 10-year Partnership and Services Agreement
-- System: Partnership and Services Agreement, Malformed: False
+**Q:** Does only one of the two statutes contain a substantive Digital Assets carve-out, while the other addresses only the medium of communication?
+- Type: boolean, Difficulty: hard, Score: 0.000
+- Gold: True
+- System: False
+- Malformed: False
+
+**Q:** On what date was the order with reasons issued?
+- Type: date, Difficulty: easy, Score: 0.000
+- Gold: 2026-01-21
+- System: 2025-08-08
+- Malformed: False
+
+**Q:** Name the seven approved forms promulgated in Regulation 2.3.1.
+- Type: names, Difficulty: medium, Score: 0.000
+- Gold: ['Financing Statement (Form 1)', 'Financing Statement Amendment - Encumbered Asset Change (Form 2)', 'Financing Statement Amendment - Encumbered Asset Restatement (Form 3)', 'Financing Statement Amendment (Form 4)', 'Financing Statement Amendment - Party Details (Form 5)', 'Correction Statement (Form 6)', 'Information Request (Form 7)']
+- System: ['Financing Statement', 'Financing Statement Amendment – Encumbered Asset Change', 'Financing Statement Amendment – Encumbered Asset Restatement', 'Financing Statement Amendment', 'Financing Statement Amendment – Party Details', 'Correction Statement', 'Information Request', 'Information Request']
+- Malformed: False
+
+## Top-5 failures: S7
+
+**Q:** In one sentence, what is the main functional contrast between the two statutes?
+- Type: free_text, Difficulty: hard, Score: 0.000
+- Gold: The CRS regulations set reporting and due-diligence rules for financial accounts, while the partnership law governs formation, administration, and dissolution of general partnerships.
+- System: The Common Reporting Standard Regulations require reporting financial institutions to collect and report information on certain financial accounts, while the Law provides for the examination of persons outside the jurisdiction to enforce judgments.
+- Malformed: False
+
+**Q:** Who is the single judge common to both judgments?
+- Type: name, Difficulty: hard, Score: 0.000
+- Gold: null
+- System: Mr. Justice David O'Connor
+- Malformed: False
+
+**Q:** How many Parts are listed in the contents before Schedule 1?
+- Type: number, Difficulty: easy, Score: 0.000
+- Gold: 8
+- System: 4
+- Malformed: False
+
+**Q:** On what date was the order with reasons issued?
+- Type: date, Difficulty: easy, Score: 0.000
+- Gold: 2026-01-21
+- System: 2025-03-19
+- Malformed: False
+
+**Q:** Name the seven approved forms promulgated in Regulation 2.3.1.
+- Type: names, Difficulty: medium, Score: 0.000
+- Gold: ['Financing Statement (Form 1)', 'Financing Statement Amendment - Encumbered Asset Change (Form 2)', 'Financing Statement Amendment - Encumbered Asset Restatement (Form 3)', 'Financing Statement Amendment (Form 4)', 'Financing Statement Amendment - Party Details (Form 5)', 'Correction Statement (Form 6)', 'Information Request (Form 7)']
+- System: ['Financing Statement', 'Financing Statement Amendment - Encumbered Asset Change', 'Financing Statement Amendment - Encumbered Asset Restatement', 'Financing Statement Amendment', 'Financing Statement Amendment - Party Details', 'Correction Statement', 'Information Request', 'Information Request']
+- Malformed: False
+
