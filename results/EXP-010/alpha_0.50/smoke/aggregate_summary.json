@@ -1,0 +1,107 @@
+{
+  "Q_main": {
+    "mean": 1.0,
+    "std": 0.0
+  },
+  "S_det": {
+    "mean": 1.0,
+    "std": 0.0
+  },
+  "S_asst": {
+    "mean": 1.0,
+    "std": 0.0
+  },
+  "G_f_beta": {
+    "mean": 0.4393939393939394,
+    "std": 0.0
+  },
+  "train_time_seconds": {
+    "mean": 0.0,
+    "std": 0.0
+  },
+  "peak_infer_vram_mb": {
+    "mean": 3063.85595703125,
+    "std": 0.0
+  },
+  "delta_vs_s1": {
+    "Q_main": 0.3575155925155925,
+    "S_det": 0.3986486486486487,
+    "S_asst": 0.2615384615384615,
+    "G_f_beta": -0.12728461599429336
+  },
+  "seed_results": [
+    {
+      "seed": 42,
+      "q_main": 1.0,
+      "s_det": 1.0,
+      "s_asst": 1.0,
+      "grounding_f_beta": 0.4393939393939394,
+      "train_time_seconds": 0.0,
+      "peak_train_vram_mb": null,
+      "peak_infer_vram_mb": 3063.85595703125,
+      "breakdown_by_type": {
+        "free_text": {
+          "count": 1.0,
+          "s_asst_mean": 1.0,
+          "grounding_f_beta_mean": 0.8787878787878788,
+          "malformed_rate": 0.0
+        },
+        "date": {
+          "count": 1.0,
+          "s_det_mean": 1.0,
+          "grounding_f_beta_mean": 0.0,
+          "malformed_rate": 0.0
+        }
+      }
+    }
+  ],
+  "breakdown_by_type": {
+    "free_text": {
+      "count": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "s_asst_mean": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "grounding_f_beta_mean": {
+        "mean": 0.8787878787878788,
+        "std": 0.0
+      },
+      "malformed_rate": {
+        "mean": 0.0,
+        "std": 0.0
+      }
+    },
+    "date": {
+      "count": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "s_det_mean": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "grounding_f_beta_mean": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "malformed_rate": {
+        "mean": 0.0,
+        "std": 0.0
+      }
+    }
+  },
+  "merge_alpha": 0.5,
+  "delta_vs_s2r": {
+    "Q_main": 0.3310591968486706,
+    "S_det": 0.3520625889046942,
+    "S_asst": 0.28205128205128205
+  },
+  "delta_vs_s3r": {
+    "Q_main": 0.33293832293832293,
+    "S_det": 0.4009009009009009,
+    "S_asst": 0.1743589743589743
+  }
+}

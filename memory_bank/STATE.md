@@ -25,6 +25,7 @@
 | 2026-03-31 | CLM hyperparams tuned | LR=5e-5, epochs=5, warmup=0.1, seq_len=512 |
 | 2026-03-31 | EXP-008 run by user request | S6 ablation despite trigger not met |
 | 2026-03-31 | Practical winner: no single winner | S2+R wins S_det, S3+R wins S_asst. Trade-off is genuine. |
+| 2026-03-31 | Adapter merge α=0.5, no retraining | 50/50 CLM+RAFT merge beats both headlines. New best Q_main. |
 
 ## System Readiness
 
@@ -36,6 +37,7 @@
 | S2 | Control | **Done** | 0.263±0.005 |
 | S3 | Control | **Done** | 0.185±0.003 |
 | S6 | Ablation | **Done** | 0.6335 |
+| S7 (merged) | Post-hoc | **Done** | 0.705±0.035 |
 
 ## Experiment History
 
@@ -51,6 +53,7 @@
 | EXP-006 | 2026-03-31 | Done | Main comparison. Tables, deltas, hypotheses. |
 | EXP-007 | 2026-03-31 | Done | Error analysis, figures, practical winner call. |
 | EXP-008 | 2026-03-31 | Done | S6 naive dense. Q_main=0.634. Δ(S1)=−0.009. |
+| EXP-010 | 2026-03-31 | Done | S7 adapter merge (0.5×CLM+0.5×RAFT). Q_main=0.705±0.035. New best. |
 
 ## Known Issues
 

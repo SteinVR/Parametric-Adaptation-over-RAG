@@ -1,0 +1,61 @@
+{
+  "system_id": "S7_merged",
+  "experiment_id": "EXP-010",
+  "question_scores": [
+    {
+      "question_id": "1d356814de25d5623275b9b1de2113fcebf2002ff4199294cdaaf10641257242",
+      "answer_type": "free_text",
+      "difficulty": "medium",
+      "is_unanswerable": false,
+      "s_det": null,
+      "s_asst": 1.0,
+      "judge_criteria": {
+        "correctness": 1,
+        "completeness": 1,
+        "grounding": 1,
+        "calibration": 1,
+        "clarity": 1
+      },
+      "grounding_precision": 0.5,
+      "grounding_recall": 1.0,
+      "grounding_f_beta": 0.8787878787878788,
+      "is_malformed": false
+    },
+    {
+      "question_id": "f2366d2d2cc2a2dab585b0c6681b04fcb1af8b46422c4fbe6a9126ae56c6fe8a",
+      "answer_type": "date",
+      "difficulty": "easy",
+      "is_unanswerable": false,
+      "s_det": 1.0,
+      "s_asst": null,
+      "judge_criteria": null,
+      "grounding_precision": 0.0,
+      "grounding_recall": 0.0,
+      "grounding_f_beta": 0.0,
+      "is_malformed": false
+    }
+  ],
+  "q_main": 1.0,
+  "s_det": 1.0,
+  "s_asst": 1.0,
+  "grounding_f_beta": 0.4393939393939394,
+  "breakdown_by_type": {
+    "free_text": {
+      "count": 1.0,
+      "s_asst_mean": 1.0,
+      "grounding_f_beta_mean": 0.8787878787878788,
+      "malformed_rate": 0.0
+    },
+    "date": {
+      "count": 1.0,
+      "s_det_mean": 1.0,
+      "grounding_f_beta_mean": 0.0,
+      "malformed_rate": 0.0
+    }
+  },
+  "ttft_median_ms": 359.2830984998727,
+  "ttft_p95_ms": 297.5255789997391,
+  "latency_median_ms": 728.3269165000092,
+  "latency_p95_ms": 677.4289549998684,
+  "malformed_rate": 0.0
+}

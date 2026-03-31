@@ -1,0 +1,44 @@
+[
+  {
+    "question_id": "f2366d2d2cc2a2dab585b0c6681b04fcb1af8b46422c4fbe6a9126ae56c6fe8a",
+    "raw_output": "2023-03-09",
+    "parsed_answer": "2023-03-09",
+    "answer_type": "date",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 3
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 10
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 19
+      }
+    ],
+    "ttft_ms": 421.04061800000636,
+    "latency_ms": 779.22487800015
+  },
+  {
+    "question_id": "1d356814de25d5623275b9b1de2113fcebf2002ff4199294cdaaf10641257242",
+    "raw_output": "The General Partnership is liable to make good the loss.",
+    "parsed_answer": "The General Partnership is liable to make good the loss.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 2
+      },
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 11
+      }
+    ],
+    "ttft_ms": 297.5255789997391,
+    "latency_ms": 677.4289549998684
+  }
+]

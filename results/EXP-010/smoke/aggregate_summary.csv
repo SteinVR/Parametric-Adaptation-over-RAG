@@ -1,0 +1,7 @@
+metric,mean,std
+Q_main,1.0,0.0
+S_det,1.0,0.0
+S_asst,1.0,0.0
+G_f_beta,0.4393939393939394,0.0
+train_time_seconds,0.0,0.0
+peak_infer_vram_mb,3063.85595703125,0.0

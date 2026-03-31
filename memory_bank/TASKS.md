@@ -22,6 +22,9 @@
 ### Wave 4: Ablation
 - [x] EXP-008 — S6 naive dense RAG (run by user request) ([spec](./specs/SPEC_EXP-008.md))
 
+### Wave 5: Post-hoc
+- [x] EXP-010 — S7 adapter merge (0.5×CLM + 0.5×RAFT), eval-only, no retraining
+
 ### Not triggered
 - ~~EXP-009 — Refresh with S6~~ (S6 results integrated directly in EXP-006/007)
 

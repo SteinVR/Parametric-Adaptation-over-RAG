@@ -5,7 +5,9 @@ from __future__ import annotations
 import argparse
 import gc
 import importlib.util
+import json
 import logging
+import math
 import os
 import sys
 from datetime import datetime, timezone
@@ -172,13 +174,17 @@ def main() -> None:
     args = parser.parse_args()
 
     alpha = args.alpha if args.alpha is not None else exp_cfg.MERGE_ALPHA
+    if not (0.0 <= alpha <= 1.0) or math.isnan(alpha):
+        raise ValueError(f"alpha must be in [0, 1], got {alpha}")
+
     selected_seeds = _resolve_seeds(args.seed, args.smoke)
+    alpha_tag = f"alpha_{round(alpha, 4)}"
     logger.info(
-        "=== EXP-010 start === mode=%s, seeds=%s, alpha=%.2f",
-        "smoke" if args.smoke else "full", selected_seeds, alpha,
+        "=== EXP-010 start === mode=%s, seeds=%s, alpha=%s",
+        "smoke" if args.smoke else "full", selected_seeds, alpha_tag,
     )
 
-    # Verify adapters exist
+    # Verify adapters exist and configs are compatible (every seed)
     for seed in selected_seeds:
         clm_dir = exp_cfg.CLM_MODELS_DIR / f"seed_{seed}"
         raft_dir = exp_cfg.RAFT_MODELS_DIR / f"seed_{seed}"
@@ -186,6 +192,7 @@ def main() -> None:
             raise FileNotFoundError(f"CLM adapter not found: {clm_dir}")
         if not raft_dir.exists():
             raise FileNotFoundError(f"RAFT adapter not found: {raft_dir}")
+        _verify_adapter_compatibility(clm_dir, raft_dir)
 
     # ── Phase 1: Retrieval (cached once) ──
     logger.info("── Phase 1: Running S1 retrieval pipeline on eval questions ──")
@@ -214,7 +221,7 @@ def main() -> None:
     for seed in selected_seeds:
         clm_dir = exp_cfg.CLM_MODELS_DIR / f"seed_{seed}"
         raft_dir = exp_cfg.RAFT_MODELS_DIR / f"seed_{seed}"
-        result_dir = exp_cfg.RESULTS_DIR / ("smoke" if args.smoke else f"seed_{seed}")
+        result_dir = exp_cfg.RESULTS_DIR / alpha_tag / ("smoke" if args.smoke else f"seed_{seed}")
 
         _free_gpu()
         logger.info(
@@ -295,11 +302,12 @@ def main() -> None:
                 "S_asst": aggregate_summary["S_asst"]["mean"] - s3r_agg["S_asst"]["mean"],
             }
 
+        agg_dir = exp_cfg.RESULTS_DIR / alpha_tag
         if args.smoke:
-            save_seed_aggregate(aggregate_summary, exp_cfg.RESULTS_DIR / "smoke")
+            save_seed_aggregate(aggregate_summary, agg_dir / "smoke")
         else:
-            save_seed_aggregate(aggregate_summary, exp_cfg.RESULTS_DIR)
-            _write_report(aggregate_summary, alpha)
+            save_seed_aggregate(aggregate_summary, agg_dir)
+            _write_report(aggregate_summary, alpha, agg_dir)
 
 
 def _load_eval_refs(limit: int | None) -> list[dict]:
@@ -318,7 +326,7 @@ def _resolve_seeds(seed: int | None, smoke: bool) -> list[int]:
     return list(exp_cfg.TRAIN_SEEDS)
 
 
-def _write_report(summary: dict, alpha: float) -> None:
+def _write_report(summary: dict, alpha: float, agg_dir: Path) -> None:
     seed_results = summary["seed_results"]
     delta_s1 = summary["delta_vs_s1"]
     delta_s2r = summary.get("delta_vs_s2r")
@@ -351,7 +359,7 @@ def _write_report(summary: dict, alpha: float) -> None:
         if metric is None:
             continue
         lines.append(f"- {metric_name}: {metric['mean']:.4f} ± {metric['std']:.4f}")
-    g = summary.get("grounding_f_beta")
+    g = summary.get("G_f_beta")
     if g:
         lines.append(f"- G (F_β=2.5): {g['mean']:.4f} ± {g['std']:.4f}")
 
@@ -415,11 +423,28 @@ def _write_report(summary: dict, alpha: float) -> None:
         "",
         "## 7. Artifacts",
         "",
-        f"- Aggregate summary: `{exp_cfg.RESULTS_DIR / 'aggregate_summary.json'}`",
-        f"- Seed outputs: `{exp_cfg.RESULTS_DIR}`",
+        f"- Aggregate summary: `{agg_dir / 'aggregate_summary.json'}`",
+        f"- Seed outputs: `{agg_dir}`",
     ])
     exp_cfg.REPORT_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
     logger.info("Report written to %s", exp_cfg.REPORT_PATH)
+
+
+def _verify_adapter_compatibility(clm_dir: Path, raft_dir: Path) -> None:
+    """Check that CLM and RAFT adapters share rank, target modules, and backbone."""
+    clm_cfg = json.loads((clm_dir / "adapter_config.json").read_text())
+    raft_cfg = json.loads((raft_dir / "adapter_config.json").read_text())
+    checks = ["r", "target_modules", "base_model_name_or_path"]
+    mismatches = [
+        f"  {k}: CLM={clm_cfg.get(k)} vs RAFT={raft_cfg.get(k)}"
+        for k in checks
+        if clm_cfg.get(k) != raft_cfg.get(k)
+    ]
+    if mismatches:
+        raise ValueError(
+            "Adapter configs are incompatible:\n" + "\n".join(mismatches)
+        )
+    logger.info("Adapter compatibility OK (rank=%s, targets=%s)", clm_cfg["r"], clm_cfg["target_modules"])
 
 
 def _free_gpu() -> None:

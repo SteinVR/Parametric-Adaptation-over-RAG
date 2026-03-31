@@ -1,0 +1,1056 @@
+[
+  {
+    "question_id": "f2366d2d2cc2a2dab585b0c6681b04fcb1af8b46422c4fbe6a9126ae56c6fe8a",
+    "raw_output": "2023-03-09",
+    "parsed_answer": "2023-03-09",
+    "answer_type": "date",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 3
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 10
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 19
+      }
+    ],
+    "ttft_ms": 357.8180059994338,
+    "latency_ms": 709.1723260000435
+  },
+  {
+    "question_id": "1d356814de25d5623275b9b1de2113fcebf2002ff4199294cdaaf10641257242",
+    "raw_output": "The General Partnership is liable to make good the loss.",
+    "parsed_answer": "The General Partnership is liable to make good the loss.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 2
+      },
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 11
+      }
+    ],
+    "ttft_ms": 303.78852099966025,
+    "latency_ms": 690.5779489998167
+  },
+  {
+    "question_id": "bf7e0ebf84229c956c1154a4d1386ed4b887fc9fc8191ef518ece6c115d182db",
+    "raw_output": "That the transferee acquires title to the property at the time of the gift unless a contrary intention is proved.",
+    "parsed_answer": "That the transferee acquires title to the property at the time of the gift unless a contrary intention is proved.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "536bbce854b9406cc22697e04fcdabd645e030c0e55b918252643b00e0b2b25f",
+        "page_number": 5
+      }
+    ],
+    "ttft_ms": 599.207731000206,
+    "latency_ms": 1384.3093810000937
+  },
+  {
+    "question_id": "40d44b27dfc1a92be0df9d8909bdadeece97c7390798beebcbdca6fe87e88f35",
+    "raw_output": "[\"Account Holder\", \"Controlling Person of a Passive NFE\"]",
+    "parsed_answer": [
+      "Account Holder",
+      "Controlling Person of a Passive NFE"
+    ],
+    "answer_type": "names",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "04be93255ec4b88e6e6c65c8e9335e10729723c2637452f3ad66d5b3dbe87513",
+        "page_number": 9
+      },
+      {
+        "doc_id": "04be93255ec4b88e6e6c65c8e9335e10729723c2637452f3ad66d5b3dbe87513",
+        "page_number": 11
+      },
+      {
+        "doc_id": "04be93255ec4b88e6e6c65c8e9335e10729723c2637452f3ad66d5b3dbe87513",
+        "page_number": 24
+      }
+    ],
+    "ttft_ms": 1078.2447999999931,
+    "latency_ms": 1078.2447999999931
+  },
+  {
+    "question_id": "bd861029417eaa91fb3a4b5fe64189b8c6133fc9a8d9231c1ab8537749fb58cd",
+    "raw_output": "true",
+    "parsed_answer": true,
+    "answer_type": "boolean",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 5
+      },
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 6
+      },
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 13
+      }
+    ],
+    "ttft_ms": 328.56638399971416,
+    "latency_ms": 328.56638399971416
+  },
+  {
+    "question_id": "5d94b33f61bae17b9fc3bf1448b9a352a89cf879fd47cc423c385e5bd11942ed",
+    "raw_output": "The court found that there was no evidence that the rescoped works differed from the descoped works, and that Bond was entitled to assert no credit should be allowed.",
+    "parsed_answer": "The court found that there was no evidence that the rescoped works differed from the descoped works, and that Bond was entitled to assert no credit should be allowed.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 17
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 22
+      }
+    ],
+    "ttft_ms": 567.209876000561,
+    "latency_ms": 1768.550869000137
+  },
+  {
+    "question_id": "7710644a88fa1b4492a462d0527ca39733db6a1219ba05b957b9ea814ed0fe89",
+    "raw_output": "20",
+    "parsed_answer": 20,
+    "answer_type": "number",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "04be93255ec4b88e6e6c65c8e9335e10729723c2637452f3ad66d5b3dbe87513",
+        "page_number": 13
+      }
+    ],
+    "ttft_ms": 384.3139020000308,
+    "latency_ms": 454.95496900002763
+  },
+  {
+    "question_id": "2452eb7b7f44e7016edeeba41a7b1ae4badb99bb5cfc06a918f611e54e558abd",
+    "raw_output": "2025-03-19",
+    "parsed_answer": "2025-03-19",
+    "answer_type": "date",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 4
+      },
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 5
+      },
+      {
+        "doc_id": "3f8a5ea0e051ba3af7a02da340c911fe0970ebece6c852c3e61a10c00cac6d6e",
+        "page_number": 3
+      }
+    ],
+    "ttft_ms": 297.07906499970704,
+    "latency_ms": 650.7070789994032
+  },
+  {
+    "question_id": "ae3b2d0d754b0ed6345e6b1ecfb795011a0186a157942b5e3c8a8da6474b34f5",
+    "raw_output": "Court of Appeal",
+    "parsed_answer": "Court of Appeal",
+    "answer_type": "name",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "5d3df6d69fac3ef91e13ac835b43a35e9e434fbc7e72ea5c01e288d69b66e6a2",
+        "page_number": 5
+      },
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 9
+      }
+    ],
+    "ttft_ms": 363.32948099970963,
+    "latency_ms": 468.57454199925996
+  },
+  {
+    "question_id": "502a270a2eed204fdef12d658ff290cb38cc8747ab7ea950ea61c128176446ae",
+    "raw_output": "[\"No specific provision under the Security Regulations\", \"Part IV of the Personal Property Law\"]",
+    "parsed_answer": [
+      "No specific provision under the Security Regulations",
+      "Part IV of the Personal Property Law"
+    ],
+    "answer_type": "names",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "536bbce854b9406cc22697e04fcdabd645e030c0e55b918252643b00e0b2b25f",
+        "page_number": 2
+      },
+      {
+        "doc_id": "536bbce854b9406cc22697e04fcdabd645e030c0e55b918252643b00e0b2b25f",
+        "page_number": 10
+      },
+      {
+        "doc_id": "536bbce854b9406cc22697e04fcdabd645e030c0e55b918252643b00e0b2b25f",
+        "page_number": 19
+      }
+    ],
+    "ttft_ms": 1182.4604800003726,
+    "latency_ms": 1182.4604800003726
+  },
+  {
+    "question_id": "b1eb96688844a90f3e9e8ff9ef992d06eae3a6766d9259e961608e561403def6",
+    "raw_output": "Stage 1 is a mandatory factual gateway, while Stage 2 involves the Court’s discretion.",
+    "parsed_answer": "Stage 1 is a mandatory factual gateway, while Stage 2 involves the Court’s discretion.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 7
+      },
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 11
+      }
+    ],
+    "ttft_ms": 295.41327800052386,
+    "latency_ms": 995.1346719999492
+  },
+  {
+    "question_id": "d6ad26d8bc7b0c6450666032169cb2e69554283c92c216acef0ce5b8edd5d0e3",
+    "raw_output": "true",
+    "parsed_answer": true,
+    "answer_type": "boolean",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 5
+      },
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 10
+      }
+    ],
+    "ttft_ms": 458.52044700041006,
+    "latency_ms": 458.52044700041006
+  },
+  {
+    "question_id": "a73a4fa484db325f96c907f5763845cef3cb9cde1b5b201ddecc34ba8d4738e1",
+    "raw_output": "Crabtree principle",
+    "parsed_answer": "Crabtree principle",
+    "answer_type": "name",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 6
+      },
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 12
+      }
+    ],
+    "ttft_ms": 299.70063700056926,
+    "latency_ms": 406.1852450004153
+  },
+  {
+    "question_id": "0d445938afad189c36cd927f6420870ecf678f22e2f1158bf2c9f0db84a2b680",
+    "raw_output": "4",
+    "parsed_answer": 4,
+    "answer_type": "number",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 3
+      },
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 22
+      },
+      {
+        "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+        "page_number": 15
+      }
+    ],
+    "ttft_ms": 176.05235199971503,
+    "latency_ms": 211.8365279993668
+  },
+  {
+    "question_id": "9b979082c31ae4ad36f857eab9a6e3dbc1404128e7467f6ebc52687ba6e4bfc1",
+    "raw_output": "A person has transfer authority if he is in possession of, or has authority to execute, an instruction to the relevant registrar to register the investments in the name of a transferee.",
+    "parsed_answer": "A person has transfer authority if he is in possession of, or has authority to execute, an instruction to the relevant registrar to register the investments in the name of a transferee.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "536bbce854b9406cc22697e04fcdabd645e030c0e55b918252643b00e0b2b25f",
+        "page_number": 8
+      },
+      {
+        "doc_id": "536bbce854b9406cc22697e04fcdabd645e030c0e55b918252643b00e0b2b25f",
+        "page_number": 10
+      }
+    ],
+    "ttft_ms": 534.8688889998812,
+    "latency_ms": 1794.3450829998255
+  },
+  {
+    "question_id": "9093940a7c2ff4a962020858d13c35be648aaf3b958b2beaee548d1ff0862a8b",
+    "raw_output": "true",
+    "parsed_answer": true,
+    "answer_type": "boolean",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 3
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 6
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 22
+      }
+    ],
+    "ttft_ms": 273.65354700032185,
+    "latency_ms": 273.65354700032185
+  },
+  {
+    "question_id": "df1e3124c44330d699ce9a1c01d670a0691158455b57156a948ce044980dbf44",
+    "raw_output": "There is no information on this question in the provided documents.",
+    "parsed_answer": "There is no information on this question in the provided documents.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+        "page_number": 7
+      },
+      {
+        "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+        "page_number": 22
+      },
+      {
+        "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+        "page_number": 23
+      }
+    ],
+    "ttft_ms": 603.4214900000734,
+    "latency_ms": 1026.492583999243
+  },
+  {
+    "question_id": "1b67d805e6c51673736ef61f9ec1c390fdd4f2706d48a360e380110d720c0339",
+    "raw_output": "OECD explanatory material for the Common Reporting Standard",
+    "parsed_answer": "OECD explanatory material for the Common Reporting Standard",
+    "answer_type": "name",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "04be93255ec4b88e6e6c65c8e9335e10729723c2637452f3ad66d5b3dbe87513",
+        "page_number": 3
+      }
+    ],
+    "ttft_ms": 361.5057839997462,
+    "latency_ms": 641.923406999922
+  },
+  {
+    "question_id": "d0fa21fb6d676b69e9cddd85cd137c298c43172d50a15aa66badd51ca3a0a8eb",
+    "raw_output": "14",
+    "parsed_answer": 14,
+    "answer_type": "number",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "5d3df6d69fac3ef91e13ac835b43a35e9e434fbc7e72ea5c01e288d69b66e6a2",
+        "page_number": 2
+      },
+      {
+        "doc_id": "3f8a5ea0e051ba3af7a02da340c911fe0970ebece6c852c3e61a10c00cac6d6e",
+        "page_number": 4
+      }
+    ],
+    "ttft_ms": 266.9583369997781,
+    "latency_ms": 338.5112539999682
+  },
+  {
+    "question_id": "ab613bfda1fe56340fafa1adda8f9d70a5bda4aed58fd521d5069c74c8c0f8da",
+    "raw_output": "10-year Partnership and Services Agreement",
+    "parsed_answer": "10-year Partnership and Services Agreement",
+    "answer_type": "name",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 3
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 1
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 2
+      }
+    ],
+    "ttft_ms": 294.4361299996672,
+    "latency_ms": 574.8976839995521
+  },
+  {
+    "question_id": "5877c6811eb496b26d3322a027b7d19f3d13f8623454f94c982b7e1d8c3e89ae",
+    "raw_output": "550000",
+    "parsed_answer": 550000,
+    "answer_type": "number",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 3
+      },
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 4
+      },
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 5
+      }
+    ],
+    "ttft_ms": 295.4880819997925,
+    "latency_ms": 507.6748660003432
+  },
+  {
+    "question_id": "e1f33d725fd31d285e8c38588e2894cd6c583bf806d53cf816f467bc68ad55c9",
+    "raw_output": "TR88 failed to prove Bond was solely responsible for the delay between 31 August 2021 and 22 December 2021, so both claims were dismissed.",
+    "parsed_answer": "TR88 failed to prove Bond was solely responsible for the delay between 31 August 2021 and 22 December 2021, so both claims were dismissed.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 15
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 16
+      }
+    ],
+    "ttft_ms": 266.6116450000118,
+    "latency_ms": 1675.5505139999514
+  },
+  {
+    "question_id": "ec695ce27695363186cb118ca3fa723c66869c6f9dbc834950c33562d67c3eec",
+    "raw_output": "The Court said the application should have been made at the stage when the draft Judgment was circulated.",
+    "parsed_answer": "The Court said the application should have been made at the stage when the draft Judgment was circulated.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "3f8a5ea0e051ba3af7a02da340c911fe0970ebece6c852c3e61a10c00cac6d6e",
+        "page_number": 4
+      },
+      {
+        "doc_id": "3f8a5ea0e051ba3af7a02da340c911fe0970ebece6c852c3e61a10c00cac6d6e",
+        "page_number": 5
+      }
+    ],
+    "ttft_ms": 426.43948099976114,
+    "latency_ms": 1095.5486089997066
+  },
+  {
+    "question_id": "85f22f4a05069be55342520d29729115be22263a06ddd865e3b609baacad3029",
+    "raw_output": "2024-03-08",
+    "parsed_answer": "2024-03-08",
+    "answer_type": "date",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+        "page_number": 1
+      },
+      {
+        "doc_id": "04be93255ec4b88e6e6c65c8e9335e10729723c2637452f3ad66d5b3dbe87513",
+        "page_number": 1
+      }
+    ],
+    "ttft_ms": 142.927740000232,
+    "latency_ms": 495.60473000019556
+  },
+  {
+    "question_id": "7bee2a70fcd7ecdd169ca34c3bc71d3950404ac3d54bc5b9442114b228b914fb",
+    "raw_output": "true",
+    "parsed_answer": true,
+    "answer_type": "boolean",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+        "page_number": 2
+      },
+      {
+        "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+        "page_number": 4
+      }
+    ],
+    "ttft_ms": 496.8513999992865,
+    "latency_ms": 496.8513999992865
+  },
+  {
+    "question_id": "42d7232debc717df1e310885e921a6aaa06208907bc1da0c7d4c61ac4fd0098a",
+    "raw_output": "true",
+    "parsed_answer": true,
+    "answer_type": "boolean",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 9
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 15
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 16
+      }
+    ],
+    "ttft_ms": 516.3267600000836,
+    "latency_ms": 516.3267600000836
+  },
+  {
+    "question_id": "c2d4d742dbc859eb1f262b53a315124fd1a063752794cf81aa9ca4e4862ab6b6",
+    "raw_output": "false",
+    "parsed_answer": false,
+    "answer_type": "boolean",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 18
+      },
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 22
+      },
+      {
+        "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+        "page_number": 2
+      }
+    ],
+    "ttft_ms": 328.6043870002686,
+    "latency_ms": 328.6043870002686
+  },
+  {
+    "question_id": "1207dcc85ca96d11158351ead9ffc5260f053375fd4b18cfdb81b5e9c6d2bb61",
+    "raw_output": "true",
+    "parsed_answer": true,
+    "answer_type": "boolean",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 9
+      },
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 11
+      }
+    ],
+    "ttft_ms": 332.68396699986624,
+    "latency_ms": 332.68396699986624
+  },
+  {
+    "question_id": "afe73d351c5b5f5bdfc97cd7b456d60962a46f2d0eea6f46e7782e984165c03d",
+    "raw_output": "Dr James Khalili",
+    "parsed_answer": "Dr James Khalili",
+    "answer_type": "name",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 8
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 11
+      }
+    ],
+    "ttft_ms": 524.550033000196,
+    "latency_ms": 667.5573240008816
+  },
+  {
+    "question_id": "68747d99590804fb4ee222ed72dea34ad4e25db553fc8005c357efa83e76cfb8",
+    "raw_output": "false",
+    "parsed_answer": false,
+    "answer_type": "boolean",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "5d3df6d69fac3ef91e13ac835b43a35e9e434fbc7e72ea5c01e288d69b66e6a2",
+        "page_number": 5
+      },
+      {
+        "doc_id": "5d3df6d69fac3ef91e13ac835b43a35e9e434fbc7e72ea5c01e288d69b66e6a2",
+        "page_number": 16
+      },
+      {
+        "doc_id": "5d3df6d69fac3ef91e13ac835b43a35e9e434fbc7e72ea5c01e288d69b66e6a2",
+        "page_number": 19
+      }
+    ],
+    "ttft_ms": 404.5918889996756,
+    "latency_ms": 404.5918889996756
+  },
+  {
+    "question_id": "c5c7eddacc461ebbf67e6b1dff474512ccdf8bd1ef8ddf88a305fd961330b26e",
+    "raw_output": "The Registrar may refuse a Filing if the communication is not on an Approved Form, is not correctly completed, is ambiguous, illegible or incomplete, is not suitable for registration or Filing, or is not accompanied by the prescribed fee.",
+    "parsed_answer": "The Registrar may refuse a Filing if the communication is not on an Approved Form, is not correctly completed, is ambiguous, illegible or incomplete, is not suitable for registration or Filing, or is not accompanied by the prescribed fee.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+        "page_number": 2
+      },
+      {
+        "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+        "page_number": 4
+      }
+    ],
+    "ttft_ms": 334.12535499974183,
+    "latency_ms": 1965.258817999711
+  },
+  {
+    "question_id": "dbb3c7a752d90dc1d9b3bae020014a71c1acaab22b856be728834dfa1cc47726",
+    "raw_output": "The Court applied the \"special circumstances\" test, requiring the proposed use to be necessary, proportionate, and not unfair or prejudicial.",
+    "parsed_answer": "The Court applied the \"special circumstances\" test, requiring the proposed use to be necessary, proportionate, and not unfair or prejudicial.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "3f8a5ea0e051ba3af7a02da340c911fe0970ebece6c852c3e61a10c00cac6d6e",
+        "page_number": 10
+      },
+      {
+        "doc_id": "3f8a5ea0e051ba3af7a02da340c911fe0970ebece6c852c3e61a10c00cac6d6e",
+        "page_number": 11
+      }
+    ],
+    "ttft_ms": 451.2719639997158,
+    "latency_ms": 1369.7412100000292
+  },
+  {
+    "question_id": "a51f259bf9869da02936142f36678193dd9e93988f339dc7ea2a21879d9d1870",
+    "raw_output": "10",
+    "parsed_answer": 10,
+    "answer_type": "number",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "3f8a5ea0e051ba3af7a02da340c911fe0970ebece6c852c3e61a10c00cac6d6e",
+        "page_number": 3
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 10
+      }
+    ],
+    "ttft_ms": 361.5437850003218,
+    "latency_ms": 432.73695100015175
+  },
+  {
+    "question_id": "4e0cd66faaafc0395fd07654a3817c1f7f26fb6aed7f8cd88c0f493024692857",
+    "raw_output": "2024-02-28",
+    "parsed_answer": "2024-02-28",
+    "answer_type": "date",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 2
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 23
+      },
+      {
+        "doc_id": "3f8a5ea0e051ba3af7a02da340c911fe0970ebece6c852c3e61a10c00cac6d6e",
+        "page_number": 3
+      }
+    ],
+    "ttft_ms": 237.1759909992761,
+    "latency_ms": 589.4493010000588
+  },
+  {
+    "question_id": "e821a2bc1919a828d26dbef0ae9c234e8cecce49c9ded70e6193a56837d37f54",
+    "raw_output": "Financial Account",
+    "parsed_answer": "Financial Account",
+    "answer_type": "name",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "04be93255ec4b88e6e6c65c8e9335e10729723c2637452f3ad66d5b3dbe87513",
+        "page_number": 13
+      },
+      {
+        "doc_id": "04be93255ec4b88e6e6c65c8e9335e10729723c2637452f3ad66d5b3dbe87513",
+        "page_number": 16
+      },
+      {
+        "doc_id": "04be93255ec4b88e6e6c65c8e9335e10729723c2637452f3ad66d5b3dbe87513",
+        "page_number": 17
+      }
+    ],
+    "ttft_ms": 269.78887699988263,
+    "latency_ms": 341.02478600016184
+  },
+  {
+    "question_id": "c8bd14fd89c211485a2181de90704867a936e5c094247bf7fed909e6db36528f",
+    "raw_output": "2025-10-08",
+    "parsed_answer": "2025-10-08",
+    "answer_type": "date",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 4
+      },
+      {
+        "doc_id": "3f8a5ea0e051ba3af7a02da340c911fe0970ebece6c852c3e61a10c00cac6d6e",
+        "page_number": 3
+      },
+      {
+        "doc_id": "5d3df6d69fac3ef91e13ac835b43a35e9e434fbc7e72ea5c01e288d69b66e6a2",
+        "page_number": 1
+      }
+    ],
+    "ttft_ms": 378.94967299962445,
+    "latency_ms": 732.3770450002485
+  },
+  {
+    "question_id": "8c8eeeeba7a6c1eace5f993e5fd5ee0eb331443fc937cff46c5da06698c7c0ef",
+    "raw_output": "[]",
+    "parsed_answer": [],
+    "answer_type": "name",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "5d3df6d69fac3ef91e13ac835b43a35e9e434fbc7e72ea5c01e288d69b66e6a2",
+        "page_number": 1
+      },
+      {
+        "doc_id": "5d3df6d69fac3ef91e13ac835b43a35e9e434fbc7e72ea5c01e288d69b66e6a2",
+        "page_number": 3
+      },
+      {
+        "doc_id": "5d3df6d69fac3ef91e13ac835b43a35e9e434fbc7e72ea5c01e288d69b66e6a2",
+        "page_number": 7
+      }
+    ],
+    "ttft_ms": 296.28833099923213,
+    "latency_ms": 332.62816699971154
+  },
+  {
+    "question_id": "e0ba7275a0c7a10725681d4c15c6c5045e5b3ac9f76d168d5568084bddbc5759",
+    "raw_output": "5",
+    "parsed_answer": 5,
+    "answer_type": "number",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+        "page_number": 4
+      },
+      {
+        "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+        "page_number": 6
+      }
+    ],
+    "ttft_ms": 237.05488599989621,
+    "latency_ms": 273.1085810000877
+  },
+  {
+    "question_id": "17bfa386a1f22d295d3ee717aae19a749af280616a875eade14b102a23dd9244",
+    "raw_output": "false",
+    "parsed_answer": false,
+    "answer_type": "boolean",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "536bbce854b9406cc22697e04fcdabd645e030c0e55b918252643b00e0b2b25f",
+        "page_number": 19
+      }
+    ],
+    "ttft_ms": 328.5818329995891,
+    "latency_ms": 328.5818329995891
+  },
+  {
+    "question_id": "08cc28c0704e573badde057a308230bde9aa15704bd26d767370f121801e4737",
+    "raw_output": "Mr Ori",
+    "parsed_answer": "Mr Ori",
+    "answer_type": "name",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "5d3df6d69fac3ef91e13ac835b43a35e9e434fbc7e72ea5c01e288d69b66e6a2",
+        "page_number": 13
+      },
+      {
+        "doc_id": "5d3df6d69fac3ef91e13ac835b43a35e9e434fbc7e72ea5c01e288d69b66e6a2",
+        "page_number": 15
+      },
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 11
+      }
+    ],
+    "ttft_ms": 295.7956000000195,
+    "latency_ms": 367.65246899994963
+  },
+  {
+    "question_id": "d859a045e515e7290174ed1aced15d8527b85f0e4c569d4630dfa521f528d79c",
+    "raw_output": "[\"Delvin Sumo\"]",
+    "parsed_answer": [
+      "Delvin Sumo"
+    ],
+    "answer_type": "names",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 15
+      },
+      {
+        "doc_id": "5d3df6d69fac3ef91e13ac835b43a35e9e434fbc7e72ea5c01e288d69b66e6a2",
+        "page_number": 3
+      }
+    ],
+    "ttft_ms": 363.27606400027435,
+    "latency_ms": 363.27606400027435
+  },
+  {
+    "question_id": "00957d62e7648173d04346496df2306addcc8e2842fabcd44244c466f4189b9f",
+    "raw_output": "5000",
+    "parsed_answer": 5000,
+    "answer_type": "number",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+        "page_number": 24
+      }
+    ],
+    "ttft_ms": 208.91576499980147,
+    "latency_ms": 350.6597650002732
+  },
+  {
+    "question_id": "32868c181e4d6b0ba34eb6fc0817c70169f81619213ac77c689492d92414efaf",
+    "raw_output": "false",
+    "parsed_answer": false,
+    "answer_type": "boolean",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 1
+      },
+      {
+        "doc_id": "437568a801115019fe8278385c0484bdf07ab86f9a499ecaba2b7969b37c764b",
+        "page_number": 12
+      }
+    ],
+    "ttft_ms": 327.61417999972764,
+    "latency_ms": 327.61417999972764
+  },
+  {
+    "question_id": "88fa316b322107dabdbb5d642ae6296b968369e810eaf2da5759584dc560e9c0",
+    "raw_output": "true",
+    "parsed_answer": true,
+    "answer_type": "boolean",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "3f8a5ea0e051ba3af7a02da340c911fe0970ebece6c852c3e61a10c00cac6d6e",
+        "page_number": 5
+      },
+      {
+        "doc_id": "3f8a5ea0e051ba3af7a02da340c911fe0970ebece6c852c3e61a10c00cac6d6e",
+        "page_number": 7
+      }
+    ],
+    "ttft_ms": 334.31651600039913,
+    "latency_ms": 334.31651600039913
+  },
+  {
+    "question_id": "734931901ce2900c33d80c0b611d8fb37c457e25b6e0529e0d26f2dc97bc2c32",
+    "raw_output": "It allows the General Partnership to indemnify any Partner or other person from and against any and all claims and demands whatsoever.",
+    "parsed_answer": "It allows the General Partnership to indemnify any Partner or other person from and against any and all claims and demands whatsoever.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 2
+      },
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 10
+      },
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 15
+      }
+    ],
+    "ttft_ms": 632.4617939999371,
+    "latency_ms": 1475.7224189997942
+  },
+  {
+    "question_id": "1ce38b389439bacc237e4716d1e238b03b9c1f6e5c36bb1443d5590d0d87e52e",
+    "raw_output": "There was no evidence that these payments related to completion of the Works, and even if they did, TR88 could not claim the cost of those works from Bond.",
+    "parsed_answer": "There was no evidence that these payments related to completion of the Works, and even if they did, TR88 could not claim the cost of those works from Bond.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 13
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 20
+      },
+      {
+        "doc_id": "ad76dc7093851d116c8878802b815608adceed54f6b5195ae04ffec28ae25d32",
+        "page_number": 21
+      }
+    ],
+    "ttft_ms": 267.5175649992525,
+    "latency_ms": 1453.1648199999836
+  },
+  {
+    "question_id": "07b32c626efd2cf7b1689f3a339d5bee4e0feb575126b511a88c0852edaf32c5",
+    "raw_output": "The Common Reporting Standard Regulations require reporting financial institutions to collect information about certain entities, while the Law on the Recovery of Judgments and Debts Law does not.",
+    "parsed_answer": "The Common Reporting Standard Regulations require reporting financial institutions to collect information about certain entities, while the Law on the Recovery of Judgments and Debts Law does not.",
+    "answer_type": "free_text",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "5d3df6d69fac3ef91e13ac835b43a35e9e434fbc7e72ea5c01e288d69b66e6a2",
+        "page_number": 18
+      },
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 18
+      },
+      {
+        "doc_id": "04be93255ec4b88e6e6c65c8e9335e10729723c2637452f3ad66d5b3dbe87513",
+        "page_number": 23
+      }
+    ],
+    "ttft_ms": 326.6963959995337,
+    "latency_ms": 1446.2107800000013
+  },
+  {
+    "question_id": "64210e41fb4ea2bbe5f40ecd11ffd475652e3163261c32186c01b9073124e1d7",
+    "raw_output": "[\"summons\", \"notice\", \"statement\", \"return\", \"account\", \"order\", \"other legal process\", \"registers\", \"cheques\", \"Records of electronic funds transfers\", \"invoices\", \"contracts\", \"general and subsidiary ledgers\", \"journal entries and other adjustments to the financial statements that are not reflected in journal entries\", \"worksheets and spreadsheets supporting costs allocations\", \"computations\", \"reconciliations\", \"disclosures\"]",
+    "parsed_answer": [
+      "summons",
+      "notice",
+      "statement",
+      "return",
+      "account",
+      "order",
+      "other legal process",
+      "registers",
+      "cheques",
+      "Records of electronic funds transfers",
+      "invoices",
+      "contracts",
+      "general and subsidiary ledgers",
+      "journal entries and other adjustments to the financial statements that are not reflected in journal entries",
+      "worksheets and spreadsheets supporting costs allocations",
+      "computations",
+      "reconciliations",
+      "disclosures"
+    ],
+    "answer_type": "names",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "04be93255ec4b88e6e6c65c8e9335e10729723c2637452f3ad66d5b3dbe87513",
+        "page_number": 23
+      },
+      {
+        "doc_id": "302a0bd8d67775e8dc5960ecec7879be566300d8b32c4b0153ba15ebdb279425",
+        "page_number": 21
+      },
+      {
+        "doc_id": "3f8a5ea0e051ba3af7a02da340c911fe0970ebece6c852c3e61a10c00cac6d6e",
+        "page_number": 12
+      }
+    ],
+    "ttft_ms": 3677.015102000041,
+    "latency_ms": 3677.015102000041
+  },
+  {
+    "question_id": "33077cafec056dc1eaadb102da3cf0bc37f8c0a0ae0b73ec061c1c7cd4d1a71a",
+    "raw_output": "[\"Financing Statement\", \"Financing Statement Amendment - Encumbered Asset Change\", \"Financing Statement Amendment - Encumbered Asset Restatement\", \"Financing Statement Amendment\", \"Financing Statement Amendment - Party Details\", \"Correction Statement\", \"Information Request\", \"Information Request\"]",
+    "parsed_answer": [
+      "Financing Statement",
+      "Financing Statement Amendment - Encumbered Asset Change",
+      "Financing Statement Amendment - Encumbered Asset Restatement",
+      "Financing Statement Amendment",
+      "Financing Statement Amendment - Party Details",
+      "Correction Statement",
+      "Information Request",
+      "Information Request"
+    ],
+    "answer_type": "names",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+        "page_number": 3
+      },
+      {
+        "doc_id": "3fa59589a91bf4913703ba0eedd08faa128948285b8a9d085bd7422248abe6c5",
+        "page_number": 4
+      }
+    ],
+    "ttft_ms": 2179.2764880001414,
+    "latency_ms": 2179.2764880001414
+  },
+  {
+    "question_id": "99eee91b133b2896308860a303fc852fd48975969168cc17059af519d9db9ceb",
+    "raw_output": "true",
+    "parsed_answer": true,
+    "answer_type": "boolean",
+    "is_malformed": false,
+    "predicted_pages": [
+      {
+        "doc_id": "04be93255ec4b88e6e6c65c8e9335e10729723c2637452f3ad66d5b3dbe87513",
+        "page_number": 21
+      },
+      {
+        "doc_id": "04be93255ec4b88e6e6c65c8e9335e10729723c2637452f3ad66d5b3dbe87513",
+        "page_number": 24
+      }
+    ],
+    "ttft_ms": 333.3013760002359,
+    "latency_ms": 333.3013760002359
+  }
+]
