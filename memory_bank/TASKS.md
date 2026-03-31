@@ -16,21 +16,20 @@
 - [x] EXP-004b — S3+R CLM + retrieval (Headline) ([spec](./specs/SPEC_EXP-004b.md))
 
 ### Wave 3: Comparison + Analysis
-- [ ] EXP-006 — Main comparison: headline S1 vs S2+R vs S3+R + controls S2, S3 ([spec](./specs/SPEC_EXP-006.md))
-- [ ] EXP-007 — Error analysis + cost/quality/grounding trade-off ([spec](./specs/SPEC_EXP-007.md))
+- [x] EXP-006 — Main comparison: all systems ([spec](./specs/SPEC_EXP-006.md))
+- [x] EXP-007 — Error analysis + cost/quality/grounding trade-off ([spec](./specs/SPEC_EXP-007.md))
 
-### Wave 4: Conditional
-- [x] EXP-008 — S6 E2E naive dense RAG ablation (run by user request despite trigger not met) ([spec](./specs/SPEC_EXP-008.md))
-- [ ] EXP-009 — Refresh final thesis package with S6 ([spec](./specs/SPEC_EXP-009.md))
+### Wave 4: Ablation
+- [x] EXP-008 — S6 naive dense RAG (run by user request) ([spec](./specs/SPEC_EXP-008.md))
+
+### Not triggered
+- ~~EXP-009 — Refresh with S6~~ (S6 results integrated directly in EXP-006/007)
 
 ### Dropped (v9.0)
-- ~~EXP-005a — S4-doc per-document routing~~ ([spec](./specs/SPEC_EXP-005a.md))
-- ~~EXP-005b — S4-cluster cluster routing~~ ([spec](./specs/SPEC_EXP-005b.md))
+- ~~EXP-005a — S4-doc~~ ([spec](./specs/SPEC_EXP-005a.md))
+- ~~EXP-005b — S4-cluster~~ ([spec](./specs/SPEC_EXP-005b.md))
 
 ## Reference Docs (in memory_bank/)
 - [SPEC-systems](./SPEC-systems.md) — Detailed system definitions (Headline / Control)
 - [SPEC-evaluation](./SPEC-evaluation.md) — Evaluation protocol, judge config, scoring rules
 - [SPEC-data](./SPEC-data.md) — Corpus, goldset, splits, leakage rules
-
-## Backlog
-_(Cleared — all items were D2L-specific and dropped with v9.0 pivot)_
