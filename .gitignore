@@ -4,3 +4,7 @@ __pycache__/
 external/doc-to-lora/
 .env
 trained_d2l/
+models/
+*.pt
+*.bin
+*.safetensors
