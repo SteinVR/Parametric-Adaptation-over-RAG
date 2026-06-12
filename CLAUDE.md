@@ -9,6 +9,7 @@
 - `src/` — core application source code, data pipelines, training, retrieval, and generation modules.
 - `term-paper/` — thesis drafts, advisor reviews, writing blueprints, and supporting figures.
 - `term-paper_2/` — updated thesis version with structured sections, blueprints, and additional materials.
+- `docs/` - additional documents.
 
 ## Memory Bank (SSOT)
 - Directory name is `memory_bank/`.

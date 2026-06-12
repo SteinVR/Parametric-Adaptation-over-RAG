@@ -1,3 +1,6 @@
+## About project
+This research project investigates **knowledge injection techniques for document-grounded question answering (QA) on consumer hardware**. The thesis compares multiple approaches for efficient knowledge integration, including retrieval-augmented generation (RAG), adapter-based fine-tuning (QLoRA), and pretraining strategies, with focus on practical deployment constraints and performance trade-offs. The project includes comprehensive data processing pipelines, baseline experiments, and systematic error analysis to evaluate the effectiveness of different knowledge injection methods.
+
 ## Project map
 - `memory_bank/` — stable project-level architecture, DS state, and task board.
 - `data/` — raw, processed, and external data layers.
@@ -7,8 +10,11 @@
 - `logs/` — split into `logs/project/` for project logs and `logs/agents/` for agent-session logs.
 - `results/` — experiment outputs, benchmarks, and performance reports.
 - `src/` — core application source code, data pipelines, training, retrieval, and generation modules.
+- `src/retrieval/` — primary RAG pipeline with staged retrieval, indexing, and retrieval factory.
+- `external/pdf_rag_pipeline/` — reference RAG implementation with ingestion, indexing, and retrieval stages.
 - `term-paper/` — thesis drafts, advisor reviews, writing blueprints, and supporting figures.
 - `term-paper_2/` — updated thesis version with structured sections, blueprints, and additional materials.
+- `docs/` - additional documents.
 
 ## Memory Bank (SSOT)
 - Directory name is `memory_bank/`.

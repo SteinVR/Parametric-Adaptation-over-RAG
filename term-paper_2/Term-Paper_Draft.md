@@ -1,19 +1,21 @@
-# Title Page Placeholder
+# {Title Page Placeholder}
 
 University, department, module, semester, author details, supervisor details, and submission date should be inserted here according to the institutional template.
 
+---
 # Declaration of Academic Integrity Placeholder
 
 The declaration should be inserted here in the exact wording required by the institution.
 
+---
 # Table of Contents Placeholder
 
 The final table of contents should be generated after the manuscript structure is fixed.
 
 
-# 1. Introduction
+## 1. Introduction
 
-## 1.1 Problem and Motivation
+### 1.1 Problem and Motivation
 
 Document-grounded legal question answering places unusual pressure on both factual precision and answer discipline. The target answer is often tied to a specific provision, date, list element, or procedural distinction, which makes unsupported generation especially costly. In that setting, improvements should not be credited merely because a model appears more fluent. They should be credited only when they improve document-bound answering under controlled conditions.
 
@@ -21,7 +23,7 @@ This constraint becomes more consequential on consumer hardware. When training a
 
 The present study addresses that question on a compact legal benchmark built from eight DIFC documents and a frozen evaluation protocol. It asks whether parametric adaptation adds measurable value beyond a strong fixed RAG baseline and whether different adaptation signals produce different quality profiles under the same infrastructure constraints.
 
-## 1.2 Research Questions and Scope
+### 1.2 Research Questions and Scope
 
 The study is intentionally narrow. It uses one backbone family, one shared retrieval stack, one frozen benchmark split, and one hardware regime in order to isolate the effect of adaptation signal. The benchmark contains eight DIFC legal documents and 200 human-authored question-answer pairs. The final split is fixed at 150 train / 50 eval, and all compared systems are evaluated on the same 50-item evaluation set.
 
@@ -29,43 +31,43 @@ Within that setup, the main comparison is restricted to three retrieval-aware sy
 
 The scope is deliberately bounded. The paper does not claim to settle the general value of parametric memory for legal QA, and it does not compare many backbones, retrieval stacks, or training recipes. Its contribution depends on holding those factors constant so that the contrast between adaptation signals remains interpretable.
 
-## 1.3 Contributions
+### 1.3 Contributions
 
 The contribution of the paper is a controlled empirical comparison rather than a new architecture. First, it compares RAFT-style supervised adaptation and CLM continued pretraining on top of the same fixed RAG pipeline, which makes the difference in training signal analytically visible. Second, it quantifies how far pure parametric systems can go without retrieval on the same benchmark and under the same hardware constraints, thereby clarifying whether retrieval remains indispensable. Third, it reports a post-hoc adapter-merge result, S7, as exploratory evidence that supervised and corpus-level adaptation may encode partially complementary strengths, while keeping that result secondary to the headline comparison.
 
-## 1.4 Structure of the Paper
+### 1.4 Structure of the Paper
 
 The remainder of the paper follows a compact experimental structure. Section 2 introduces the background needed to position retrieval and parameter-efficient adaptation in document-grounded legal QA. Section 3 describes the benchmark, hardware setting, and fixed retrieval backbone. Section 4 presents the compared systems and the evaluation protocol. Section 5 reports the main empirical results, including the headline comparison, per-type breakdowns, retrieval controls, and the single-document versus multi-document analysis. Section 6 discusses the answers to the research questions, the error topology, and the main limitations. Section 7 concludes. The appendix collects hyperparameters, extra tables and figures, the D2L engineering note, and the disclosure of generative AI use.
 
-# 2. Background and Related Work
+## 2. Background and Related Work
 
-## 2.1 RAG as Nonparametric Memory
+### 2.1 RAG as Nonparametric Memory
 
 Retrieval-augmented generation can be treated as a nonparametric memory mechanism [1]. Instead of requiring the model to encode all relevant information in its parameters, the system retrieves external evidence at inference time and conditions generation on that evidence. In legal QA, this distinction is particularly useful because answer quality depends less on open-ended completion ability than on the accurate use of document-bound facts. A system that can recover the relevant pages or clauses at inference time has a direct path to grounded answering that does not rely on internalizing the entire corpus.
 
 That perspective is methodologically important for the present study. The baseline is a retrieval-aware pipeline with hybrid search, reranking, and evidence compression. This means that any gain from downstream adaptation must be interpreted relative to an already strong external memory mechanism. The paper therefore studies parametric adaptation as an addition to nonparametric memory while treating retrieval as the foundation of the comparison, rather than as a competitor to retrieval itself [1].
 
-## 2.2 Parameter-Efficient Adaptation on Consumer Hardware
+### 2.2 Parameter-Efficient Adaptation on Consumer Hardware
 
 Parameter-efficient fine-tuning is central to the project because the hardware budget is not incidental. LoRA introduced the low-rank adapter formulation that makes this design possible at all, while QLoRA made it practical under aggressive memory constraints through 4-bit quantization and paged optimization [2, 3]. The implementation-oriented literature also makes clear why that matters on a single modest GPU: practical QLoRA pipelines rely on 4-bit loading, bitsandbytes integration, and careful handling of NF4-based quantization details [18, 19]. Under the present resource constraints, that design is not merely convenient. It is what makes adaptation experimentally feasible without changing the backbone family or requiring large-scale compute.
 
 This constraint also improves interpretability. Because the compared adapted systems rely on the same PEFT basis, differences between them can be attributed to their training signals rather than to different adaptation mechanisms. Survey and review work on parameter-efficient fine-tuning consistently treats this family of methods as a quality-versus-resource trade-off rather than as a single fixed recipe, and both general PEFT surveys and small-model empirical studies reinforce that point under practical resource budgets [4, 5, 6, 7]. The paper therefore treats PEFT as part of the experimental design, not as an optimization detail.
 
-## 2.3 RAFT-style Adaptation vs. CLM Continued Pretraining
+### 2.3 RAFT-style Adaptation vs. CLM Continued Pretraining
 
 The central comparison in this paper is between two adaptation signals. RAFT-style adaptation uses retrieval-conditioned supervision: the model is trained on question-answer examples paired with supporting evidence, so the adaptation objective directly reflects the downstream QA task [8]. In this paper, CLM continued pretraining denotes adapter training by next-token prediction over the corpus text without explicit QA supervision. That second branch is included as an operational contrast to RAFT-style supervision rather than as a claim about a separate named method family in the literature.
 
 Because both approaches are applied to the same backbone and later evaluated inside the same retrieval stack, the contrast isolates a substantive methodological difference. RAFT-style adaptation may favor deterministic extraction because it is trained directly on answer production under evidence conditioning. CLM adaptation may favor assistant-style answer quality because it continues to shape the model's local contextualization behavior without task-specific labels. The empirical question is which of these tendencies becomes visible once both are tested against the same strong RAG baseline.
 
-## 2.4 Research Gap and Positioning
+### 2.4 Research Gap and Positioning
 
 The study is positioned against broad comparisons among abstract memory families. That framing often obscures the more practical question faced in a constrained experimental setting: if a retrieval pipeline is already strong and fixed, does adapter-based adaptation still add value, and what kind of adaptation signal matters most? This paper answers that narrower question under one benchmark, one backbone family, and one hardware regime. Recent legal-domain work has increasingly separated general legal reasoning benchmarks from retrieval-centered legal QA benchmarks and broader RAG evaluation frameworks, which makes this narrower framing methodologically preferable for the present paper [13, 14, 15, 16].
 
 That scope makes the result more controlled, even if it makes the claims less general. The paper does not argue that any single method family is universally best for legal QA. It argues that, on this benchmark and under these constraints, a strong retrieval baseline is difficult to beat, adaptation can still provide moderate gains, and those gains depend on the training signal rather than on the mere presence of an adapter.
 
-# 3. Benchmark and Experimental Setup
+## 3. Benchmark and Experimental Setup
 
-## 3.1 Corpus and Benchmark
+### 3.1 Corpus and Benchmark
 
 The benchmark is built from eight DIFC legal documents comprising 176 pages and approximately 115 thousand tokens. The corpus includes statutes, regulations, and case decisions, which gives the evaluation set a mix of local extraction tasks and broader interpretive questions while remaining small enough for controlled experimentation on consumer hardware.
 
@@ -75,7 +77,7 @@ The final split is fixed at 150 train / 50 eval. The split is stratified by answ
 
 Table 1 should be placed here.
 
-## 3.2 Hardware, Shared Backbone, and Variance Policy
+### 3.2 Hardware, Shared Backbone, and Variance Policy
 
 All systems are evaluated under the same hardware constraint: an RTX 4060 with 8 GB of VRAM and 32 GB of RAM. The shared backbone across the active systems is Gemma-2-2b-it. This common infrastructure is important because it removes a large source of confounding variation. The headline systems differ in adaptation signal, not in backbone family or deployment environment.
 
@@ -83,7 +85,7 @@ For trained systems, variance is handled through three random seeds, namely 42, 
 
 Detailed hyperparameters are not repeated in the main text because they are not the center of the argument. They are deferred to the appendix, where they support reproducibility without interrupting the logic of the comparison.
 
-## 3.3 Fixed Retrieval Backbone
+### 3.3 Fixed Retrieval Backbone
 
 The retrieval backbone is held constant across all retrieval-aware systems. It combines hybrid dense and sparse retrieval, reciprocal-rank fusion, reranking, and evidence compression. In operational terms, that means S1, S2+R, S3+R, and S7 receive their evidence through the same retrieval pipeline rather than through system-specific retrieval variants.
 
@@ -91,9 +93,9 @@ This frozen retrieval design is essential for interpretation. Because the eviden
 
 The retrieval description is kept in prose because the visual budget of the paper is better spent on cross-system comparisons. The main methodological point is that retrieval is strong, shared, and frozen before adaptation results are interpreted.
 
-# 4. Compared Systems and Evaluation Protocol
+## 4. Compared Systems and Evaluation Protocol
 
-## 4.1 System Inventory
+### 4.1 System Inventory
 
 The compared systems occupy different methodological roles. The headline comparison consists of S1, S2+R, and S3+R. S1 is the strong nonparametric baseline, S2+R is the supervised retrieval-aware adapter trained with RAFT-style open-book supervision, and S3+R is the retrieval-aware CLM adapter obtained through continued pretraining on the corpus text. These three systems define the main thesis comparison.
 
@@ -113,7 +115,7 @@ Table 2 provides the compact legend for the system identifiers used throughout t
 | S3 | Closed-book CLM control | No | Continued pretraining on corpus text without retrieval | Control |
 | S3-legacy | Legacy D2L branch | No | Document-conditioned adapter generation with workaround packaging | Legacy control |
 
-## 4.2 Training Setups
+### 4.2 Training Setups
 
 The adapted systems differ in signal rather than in surrounding scaffolding. S2+R is trained with retrieval-conditioned supervision built from the 150 train portion of the benchmark. Each training instance pairs a question with gold evidence chunks and distractors, and the model is trained to produce the answer from that evidence-conditioned prompt. This makes the training objective closely aligned with downstream document-grounded QA.
 
@@ -121,7 +123,7 @@ S3 is trained differently. Its adapter is learned through causal language modeli
 
 The no-retrieval controls remove retrieval at inference time and thereby measure the limits of internalized or partially internalized knowledge. The D2L branch is described only briefly in the main text because its full engineering details do not pay for their page budget here. The relevant point is that a token-level audit suggested single-pass feasibility, but the released implementation imposed stricter effective limits in practice, which required chunked packaging and left D2L as a legacy negative control. Full training details and hyperparameters are reported in Appendix A.
 
-## 4.3 Evaluation Protocol
+### 4.3 Evaluation Protocol
 
 The evaluation combines aggregate answer quality, component-level answer quality, grounding, and practical systems metrics. The primary score is Q_main, defined as 0.7 times S_det plus 0.3 times S_asst. This weighting prioritizes deterministic extraction while still crediting assistant-style quality on free-text answers. S_det captures exact or near-exact correctness for deterministic answer types such as boolean, number, name, names, and date. Number answers are scored with exact match under a 1 percent tolerance, boolean and date answers require exact normalized matches, single names use normalized exact string match, and multi-name answers use Jaccard similarity over normalized sets.
 
@@ -133,9 +135,9 @@ Grounding is reported only for retrieval-aware systems and is measured as page-l
 
 The protocol also records systems metrics such as time to first token, end-to-end latency, peak inference VRAM, and offline cost. These metrics matter for practical interpretation, but the paper avoids collapsing them into a misleading latency-only cost narrative. Instead, quality and resource expenditure are interpreted together, with direct offline-cost comparison restricted to systems that are genuinely comparable in training or packaging effort.
 
-# 5. Results
+## 5. Results
 
-## 5.1 Main Comparison
+### 5.1 Main Comparison
 
 The main comparison begins with a strong baseline. S1 reaches a Q_main of 0.6425, with S_det at 0.6014 and S_asst at 0.7385, which establishes a difficult starting point for any adapted retrieval-aware system. Against that baseline, both headline adapted systems provide moderate but meaningful improvement. S2+R reaches 0.6689 ± 0.0137, while S3+R reaches 0.6671 ± 0.0229. The size of the gain is not large, but that is precisely what makes it informative in this setup: the baseline is already strong, and improvements are measured against a fixed retrieval stack rather than against a weak generator-only system.
 
@@ -157,7 +159,7 @@ Table 3 summarizes the main comparison.
 
 S7 is excluded from direct offline-cost comparison because it inherits prior adaptation cost from both S2+R and S3+R.
 
-## 5.2 Trade-off Between RAFT-style and CLM Adaptation
+### 5.2 Trade-off Between RAFT-style and CLM Adaptation
 
 The central scientific result of the paper is the difference in quality profile between RAFT-style adaptation and CLM continued pretraining. S2+R reaches a higher deterministic score than S3+R, with S_det values of 0.6479 ± 0.0150 and 0.5991 ± 0.0156 respectively. S3+R, however, reaches a substantially higher assistant-style quality score, with S_asst at 0.8256 ± 0.0622 compared with 0.7179 ± 0.0178 for S2+R. The systems are therefore close in Q_main while behaving differently at the component level.
 
@@ -169,7 +171,7 @@ The practical interpretation remains mixed. The comparison records a tie on Q_ma
 
 *Figure 2. Delta-to-S1 Bar Chart.*
 
-## 5.3 By Answer Type
+### 5.3 By Answer Type
 
 Aggregate scores hide several material behavioral differences. On free-text questions, S3+R reaches the strongest assistant-style score at 0.8256 ± 0.0622, clearly above S1 at 0.7385 and S2+R at 0.7179 ± 0.0178. This supports the interpretation that CLM continued pretraining helps local contextualization and discourse quality when the answer requires synthesized prose. By contrast, S2+R improves several deterministic categories relative to the baseline, including boolean questions at 0.8889 and date questions at 0.4000, while S3+R remains closer to the baseline on those answer types.
 
@@ -179,13 +181,13 @@ The per-type breakdown also shows that none of the systems is uniformly strong. 
 
 *Figure 3. Per-Type Score Heatmap.*
 
-## 5.4 Retrieval Contribution and the Limits of Pure Parametric Memory
+### 5.4 Retrieval Contribution and the Limits of Pure Parametric Memory
 
 Retrieval remains indispensable on this benchmark. The supervised control S2 reaches only 0.2630 ± 0.0046 in Q_main, whereas S2+R reaches 0.6689 ± 0.0137. The CLM control S3 performs even worse at 0.1854 ± 0.0027, while S3+R reaches 0.6671 ± 0.0229. The deltas are large: retrieval adds 0.4059 Q_main points to the supervised system and 0.4817 Q_main points to the CLM system. These gaps are too large to treat retrieval as a minor convenience or as a redundant supplement to parametric adaptation.
 
 The legacy D2L branch supports the same conclusion from a separate engineering path. S3-legacy reaches a Q_main of 0.2100, with S_det at 0.1351 and S_asst at 0.3846. Although the D2L implementation is not directly comparable to the active CLM setup, it remains useful as a negative control. The result indicates that document-internalized adaptation without retrieval did not become competitive in this implementation regime, and the main thesis of the paper does not depend on it doing so.
 
-## 5.5 Multi-Document Difficulty
+### 5.5 Multi-Document Difficulty
 
 The split between single-document and multi-document questions yields one of the clearest analytical results in the paper. Multi-document questions are substantially harder for all headline systems. S1 drops from 0.694 on single-document items to 0.338 on multi-document items. S3+R shows a similar contrast, moving from 0.719 to 0.338. S2+R remains lower on single-document questions than S3+R, at 0.692, but it retains more quality on multi-document questions, reaching 0.529. This difference is important because it reveals a sharper behavioral distinction than the aggregate table alone.
 
@@ -195,47 +197,47 @@ The contrast supports a bounded complementarity interpretation. CLM adaptation a
 
 *Figure 4. Single-doc vs Multi-doc Comparison.*
 
-## 5.6 Exploratory Adapter Fusion
+### 5.6 Exploratory Adapter Fusion
 
 The merged adapter provides evidence that the two adaptation signals are not redundant. Relative to S2+R, S7 improves Q_main by 0.0356, S_det by 0.0310, and S_asst by 0.0462. Relative to S3+R, it improves Q_main by 0.0374 and S_det by 0.0799, while reducing S_asst by 0.0615. This pattern is consistent with partial complementarity: the merged system appears to preserve some of the CLM advantage in assistant-style quality while recovering part of the deterministic advantage associated with RAFT-style supervision. The result is also methodologically consistent with recent work on LoRA merging and lightweight skill composition, although the present paper uses only a simple linear merge rather than a more elaborate composition strategy such as task-aware adapter composition or online continual merging [10, 11, 20, 21].
 
 The result remains exploratory for two reasons. First, S7 is a post-hoc merge rather than a separately trained system. Second, its practical cost is not directly comparable to the headline systems because it inherits prior adaptation cost from both source adapters. For that reason, the merged system supports interpretation rather than practical winner selection. Recent work has also argued that desirable properties in adapter merging are more subtle than simple orthogonality or naive composition heuristics alone, which further justifies treating S7 as a bounded exploratory result rather than as a definitive recipe [12]. The main claim of the paper remains intact without S7, which is the correct standard for treating it as a secondary finding.
 
-# 6. Discussion and Limitations
+## 6. Discussion and Limitations
 
-## 6.1 Answer to RQ1
+### 6.1 Answer to RQ1
 
 The results indicate that parametric adaptation does add value beyond a strong RAG baseline within this setup. Both S2+R and S3+R improve over S1 in Q_main, but the gain is moderate rather than transformative. That magnitude is important. Because S1 is already a strong baseline, modest gains are more informative than they would be in a weak-baseline setting. They indicate that adaptation can still matter after retrieval is strong, but they do not support the claim that retrieval-aware adaptation fundamentally changes the problem.
 
 The value of adaptation is best understood as a change in quality profile. RAFT-style supervision raises deterministic extraction, while CLM continued pretraining raises assistant-style answer quality. The paper therefore answers RQ1 positively, but in a qualified form: parametric adaptation is useful on top of strong RAG, and the specific training signal matters more than the mere fact that an adapter is present.
 
-## 6.2 Answer to RQ2
+### 6.2 Answer to RQ2
 
 RQ2 asks whether pure parametric systems can substitute for retrieval on this benchmark. The answer is negative within the present setup. Both retrieval-free controls perform far below the retrieval-aware systems, and the deltas between S2 and S2+R as well as between S3 and S3+R are large enough to make the conclusion unambiguous. Retrieval remains the dominant memory mechanism for this document-grounded legal QA task.
 
 This conclusion should be stated narrowly. It applies to the evaluated corpus, split, backbone, and hardware regime. It does not imply that parametric memory is irrelevant in general. It indicates that, on this benchmark, retrieval is indispensable as the main carrier of document knowledge, while parametric adaptation is better interpreted as a complementary method for improving how retrieved evidence is used.
 
-## 6.3 Error Analysis
+### 6.3 Error Analysis
 
 Error overlap clarifies both the shared difficulty of the benchmark and the limits of any single system improvement. Fifteen evaluation questions are answered incorrectly by all headline systems, which indicates that a substantial portion of the remaining difficulty is benchmark-level rather than model-specific. At the same time, the overlap is not total. Two questions are answered correctly only by S1, two only by S3+R, and none only by S2+R or only by S7. This distribution suggests that local non-overlapping strengths exist, but they are sparse and do not overturn the aggregate-level interpretation.
 
 The qualitative failures support the same conclusion. Recurrent misses include multi-document synthesis, date recovery, and exact name or form-list extraction. Several of these errors persist even when retrieval is available, which implies that access to evidence is necessary but not sufficient. Some failures reflect remaining difficulty in mapping retrieved context to precise answer behavior, while others likely reflect the compactness of the benchmark and the limited number of examples for harder question types.
 
-## 6.4 Limitations
+### 6.4 Limitations
 
 The findings are bounded in several straightforward ways. The benchmark is compact, the evaluation split is fixed, and the study uses one backbone family under one hardware regime. Free-text scoring depends on a frozen judge rubric rather than on human adjudication for every answer. The retrieval stack is fixed across retrieval-aware systems, which strengthens interpretability but limits how far the conclusions can speak to alternative retrieval designs. The merged adapter result is also bounded because S7 is post-hoc and inherits prior adaptation cost.
 
 The D2L branch should be read even more narrowly. It supports a negative finding for the present implementation and engineering regime, not a broad claim about document-conditioned adapter generation in general. More broadly, the paper studies a compact legal corpus rather than a large or heterogeneous legal benchmark, so the conclusions should be understood as benchmark-specific and hardware-specific rather than universal.
 
-# 7. Conclusion
+## 7. Conclusion
 
-## 7.1 Main Findings
+### 7.1 Main Findings
 
 This study examined whether parametric adaptation adds value beyond a strong fixed RAG baseline for document-grounded legal QA under consumer-hardware constraints. The results support three main conclusions. First, the RAG baseline is already strong and difficult to surpass. Second, parametric adaptation does provide additional value, but that value depends on the adaptation signal rather than on adapter use alone. RAFT-style supervision is associated with stronger deterministic extraction, whereas CLM continued pretraining is associated with stronger assistant-style answer quality. Third, retrieval remains indispensable, because retrieval-free controls perform far below the retrieval-aware systems.
 
 The exploratory merged-adapter result suggests that the two adaptation signals capture partially complementary strengths. Even so, the scientific contribution of the paper does not depend on the merged system. The practical takeaway is therefore compact: when retrieval is already strong, adaptation can still improve quality, but the relevant decision is which quality profile is needed and whether the additional offline cost is justified under the available hardware budget.
 
-# References
+## References
 
 [1] Lewis et al. "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks" (2020).
 
@@ -279,9 +281,9 @@ The exploratory merged-adapter result suggests that the two adaptation signals c
 
 [21] "K-Merge: Online Continual Merging of Adapters for On-device Large ..." (title as listed in the provided bibliography).
 
-# Appendix
+## Appendix
 
-## Appendix A - Hyperparameters and Prompts
+### Appendix A - Hyperparameters and Prompts
 
 Appendix A records the fixed training and evaluation settings needed to interpret the comparison as a same-scaffolding, different-signal study.
 
@@ -314,7 +316,7 @@ Criteria:
 
 Malformed judge output is retried once; if the retry also fails, all five criteria are scored as zero for that answer. Judge-based scoring is never used for deterministic answer types. Deterministic unanswerable items are scored through the parser-level [] rule, while free-text negative items remain in the judged subset and are evaluated under the same five-criterion rubric, including calibration.
 
-## Appendix B - Extra Tables and Figures
+### Appendix B - Extra Tables and Figures
 
 Appendix Table B1 should summarize the practical trade-off among S1, S2+R, S3+R, S2, and S3. S7 should not appear in the cost-comparable body of that table because it inherits prior training cost from both source adapters. Appendix Figure B3 presents the judge criteria profile. Additional auxiliary figures should be added only if they directly support a discussion point in the main text.
 
@@ -322,10 +324,10 @@ Appendix Table B1 should summarize the practical trade-off among S1, S2+R, S3+R,
 
 *Appendix Figure B3. Judge Criteria Profile.*
 
-## Appendix C - D2L Engineering Note
+### Appendix C - D2L Engineering Note
 
 This appendix should explain that D2L was originally intended to test document-conditioned adapter generation, but the implemented system required chunk-level workaround packaging in practice. The note should state plainly that the branch is retained as a legacy engineering diagnostic and negative control rather than as a headline result.
 
-## Appendix D - Use of Generative AI
+### Appendix D - Use of Generative AI
 
 This appendix should name the tools used, describe the scope of assistance, and state that responsibility for the final manuscript remains with the author. If the institutional template requires explicit marking of substantially AI-assisted passages in the manuscript itself, that marking should be applied during the final formatting pass.

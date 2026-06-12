@@ -1,9 +1,14 @@
-# Parametric Adaptation over Strong RAG for Legal QA
+# {Title Page Placeholder}
 
+University, department, module, semester, author details, supervisor details, and submission date should be inserted here according to the institutional template.
 
 ---
+# Declaration of Academic Integrity Placeholder
 
-## Table of Contents
+The declaration should be inserted here in the exact wording required by the institution.
+
+---
+# Table of Contents
 
 1. Introduction
 2. Background and Related Work
@@ -347,17 +352,17 @@ The practical takeaway is that, under consumer-hardware constraints, investing i
 
 ### A.1 QLoRA Configuration (Shared)
 
-| Parameter | Value |
-|-----------|-------|
-| PEFT method | QLoRA |
-| Rank | 32 |
-| Alpha | 32 |
-| Dropout | 0.05 |
-| Target modules | q\_proj, v\_proj |
-| Quantization | 4-bit NF4, double quantization |
-| Optimizer | Paged AdamW 8-bit |
-| Scheduler | Cosine |
-| Weight decay | 0.01 |
+| Parameter      | Value                          |
+| -------------- | ------------------------------ |
+| PEFT method    | QLoRA                          |
+| Rank           | 32                             |
+| Alpha          | 32                             |
+| Dropout        | 0.05                           |
+| Target modules | q\_proj, v\_proj               |
+| Quantization   | 4-bit NF4, double quantization |
+| Optimizer      | Paged AdamW 8-bit              |
+| Scheduler      | Cosine                         |
+| Weight decay   | 0.01                           |
 
 ### A.2 Training-Signal-Specific Parameters
 
