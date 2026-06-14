@@ -6,6 +6,7 @@ be regenerated from any checkout of the repository.
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
@@ -22,6 +23,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "results" / "EXP-007"
+DOC_SCOPE = ROOT / "results" / "EXP-006" / "single_vs_multi_doc.csv"
 OUT = Path(__file__).resolve().parent
 OUT.mkdir(parents=True, exist_ok=True)
 
@@ -47,6 +49,14 @@ DISPLAY = {
     "S2": "RAFT-Closed",
     "S3": "CLM-Closed",
     "S3-legacy": "D2L-Closed",
+}
+
+SEED_QMAIN_SOURCES = {
+    "S2+R": ROOT / "results" / "EXP-003" / "aggregate_summary.json",
+    "S3+R": ROOT / "results" / "EXP-004b" / "aggregate_summary.json",
+    "S7": ROOT / "results" / "EXP-010" / "alpha_0.5" / "aggregate_summary.json",
+    "S2": ROOT / "results" / "EXP-003b" / "aggregate_summary.json",
+    "S3": ROOT / "results" / "EXP-004_clm" / "aggregate_summary.json",
 }
 
 plt.rcParams.update(
@@ -81,6 +91,23 @@ def save(fig: plt.Figure, name: str) -> None:
     fig.savefig(OUT / name, dpi=DPI, bbox_inches="tight")
     plt.close(fig)
     print(f"  saved {name}")
+
+
+def load_seed_qmain() -> pd.DataFrame:
+    """Load per-seed Q_main values from the experiment aggregate summaries."""
+
+    rows = []
+    for system, path in SEED_QMAIN_SOURCES.items():
+        data = json.loads(path.read_text())
+        for item in data["seed_results"]:
+            rows.append(
+                {
+                    "system": system,
+                    "seed": int(item["seed"]),
+                    "q_main": float(item["q_main"]),
+                }
+            )
+    return pd.DataFrame.from_records(rows)
 
 
 def system_row(
@@ -354,32 +381,37 @@ def fig02_delta_bars() -> None:
 
 
 def fig03_judge_criteria() -> None:
-    """Free-text judge profile as a line plot instead of crowded bars."""
+    """Free-text judge profile as grouped bars."""
 
     df = pd.read_csv(DATA / "judge_criteria_profile.csv")
     criteria = ["correctness", "completeness", "grounding", "calibration", "clarity"]
-    labels = ["Correct.", "Complete.", "Grounded", "Calibr.", "Clear"]
+    labels = ["Correctness", "Completeness", "Grounding", "Calibration", "Clarity"]
     x = np.arange(len(criteria))
+    width = 0.18
 
-    fig, ax = plt.subplots(figsize=(6.7, 3.6))
-    for system in HEADLINE:
+    fig, ax = plt.subplots(figsize=(7.4, 3.8))
+    for i, system in enumerate(HEADLINE):
         vals = (
             df[df["system"] == system]
             .set_index("criterion")
             .loc[criteria, "mean_score"]
             .to_numpy()
         )
-        ax.plot(
-            x,
+        offset = (i - (len(HEADLINE) - 1) / 2) * width
+        bars = ax.bar(
+            x + offset,
             vals,
-            marker="o",
-            markersize=5.0,
-            linewidth=1.8 if system == "S3+R" else 1.3,
+            width=width,
             color=COLORS[system],
             label=DISPLAY[system],
-            alpha=0.95,
-            linestyle="--" if system == "S7" else "-",
+            alpha=0.92,
+            edgecolor="#333333",
+            linewidth=0.35,
+            hatch="//" if system == "S7" else None,
         )
+        if system == "S3+R":
+            for bar in bars:
+                bar.set_linewidth(0.65)
 
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
@@ -388,16 +420,6 @@ def fig03_judge_criteria() -> None:
     ax.set_title("Free-Text Judge Profile")
     clean_axes(ax, "y")
     ax.legend(frameon=False, ncol=4, loc="lower center", bbox_to_anchor=(0.5, -0.30))
-    ax.text(
-        2.15,
-        0.97,
-        "CLM adapter leads\non judged prose",
-        fontsize=7.6,
-        color=COLORS["S3+R"],
-        ha="left",
-        va="top",
-    )
-
     save(fig, "fig03_judge_criteria.png")
 
 
@@ -465,27 +487,15 @@ def fig04_per_type_heatmap() -> None:
     cbar.set_label("Score", rotation=270, labelpad=12)
     cbar.ax.tick_params(labelsize=8)
 
-    ax.text(
-        -0.48,
-        4.08,
-        "outlined cells mark the best system per answer type",
-        fontsize=7.3,
-        color="#666666",
-        ha="left",
-    )
-
     save(fig, "fig04_per_type_heatmap.png")
 
 
 def fig05_singledoc_multidoc() -> None:
     """Single vs multi-document performance as a gap/slope chart."""
 
-    df = pd.read_csv(DATA / "question_score_summary.csv")
-    df = df[df["system"].isin(HEADLINE)]
-    groups = df.groupby(["system", "is_multi_doc"])["score_mean"].mean()
-
-    single = {system: groups.loc[(system, False)] for system in HEADLINE}
-    multi = {system: groups.loc[(system, True)] for system in HEADLINE}
+    df = pd.read_csv(DOC_SCOPE).set_index("system")
+    single = {system: df.loc[system, "single_doc_q_main"] for system in HEADLINE}
+    multi = {system: df.loc[system, "multi_doc_q_main"] for system in HEADLINE}
 
     fig, ax = plt.subplots(figsize=(6.3, 3.8))
     x = np.array([0, 1])
@@ -548,9 +558,204 @@ def fig05_singledoc_multidoc() -> None:
     save(fig, "fig05_singledoc_multidoc.png")
 
 
+def figB1_error_overlap() -> None:
+    """Failure-overlap Jaccard matrix for headline systems."""
+
+    df = pd.read_csv(DATA / "error_overlap_jaccard.csv", index_col=0)
+    systems = HEADLINE
+    matrix = df.loc[systems, systems].to_numpy(dtype=float)
+
+    fig, ax = plt.subplots(figsize=(5.2, 4.1))
+    im = ax.imshow(matrix, cmap="magma", vmin=0.40, vmax=1.00)
+
+    ax.set_xticks(np.arange(len(systems)))
+    ax.set_yticks(np.arange(len(systems)))
+    ax.set_xticklabels([DISPLAY[system] for system in systems], rotation=25, ha="right")
+    ax.set_yticklabels([DISPLAY[system] for system in systems])
+    ax.set_xlabel("System B")
+    ax.set_ylabel("System A")
+    ax.set_title("Failure-Overlap Jaccard Among Headline Systems")
+
+    for i in range(matrix.shape[0]):
+        for j in range(matrix.shape[1]):
+            val = matrix[i, j]
+            rgba = im.cmap(im.norm(val))
+            luminance = 0.299 * rgba[0] + 0.587 * rgba[1] + 0.114 * rgba[2]
+            color = "#222222" if luminance > 0.58 else "white"
+            ax.text(j, i, f"{val:.2f}", ha="center", va="center", fontsize=8.2, color=color)
+
+    ax.tick_params(length=0)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+
+    cbar = fig.colorbar(im, ax=ax, shrink=0.82, pad=0.03)
+    cbar.set_label("Jaccard over missed questions", rotation=270, labelpad=16)
+    cbar.ax.tick_params(labelsize=8)
+
+    ax.text(
+        0.0,
+        -0.24,
+        "Higher values mean that two systems fail on more of the same questions.",
+        transform=ax.transAxes,
+        ha="left",
+        va="top",
+        fontsize=7.6,
+        color="#555555",
+    )
+
+    save(fig, "figB1_error_overlap_heatmap.png")
+
+
+def figB2_seed_stability() -> None:
+    """Grouped per-seed Q_main bars for trained systems."""
+
+    seed_df = load_seed_qmain()
+    systems = ["S2+R", "S3+R", "S7", "S2", "S3"]
+    seeds = [42, 123, 777]
+    x = np.arange(len(systems))
+    width = 0.22
+    seed_colors = {
+        42: "#C7D8ED",
+        123: "#7FA6CF",
+        777: "#315F8C",
+    }
+
+    fig, ax = plt.subplots(figsize=(7.2, 4.0))
+    for idx, seed in enumerate(seeds):
+        vals = [
+            seed_df[(seed_df["system"] == system) & (seed_df["seed"] == seed)][
+                "q_main"
+            ].iloc[0]
+            for system in systems
+        ]
+        offset = (idx - 1) * width
+        bars = ax.bar(
+            x + offset,
+            vals,
+            width=width,
+            color=seed_colors[seed],
+            edgecolor="#333333",
+            linewidth=0.45,
+            label=f"seed {seed}",
+        )
+        for bar, val in zip(bars, vals):
+            if val < 0.35:
+                label_y = val + 0.010
+                label_va = "bottom"
+                text_color = "#222222"
+            else:
+                label_y = val - 0.012
+                label_va = "top"
+                text_color = "white" if seed == 777 else "#222222"
+            ax.text(
+                bar.get_x() + bar.get_width() / 2,
+                label_y,
+                f"{val:.3f}",
+                ha="center",
+                va=label_va,
+                fontsize=7.0,
+                rotation=90,
+                color=text_color,
+            )
+
+    base = pd.read_csv(DATA / "consolidated_results.csv").set_index("system").loc["S1", "q_main"]
+    ax.axhline(base, color=COLORS["S1"], linewidth=1.2, linestyle="--")
+    ax.text(
+        len(systems) - 0.05,
+        base + 0.008,
+        "Base-RAG baseline",
+        ha="right",
+        va="bottom",
+        fontsize=7.6,
+        color=COLORS["S1"],
+    )
+
+    ax.set_xticks(x)
+    ax.set_xticklabels([DISPLAY[system] for system in systems], rotation=18, ha="right")
+    ax.set_ylabel("Q_main")
+    ax.set_ylim(0.15, 0.82)
+    ax.set_title("Seed-Level Stability of Trained Systems")
+    clean_axes(ax, "y")
+    ax.legend(frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(0.5, -0.24))
+
+    save(fig, "figB2_seed_stability.png")
+
+
+def figB3_pairwise_win_rates() -> None:
+    """Pairwise win-rate heatmap for headline systems."""
+
+    df = pd.read_csv(DATA / "pairwise_win_rate.csv")
+    systems = HEADLINE
+    matrix = np.full((len(systems), len(systems)), np.nan)
+    counts = np.zeros((len(systems), len(systems)), dtype=int)
+    ties = np.zeros((len(systems), len(systems)), dtype=int)
+
+    for i, row_system in enumerate(systems):
+        for j, col_system in enumerate(systems):
+            row = df[(df["system_a"] == row_system) & (df["system_b"] == col_system)].iloc[0]
+            if row_system != col_system:
+                matrix[i, j] = float(row["win_rate_a_over_b"])
+            counts[i, j] = int(row["win_count"])
+            ties[i, j] = int(row["tie_count"])
+
+    fig, ax = plt.subplots(figsize=(5.4, 4.3))
+    cmap = plt.colormaps["YlGn"].copy()
+    cmap.set_bad(color="#F2F2F2")
+    im = ax.imshow(matrix, cmap=cmap, vmin=0.0, vmax=0.30)
+
+    ax.set_xticks(np.arange(len(systems)))
+    ax.set_yticks(np.arange(len(systems)))
+    ax.set_xticklabels([DISPLAY[system] for system in systems], rotation=25, ha="right")
+    ax.set_yticklabels([DISPLAY[system] for system in systems])
+    ax.set_xlabel("Column system")
+    ax.set_ylabel("Row system")
+    ax.set_title("Pairwise Win Rates Among Headline Systems")
+
+    for i in range(matrix.shape[0]):
+        for j in range(matrix.shape[1]):
+            if i == j:
+                text = "-"
+                color = "#777777"
+            else:
+                text = f"{matrix[i, j]:.2f}\n({counts[i, j]}/50)"
+                color = "white" if matrix[i, j] >= 0.22 else "#222222"
+            ax.text(j, i, text, ha="center", va="center", fontsize=8.0, color=color)
+
+    ax.tick_params(length=0)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+
+    cbar = fig.colorbar(im, ax=ax, shrink=0.82, pad=0.03)
+    cbar.set_label("Fraction of questions won", rotation=270, labelpad=16)
+    cbar.ax.tick_params(labelsize=8)
+
+    ax.text(
+        0.0,
+        -0.24,
+        "Cell = row system scores higher than column system; ties are not wins.",
+        transform=ax.transAxes,
+        ha="left",
+        va="top",
+        fontsize=7.6,
+        color="#555555",
+    )
+
+    save(fig, "figB3_pairwise_win_rates.png")
+
+
 if __name__ == "__main__":
     print(f"Generating figures from {DATA}")
-    missing = [path for path in [DATA / "consolidated_results.csv"] if not path.exists()]
+    missing = [
+        path
+        for path in [
+            DATA / "consolidated_results.csv",
+            DATA / "error_overlap_jaccard.csv",
+            DATA / "pairwise_win_rate.csv",
+            DOC_SCOPE,
+            *SEED_QMAIN_SOURCES.values(),
+        ]
+        if not path.exists()
+    ]
     if missing:
         raise FileNotFoundError(f"Missing expected input files: {missing}")
     fig01_system_schematic()
@@ -558,4 +763,7 @@ if __name__ == "__main__":
     fig03_judge_criteria()
     fig04_per_type_heatmap()
     fig05_singledoc_multidoc()
+    figB1_error_overlap()
+    figB2_seed_stability()
+    figB3_pairwise_win_rates()
     print(f"All figures saved to {OUT}")
