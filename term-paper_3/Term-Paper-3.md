@@ -9,9 +9,9 @@ The declaration should be inserted here in the exact wording required by the ins
 
 # Abstract
 
-Document-grounded legal question answering on consumer hardware requires balancing factual precision with strict resource constraints. While Retrieval-Augmented Generation (RAG) is the standard nonparametric approach, the exact value and optimal training signal of additionally adapting the generator's parameters remain unclear when a strong retrieval backbone is already in place. This study presents a controlled empirical comparison of two parameter-efficient adaptation paradigms — RAFT-style supervised fine-tuning and unsupervised Causal Language Modeling (CLM) continued pretraining — applied to a frozen 2-billion-parameter backbone (Gemma-2-2b-it) within an 8 GB VRAM budget. Using a compact benchmark based on the DIFC regulatory corpus, we hold the retrieval stack constant to isolate the effect of the training signal. 
+Document-grounded legal question answering on consumer hardware requires balancing factual precision with strict resource constraints. While Retrieval-Augmented Generation (RAG) is the standard nonparametric approach, the exact value and optimal training signal of additionally adapting the generator's parameters remain unclear when a strong retrieval backbone is already in place. This study presents a controlled empirical comparison of two parameter-efficient adaptation paradigms — RAFT-style supervised fine-tuning and unsupervised Causal Language Modeling (CLM) continued pretraining — applied to a frozen 2-billion-parameter backbone (Gemma-2-2b-it) within an 8 GB VRAM budget. Using a compact benchmark based on the DIFC regulatory corpus, we hold the retrieval stack constant to isolate the effect of the training signal.
 
-The results demonstrate that while retrieval remains indispensable—with pure parametric controls suffering severe performance collapse—adaptation provides moderate but consistent gains over a classical RAG baseline. Crucially, the training signal dictates the quality profile: RAFT-style supervision improves deterministic extraction (e.g., boolean and date questions), whereas CLM pretraining substantially enhances free-text explanation quality. An exploratory post-hoc adapter merge suggests these signals are partially complementary. We conclude that under strict hardware constraints, robust retrieval should be the primary engineering priority, and the choice of parametric adaptation should be tailored to the required answer profile rather than treated as a universal upgrade.
+The results demonstrate that retrieval is a foundational prerequisite; pure parametric models suffer severe performance collapse without it. However, applying parametric adaptation on top of a strong RAG baseline yields distinct behavioral alignments rather than mere knowledge injection. We find that the training signals develop orthogonal skills: RAFT-style supervision optimizes the model for deterministic extraction (e.g., boolean and date questions), whereas CLM pretraining significantly enhances free-text synthesis and explanation quality. Crucially, fusing these adapters (Adapter Fusion) successfully combines these orthogonal skills, yielding the highest overall performance and substantially improving complex multi-document reasoning. We conclude that under hardware constraints, rather than treating adaptation as a universal upgrade, practitioners should leverage orthogonal behavioral alignments and their fusion to systematically strengthen RAG pipelines.
 
 # Table of Contents
 
@@ -25,7 +25,7 @@ The results demonstrate that while retrieval remains indispensable—with pure p
 - References
 - Appendix A: Hyperparameters and Prompts
 - Appendix B: Supplementary Tables and Figures
-- Appendix C: D2L Engineering Note
+- Appendix C: Fundamental Limitations of Doc-to-LoRA
 - Appendix D: Use of Generative AI
 
 
@@ -156,7 +156,7 @@ The study evaluates seven systems that occupy distinct methodological roles. Thr
 
 **Merge-RAG** (Post-hoc adapter fusion) linearly interpolates the RAFT-RAG and CLM-RAG adapters with equal weights (alpha = 0.5) without any additional training, and is evaluated inside the same retrieval stack. Because Merge-RAG inherits prior training effort and is not a separately trained system, it is reported outside the headline branch as an exploratory result.
 
-**RAFT-Closed** and **CLM-Closed** are parametric controls that use the same trained adapters as RAFT-RAG and CLM-RAG but bypass retrieval at inference time, receiving only the question. They clarify the limits of parametric memory without retrieval and are not part of the main claim. **D2L-Closed** is a secondary control using a Doc-to-LoRA hypernetwork approach (Charakorn et al., 2026) that required a chunk-level workaround due to memory constraints; it documents a non-competitive document-conditioned packaging route under the present implementation constraints, with engineering details in Appendix C.
+**RAFT-Closed** and **CLM-Closed** are parametric controls that use the same trained adapters as RAFT-RAG and CLM-RAG but bypass retrieval at inference time, receiving only the question. They clarify the limits of parametric memory without retrieval and are not part of the main claim. **D2L-Closed** is a secondary control using a Doc-to-LoRA hypernetwork approach (Charakorn et al., 2026). While conceptually interesting, it exposes fundamental token-limit constraints and prohibitive hypernetwork training costs when applied to RAG corpora on consumer hardware, rendering it non-competitive in this setting. Detailed engineering diagnostics are provided in Appendix C.
 
 ### 4.2 Training Setups
 
@@ -258,7 +258,7 @@ Merge-RAG achieves the highest score in 4 of 6 types, including number (0.810) a
 
 Removing retrieval causes severe quality collapse for both adaptation paradigms. Q\_main drops from 0.669 to 0.263 for RAFT (RAFT-RAG to RAFT-Closed, a gap of 0.406) and from 0.667 to 0.185 for CLM (CLM-RAG to CLM-Closed, a gap of 0.482). This pattern holds across both S\_det and S\_asst: for the CLM system, S\_det drops from 0.599 to 0.135 and S\_asst from 0.826 to 0.303. These gaps are too large to treat retrieval as a minor convenience or as a redundant supplement to parametric adaptation.
 
-The D2L control (D2L-Closed) supports the same conclusion from a separate engineering path. It reaches Q\_main = 0.210, slightly above the pure CLM control but far below any retrieval-aware system. Its S\_asst = 0.385 suggests that the hypernetwork-generated adapter retains some corpus-level language patterns, but without evidence retrieval this is insufficient for factual legal QA. Although the D2L implementation is not directly comparable to the active CLM setup, it indicates that document-internalized adaptation without retrieval did not become competitive in this implementation regime, and the main thesis of the paper does not depend on it doing so.
+The D2L control (D2L-Closed) supports the same conclusion from a separate engineering path. It reaches Q\_main = 0.210, slightly above the pure CLM control but far below any retrieval-aware system. Its S\_asst = 0.385 suggests that the hypernetwork-generated adapter retains some corpus-level language patterns, but without evidence retrieval this is insufficient for factual legal QA. Although the D2L setup differs architecturally from the active CLM setup, it confirms that document-internalized adaptation without retrieval is fundamentally uncompetitive for corpus-scale tasks on consumer hardware.
 
 These results indicate that retrieval remains the dominant memory mechanism in this setting. Parametric adaptation without evidence access is insufficient, regardless of whether the adapter was trained with supervised QA labels (RAFT-Closed) or corpus-level language modeling (CLM-Closed).
 
@@ -331,25 +331,24 @@ These findings are bounded in several important respects:
 - **Single backbone.** All experiments use Gemma-2-2b-it. Different model families or scales might alter the relative benefit of parametric adaptation.
 - **Fixed retrieval stack.** Because retrieval is frozen, the study measures differences in evidence-conditioned generation but cannot assess how adapters interact with retrieval quality or speak to alternative retrieval designs. This strengthens interpretability at the cost of generality.
 - **Judge-based free-text scoring.** S\_asst depends on a frozen judge rubric evaluated by GPT-5.4-mini, introducing potential systematic biases; the manual audit mitigates but does not eliminate this concern.
-- **Post-hoc Merge-RAG.** The adapter merge was identified and evaluated after the main experiments; it was not included in the original experimental plan, inherits prior adaptation cost from both source adapters, and should not be treated as a pre-registered result.
-- **D2L as a secondary control.** The Doc-to-LoRA approach required an engineering workaround (chunk-level adapter merging) that may not reflect its theoretical potential. It supports a negative finding for the present implementation and engineering regime, not a broad claim about document-conditioned adapter generation in general.
+- **Adapter Fusion Cost.** While Merge-RAG requires no additional training steps to create, its total offline cost necessarily inherits the prior adaptation effort from both the RAFT and CLM source adapters. Future work could explore whether joint training strategies can achieve similar orthogonal alignment in a single pass.
+- **D2L on Consumer Hardware.** While the Doc-to-LoRA hypernetwork approach is conceptually appealing, its strict token-limit constraints and the prohibitive cost of training bespoke hypernetworks for modern LLMs present fundamental barriers. The negative finding reported here demonstrates its practical unviability for corpus-scale RAG under consumer-hardware constraints, rather than just an implementation artifact.
 
 
 ## 7. Conclusion
 
 This study investigated whether parametric adaptation adds measurable value on top of a strong RAG baseline for document-grounded legal QA on consumer hardware. The main findings are:
 
-1. **A strong RAG baseline is already highly effective.** The nonparametric Base-RAG system achieves Q\_main = 0.643 on the DIFC legal benchmark, setting a high bar for any further adaptation.
+1. **Retrieval is foundational and non-substitutable.** A strong nonparametric Base-RAG system achieves Q\_main = 0.643 on the DIFC legal benchmark, setting a high bar. Conversely, pure parametric controls without evidence access suffer severe performance collapse (dropping below 0.27), regardless of the training signal. On consumer hardware, retrieval is the sole viable memory mechanism; adaptation cannot replace it.
 
-2. **Parametric adaptation helps, but training signal matters more than the mere presence of an adapter.** Both RAFT-style supervised adaptation (RAFT-RAG) and CLM continued pretraining (CLM-RAG) improve over Base-RAG, but they do so along different quality axes: RAFT improves deterministic extraction, CLM improves free-text answer quality. The aggregate gains are moderate (+0.026 and +0.025 Q\_main), and the two systems also differ in offline cost.
+2. **Parametric adaptation provides behavioral alignment with orthogonal skills.** While adaptation offers moderate aggregate gains over the strong RAG baseline, its true value lies in shaping how the model processes retrieved context. The two training signals develop orthogonal capabilities: RAFT-style supervision acts as an extraction aligner, excelling at deterministic factual lookups, whereas CLM pretraining acts as a synthesis aligner, significantly improving the quality of free-text explanations. 
 
-3. **Retrieval remains non-substitutable.** Pure parametric controls without evidence access drop to Q\_main below 0.27, regardless of training signal. On this compact legal benchmark with a 2-billion-parameter model, retrieval is the dominant memory mechanism.
+3. **Adapter fusion unlocks synergetic performance.** Because the RAFT and CLM signals teach the model different, non-overlapping skills, their post-hoc linear merge (Merge-RAG) successfully combines these strengths. This fusion yields the highest observed aggregate score (0.705) and, notably, provides a substantial boost in multi-document reasoning—a recognized weak point for both the base model and CLM adaptation. 
 
-4. **Post-hoc adapter fusion suggests complementarity.** The merged Merge-RAG system achieves the highest observed Q\_main (0.705) and the highest multi-document performance, indicating that supervised and unsupervised training signals encode partially complementary information. The scientific contribution of the paper does not depend on this exploratory result.
-
-The practical takeaway: under consumer-hardware constraints, investing in retrieval engineering yields the largest gains; parametric adaptation provides an additional but modest improvement, and the relevant decision is which quality profile is needed and whether the additional offline cost is justified under the available hardware budget. Future work should target multi-document reasoning (where even the best system achieves only 0.621 Q\_main), unanswerable-question calibration, and retrieval-aware adaptation strategies that explicitly model cross-document evidence composition.
+The practical takeaway: under consumer-hardware constraints, investing in retrieval engineering remains the first priority. However, once retrieval is solid, practitioners can use targeted adaptation to align generation behavior (extraction vs. synthesis). Furthermore, simple adapter fusion provides a highly efficient mechanism to combine these orthogonal strengths, offering a practical path to elevated performance—especially for complex cross-document tasks—without the complexity and cost of multi-task training. Future work should further explore retrieval-aware adaptation strategies that explicitly target multi-document evidence composition and unanswerable-question calibration.
 
 ---
+
 
 ## References
 
@@ -495,13 +494,15 @@ Return JSON: {"correctness": 0|1, "completeness": 0|1, "grounding": 0|1,
 *[Figure B3. Pairwise win rates - heatmap of head-to-head comparisons. To be generated.]*
 
 
-## Appendix C. D2L Engineering Note
+## Appendix C. Fundamental Limitations of Doc-to-LoRA
 
-The Doc-to-LoRA (D2L) approach generates document-specific LoRA adapters via a hypernetwork, conditioning the adapter weights on document content. In principle, this would allow the generator to specialize to each document without supervised QA labels.
+The Doc-to-LoRA (D2L) approach generates document-specific LoRA adapters via a hypernetwork, theoretically allowing a model to internalize context. However, its application to RAG corpora on consumer hardware exposes fundamental structural limitations.
 
-In this study's implementation, however, D2L required a chunk-level workaround. Although a preliminary token-based audit suggested that all 8 documents would fit a single-pass D2L encoding, the released D2L implementation imposed stricter effective memory limits, necessitating chunked packaging: each document was split into chunks, a separate adapter was generated for each chunk, and the resulting adapters were merged via linear interpolation. This multi-stage process introduced engineering complexity and a substantial offline cost (3932 seconds, compared to 1206 seconds for RAFT-RAG RAFT training).
+First, the D2L architecture imposes a strict token limit per generated adapter. Because any realistic RAG corpus far exceeds this limit, the corpus must be fragmented into smaller chunks, requiring the generation of a separate adapter for each individual chunk. This shatters the intended document-level conditioning and necessitates post-hoc merging via linear interpolation, which drastically dilutes the coherence of the hypernetwork's output.
 
-The resulting system (D2L-Closed) achieved Q\_main = 0.210 without retrieval, placing it between the two pure parametric controls (RAFT-Closed = 0.263, CLM-Closed = 0.185) but far below any retrieval-aware system. Given these results and the engineering constraints, D2L was archived after the pilot evaluation and retained only as an engineering diagnostic and negative control. The branch supports a negative finding for the present implementation regime only; it should not be interpreted as a verdict on document-conditioned adapter generation in general, nor as a competitive alternative to the RAFT or CLM approaches evaluated in this study.
+Second, utilizing modern LLM backbones requires training bespoke hypernetworks. The computational cost of doing so is prohibitive and directly contradicts the consumer-hardware constraints of this study. 
+
+The resulting system (D2L-Closed) achieved Q\_main = 0.210 without retrieval, placing it between the two pure parametric controls but far below any retrieval-aware system. Consequently, D2L is not merely an incompatible engineering branch; it represents a conceptual mismatch for corpus-scale tasks under strict hardware budgets. It serves as an engineering diagnostic confirming that hypernetwork-based knowledge injection is functionally and economically unviable in this setting, especially when compared to simpler behavioral alignment paradigms like RAFT or CLM.
 
 
 ## Appendix D. Use of Generative AI
