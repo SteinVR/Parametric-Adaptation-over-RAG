@@ -14,6 +14,7 @@ This research project investigates **knowledge injection techniques for document
 - `external/pdf_rag_pipeline/` — reference RAG implementation with ingestion, indexing, and retrieval stages.
 - `term-paper/` — thesis drafts, advisor reviews, writing blueprints, and supporting figures.
 - `term-paper_2/` — updated thesis version with structured sections, blueprints, and additional materials.
+- `term-paper_3/` — most recent and thoroughly developed thesis version with comprehensive refinements and finalized content.
 - `docs/` - additional documents.
 
 ## Memory Bank (SSOT)

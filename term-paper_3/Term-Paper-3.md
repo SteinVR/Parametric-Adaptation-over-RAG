@@ -6,6 +6,13 @@ University, department, module, semester, author details, supervisor details, an
 
 The declaration should be inserted here in the exact wording required by the institution.
 
+
+# Abstract
+
+Document-grounded legal question answering on consumer hardware requires balancing factual precision with strict resource constraints. While Retrieval-Augmented Generation (RAG) is the standard nonparametric approach, the exact value and optimal training signal of additionally adapting the generator's parameters remain unclear when a strong retrieval backbone is already in place. This study presents a controlled empirical comparison of two parameter-efficient adaptation paradigms — RAFT-style supervised fine-tuning and unsupervised Causal Language Modeling (CLM) continued pretraining — applied to a frozen 2-billion-parameter backbone (Gemma-2-2b-it) within an 8 GB VRAM budget. Using a compact benchmark based on the DIFC regulatory corpus, we hold the retrieval stack constant to isolate the effect of the training signal. 
+
+The results demonstrate that while retrieval remains indispensable—with pure parametric controls suffering severe performance collapse—adaptation provides moderate but consistent gains over a classical RAG baseline. Crucially, the training signal dictates the quality profile: RAFT-style supervision improves deterministic extraction (e.g., boolean and date questions), whereas CLM pretraining substantially enhances free-text explanation quality. An exploratory post-hoc adapter merge suggests these signals are partially complementary. We conclude that under strict hardware constraints, robust retrieval should be the primary engineering priority, and the choice of parametric adaptation should be tailored to the required answer profile rather than treated as a universal upgrade.
+
 # Table of Contents
 
 1. Introduction
@@ -102,11 +109,11 @@ The 200 questions are split into 150 training questions and 50 evaluation questi
 
 All experiments run on a single NVIDIA RTX 4060 with 8 GB VRAM and 32 GB system RAM. The language model backbone is Gemma-2-2b-it, an instruction-tuned model with approximately 2 billion parameters. The backbone is held constant across all systems to prevent architectural variance from confounding the training-signal comparison: the headline systems differ in adaptation signal, not in backbone family or deployment environment.
 
-For systems that involve training (S2+R, S3+R, and their no-retrieval controls), three random seeds (42, 123, 777) are used, and results are reported as mean +/- standard deviation. No cross-validation is performed: the single frozen split is shared across all evaluations, and seed-level variance captures only the stochasticity introduced by the training process. This variance policy is modest, but it provides a clearer view of stability than a single run would, while keeping all compared systems anchored to the same test set.
+For systems that involve training (RAFT-RAG, CLM-RAG, and their no-retrieval controls), three random seeds (42, 123, 777) are used, and results are reported as mean +/- standard deviation. No cross-validation is performed: the single frozen split is shared across all evaluations, and seed-level variance captures only the stochasticity introduced by the training process. This variance policy is modest, but it provides a clearer view of stability than a single run would, while keeping all compared systems anchored to the same test set.
 
 ### 3.3 Fixed Retrieval Backbone
 
-The retrieval stack is held constant across all retrieval-aware systems (S1, S2+R, S3+R, S7). It comprises a five-stage pipeline:
+The retrieval stack is held constant across all retrieval-aware systems (Base-RAG, RAFT-RAG, CLM-RAG, Merge-RAG). It comprises a five-stage pipeline:
 
 1. **Ingestion and hierarchical chunking.** Documents are parsed and split into five chunk families: page-level, section-level, clause-level, microchunks (300 tokens, 50-token overlap), and table blocks. Metadata - including entities, dates, heading paths, and BM25 terms - is extracted for each chunk.
 
@@ -129,39 +136,39 @@ The study evaluates seven systems that occupy distinct methodological roles. Thr
 
 **Table 1. Compared systems and their roles.**
 
-| System | Retrieval | Training signal | Supervision | Role |
+| System (Mnemonic) | Retrieval | Training signal | Supervision | Role |
 |--------|-----------|-----------------|-------------|------|
-| S1 | Yes | None | --- | Headline baseline |
-| S2+R | Yes | RAFT-style QA | Supervised | Headline |
-| S3+R | Yes | CLM on corpus | Unsupervised | Headline |
-| S7 | Yes | Merged S2+R + S3+R | Post-hoc | Exploratory |
-| S2 | No | RAFT-style QA | Supervised | Control |
-| S3 | No | CLM on corpus | Unsupervised | Control |
-| S3-legacy | No | D2L hypernetwork | Supervised | Legacy control |
+| Base-RAG | Yes | None | --- | Headline baseline |
+| RAFT-RAG | Yes | RAFT-style QA | Supervised | Headline |
+| CLM-RAG | Yes | CLM on corpus | Unsupervised | Headline |
+| Merge-RAG | Yes | Merged RAFT + CLM | Post-hoc | Exploratory |
+| RAFT-Closed | No | RAFT-style QA | Supervised | Control |
+| CLM-Closed | No | CLM on corpus | Unsupervised | Control |
+| D2L-Closed | No | D2L hypernetwork | Supervised | Control |
 
 ![Figure 1. System overview schematic](figures/fig01_system_schematic.png)
 
-*Figure 1. System overview schematic. S1 routes queries through the shared retrieval stack to the base generator; S2+R and S3+R route through retrieval to an adapted generator; S7 uses a merged adapter; controls bypass retrieval entirely.*
+*Figure 1. System overview schematic. Base-RAG routes queries through the shared retrieval stack to the base generator; RAFT-RAG and CLM-RAG route through retrieval to an adapted generator; Merge-RAG uses a merged adapter; controls bypass retrieval entirely.*
 
-**S1 (Classical RAG)** serves as the nonparametric baseline: the frozen Gemma-2-2b-it generator receives retrieved evidence and produces answers without any adapter.
+**Base-RAG** serves as the nonparametric baseline: the frozen Gemma-2-2b-it generator receives retrieved evidence and produces answers without any adapter.
 
-**S2+R (RAFT-style QLoRA + retrieval)** and **S3+R (CLM + retrieval)** are the two headline adapted systems. Both use the same retrieval stack as S1 and the same QLoRA architecture (rank 32, alpha 32, dropout 0.05, targeting q\_proj and v\_proj). They differ only in training signal: S2+R is trained on question-answer pairs with retrieved context (RAFT-style), while S3+R is pretrained on raw corpus text via causal language modeling. These three systems define the main thesis comparison.
+**RAFT-RAG** and **CLM-RAG** are the two headline adapted systems. Both use the same retrieval stack as Base-RAG and the same QLoRA architecture (rank 32, alpha 32, dropout 0.05, targeting q\_proj and v\_proj). They differ only in training signal: RAFT-RAG is trained on question-answer pairs with retrieved context (RAFT-style), while CLM-RAG is pretrained on raw corpus text via causal language modeling. These three systems define the main thesis comparison.
 
-**S7 (Post-hoc adapter merge)** linearly interpolates the S2+R and S3+R adapters with equal weights (alpha = 0.5) without any additional training, and is evaluated inside the same retrieval stack. Because S7 inherits prior training effort and is not a separately trained system, it is reported outside the headline branch as an exploratory result.
+**Merge-RAG** (Post-hoc adapter fusion) linearly interpolates the RAFT-RAG and CLM-RAG adapters with equal weights (alpha = 0.5) without any additional training, and is evaluated inside the same retrieval stack. Because Merge-RAG inherits prior training effort and is not a separately trained system, it is reported outside the headline branch as an exploratory result.
 
-**S2 (closed-book RAFT)** and **S3 (CLM without retrieval)** are parametric controls that use the same trained adapters as S2+R and S3+R but bypass retrieval at inference time, receiving only the question. They clarify the limits of parametric memory without retrieval and are not part of the main claim. **S3-legacy (D2L)** is a historical negative control using a Doc-to-LoRA hypernetwork approach (Charakorn et al., 2026) that required a chunk-level workaround due to memory constraints; it documents a non-competitive document-conditioned packaging route under the present implementation constraints, with engineering details in Appendix C.
+**RAFT-Closed** and **CLM-Closed** are parametric controls that use the same trained adapters as RAFT-RAG and CLM-RAG but bypass retrieval at inference time, receiving only the question. They clarify the limits of parametric memory without retrieval and are not part of the main claim. **D2L-Closed** is a secondary control using a Doc-to-LoRA hypernetwork approach (Charakorn et al., 2026) that required a chunk-level workaround due to memory constraints; it documents a non-competitive document-conditioned packaging route under the present implementation constraints, with engineering details in Appendix C.
 
 ### 4.2 Training Setups
 
-Both S2+R and S3+R employ identical QLoRA configurations applied to the same frozen backbone; the sole difference is the training objective. The comparison thus isolates training signal rather than model family or PEFT architecture.
+Both RAFT-RAG and CLM-RAG employ identical QLoRA configurations applied to the same frozen backbone; the sole difference is the training objective. The comparison thus isolates training signal rather than model family or PEFT architecture.
 
-**S2+R training.** The adapter is fine-tuned for 3 epochs on the 150 training questions in RAFT format. Each training example consists of the question, gold evidence chunks (matched to gold retrieval pages), and 2 distractor chunks from unrelated documents. The target is the reference answer. Learning rate is 2 x 10^-4 with cosine decay and 3% warmup. Maximum sequence length is 4096 tokens. Training takes approximately 20 minutes per seed on the RTX 4060.
+**RAFT-RAG training.** The adapter is fine-tuned for 3 epochs on the 150 training questions in RAFT format. Each training example consists of the question, gold evidence chunks (matched to gold retrieval pages), and 2 distractor chunks from unrelated documents. The target is the reference answer. Learning rate is 2 x 10^-4 with cosine decay and 3% warmup. Maximum sequence length is 4096 tokens. Training takes approximately 20 minutes per seed on the RTX 4060.
 
-**S3+R training.** The adapter is pretrained for 5 epochs on the concatenated corpus text (~115K tokens) using a CLM objective. Learning rate is 5 x 10^-5 with cosine decay and 10% warmup. Maximum sequence length is limited to 512 tokens by a hardware constraint: computing CLM cross-entropy over the full Gemma vocabulary (~256K tokens) at longer sequences exceeds 8 GB VRAM at the logits stage. Training takes approximately 10 minutes per seed. The same adapter is reused without retrieval as the S3 control.
+**CLM-RAG training.** The adapter is pretrained for 5 epochs on the concatenated corpus text (~115K tokens) using a CLM objective. Learning rate is 5 x 10^-5 with cosine decay and 10% warmup. Maximum sequence length is limited to 512 tokens by a hardware constraint: computing CLM cross-entropy over the full Gemma vocabulary (~256K tokens) at longer sequences exceeds 8 GB VRAM at the logits stage. Training takes approximately 10 minutes per seed. The same adapter is reused without retrieval as the CLM-Closed control.
 
-**S2 control training.** The closed-book supervised control is intentionally matched to S2+R in optimizer and PEFT settings (learning rate 2 x 10^-4, cosine schedule, 3% warmup, 3 epochs, maximum sequence length 4096). The only controlled difference is the training data format, which omits retrieved context and trains on question-to-answer pairs alone.
+**RAFT-Closed control training.** The closed-book supervised control is intentionally matched to RAFT-RAG in optimizer and PEFT settings (learning rate 2 x 10^-4, cosine schedule, 3% warmup, 3 epochs, maximum sequence length 4096). The only controlled difference is the training data format, which omits retrieved context and trains on question-to-answer pairs alone.
 
-**S7.** No training is performed. The S2+R and S3+R adapter weight matrices are linearly interpolated: W\_merged = 0.5 * W\_S2+R + 0.5 * W\_S3+R.
+**Merge-RAG.** No training is performed. The RAFT-RAG and CLM-RAG adapter weight matrices are linearly interpolated: W\_merged = 0.5 * W\_RAFT-RAG + 0.5 * W\_CLM-RAG.
 
 ### 4.3 Evaluation Protocol
 
@@ -185,44 +192,44 @@ The evaluation protocol combines deterministic scoring for structured answer typ
 
 Table 2 presents the aggregate results across all systems. The headline systems are grouped at the top, followed by the exploratory post-hoc merge, and then the negative controls.
 
-**Table 2. Main results on the 50-question evaluation set.** Trained systems report mean +/- std across 3 seeds. Offline cost is per-seed wall-clock training time. S7 is excluded from direct offline-cost comparison because it inherits prior adaptation cost from both source adapters.
+**Table 2. Main results on the 50-question evaluation set.** Trained systems report mean +/- std across 3 seeds. Offline cost is per-seed wall-clock training time. Merge-RAG is excluded from direct offline-cost comparison because it inherits prior adaptation cost from both source adapters.
 
 | | Q\_main | S\_det | S\_asst | G | Latency (ms) | VRAM (MB) | Offline (s) |
 |---|---------|--------|---------|------|--------------|-----------|------------|
 | **Headline** | | | | | | | |
-| S1 (RAG) | 0.643 | 0.601 | 0.739 | 0.567 | 479 | 5201 | --- |
-| S2+R (RAFT) | 0.669 +/- 0.014 | 0.648 +/- 0.015 | 0.718 +/- 0.018 | 0.567 | 492 | 3069 | 1206 |
-| S3+R (CLM) | 0.667 +/- 0.023 | 0.599 +/- 0.016 | 0.826 +/- 0.062 | 0.567 | 525 | 3069 | 581 |
+| Base-RAG | 0.643 | 0.601 | 0.739 | 0.567 | 479 | 5201 | --- |
+| RAFT-RAG | 0.669 +/- 0.014 | 0.648 +/- 0.015 | 0.718 +/- 0.018 | 0.567 | 492 | 3069 | 1206 |
+| CLM-RAG | 0.667 +/- 0.023 | 0.599 +/- 0.016 | 0.826 +/- 0.062 | 0.567 | 525 | 3069 | 581 |
 | **Post-hoc** | | | | | | | |
-| S7 (merge) | 0.705 +/- 0.035 | 0.679 +/- 0.048 | 0.764 +/- 0.018 | 0.567 | 527 | 3069 | n.c.* |
+| Merge-RAG | 0.705 +/- 0.035 | 0.679 +/- 0.048 | 0.764 +/- 0.018 | 0.567 | 527 | 3069 | n.c.* |
 | **Controls** | | | | | | | |
-| S2 (closed) | 0.263 +/- 0.005 | 0.270 | 0.246 | --- | 257 | 3067 | 88 |
-| S3 (no retr.) | 0.185 +/- 0.003 | 0.135 | 0.303 | --- | 195 | 3077 | 581 |
-| S3-leg. (D2L) | 0.210 | 0.135 | 0.385 | --- | 179 | 3072 | 3932 |
+| RAFT-Closed | 0.263 +/- 0.005 | 0.270 | 0.246 | --- | 257 | 3067 | 88 |
+| CLM-Closed | 0.185 +/- 0.003 | 0.135 | 0.303 | --- | 195 | 3077 | 581 |
+| D2L-Closed | 0.210 | 0.135 | 0.385 | --- | 179 | 3072 | 3932 |
 
-\* Not directly comparable: S7 inherits the combined offline cost of S2+R (1206 s) and S3+R (581 s); the merge itself is instantaneous.
+\* Not directly comparable: Merge-RAG inherits the combined offline cost of RAFT-RAG (1206 s) and CLM-RAG (581 s); the merge itself is instantaneous.
 
-The nonparametric baseline S1 already reaches Q\_main = 0.643, establishing a difficult starting point for any adapted retrieval-aware system. Both retrieval-aware adapters improve over S1: S2+R attains 0.669 +/- 0.014 and S3+R attains 0.667 +/- 0.023. The improvements are moderate (+0.026 for S2+R and +0.025 for S3+R) but consistent across seeds. The gain is small, but the baseline is already strong and improvements are measured against a fixed retrieval stack.
+The nonparametric baseline Base-RAG already reaches Q\_main = 0.643, establishing a difficult starting point for any adapted retrieval-aware system. Both retrieval-aware adapters improve over Base-RAG: RAFT-RAG attains 0.669 +/- 0.014 and CLM-RAG attains 0.667 +/- 0.023. The improvements are moderate (+0.026 for RAFT-RAG and +0.025 for CLM-RAG) but consistent across seeds. The gain is small, but the baseline is already strong and improvements are measured against a fixed retrieval stack.
 
-S7 reaches the highest observed score (0.705 +/- 0.035) through post-hoc adapter interpolation. However, its higher seed variance (std = 0.035 vs. 0.014 and 0.023 for the headline adapters) and post-hoc nature warrant cautious interpretation. It strengthens the case for partial complementarity between the two adaptation signals, but it does not supersede the controlled headline comparison on which the paper's main claim depends.
+Merge-RAG reaches the highest observed score (0.705 +/- 0.035) through post-hoc adapter interpolation. However, its higher seed variance (std = 0.035 vs. 0.014 and 0.023 for the headline adapters) and post-hoc nature warrant cautious interpretation. It strengthens the case for partial complementarity between the two adaptation signals, but it does not supersede the controlled headline comparison on which the paper's main claim depends.
 
-![Figure 2. Improvement over S1 baseline](figures/fig02_delta_bars.png)
+![Figure 2. Improvement over Base-RAG baseline](figures/fig02_delta_bars.png)
 
-*Figure 2. Improvement over the S1 baseline. Grouped bars show Delta-Q\_main, Delta-S\_det, and Delta-S\_asst for S2+R, S3+R, and S7 relative to S1: RAFT raises S\_det, CLM raises S\_asst, and the merge raises both.*
+*Figure 2. Improvement over the Base-RAG baseline. Grouped bars show Delta-Q\_main, Delta-S\_det, and Delta-S\_asst for RAFT-RAG, CLM-RAG, and Merge-RAG relative to Base-RAG: RAFT raises S\_det, CLM raises S\_asst, and the merge raises both.*
 
-### 5.2 Trade-off Between S2+R and S3+R
+### 5.2 Trade-off Between RAFT-RAG and CLM-RAG
 
 The headline comparison does not yield a single dominant system. Instead, the two adapters improve different quality dimensions, which constitutes the central scientific result of the paper.
 
-S2+R achieves higher deterministic extraction scores (S\_det = 0.648 vs. 0.599), reflecting its supervised exposure to question-answer pairs with evidence context. S3+R achieves substantially higher free-text answer quality (S\_asst = 0.826 vs. 0.718), suggesting that CLM pretraining improves the generator's ability to produce well-structured legal explanations. On the aggregate Q\_main, the two systems are near-tied (delta = 0.002), with S2+R marginally ahead; the difference is too small to support a claim of practical dominance.
+RAFT-RAG achieves higher deterministic extraction scores (S\_det = 0.648 vs. 0.599), reflecting its supervised exposure to question-answer pairs with evidence context. CLM-RAG achieves substantially higher free-text answer quality (S\_asst = 0.826 vs. 0.718), suggesting that CLM pretraining improves the generator's ability to produce well-structured legal explanations. On the aggregate Q\_main, the two systems are near-tied (delta = 0.002), with RAFT-RAG marginally ahead; the difference is too small to support a claim of practical dominance.
 
-The delta-to-S1 view makes the contrast explicit. Relative to the baseline, S2+R improves Q\_main by +0.026 and S\_det by +0.047 while slightly reducing S\_asst by -0.021. S3+R improves Q\_main by +0.025 and S\_asst by +0.087 while leaving S\_det essentially unchanged (-0.002). This pattern supports the interpretation that training signal matters more than the mere presence of an adapter.
+The delta-to-Base-RAG view makes the contrast explicit. Relative to the baseline, RAFT-RAG improves Q\_main by +0.026 and S\_det by +0.047 while slightly reducing S\_asst by -0.021. CLM-RAG improves Q\_main by +0.025 and S\_asst by +0.087 while leaving S\_det essentially unchanged (-0.002). This pattern supports the interpretation that training signal matters more than the mere presence of an adapter.
 
-S3+R also incurs lower offline cost (581 s vs. 1206 s per seed), as it requires no task-specific label generation. This matters under consumer-hardware constraints, where training time competes with other workloads. The comparison thus records a tie on Q\_main and grounding, with S2+R favored on deterministic extraction and S3+R favored on assistant-style quality and offline cost.
+CLM-RAG also incurs lower offline cost (581 s vs. 1206 s per seed), as it requires no task-specific label generation. This matters under consumer-hardware constraints, where training time competes with other workloads. The comparison thus records a tie on Q\_main and grounding, with RAFT-RAG favored on deterministic extraction and CLM-RAG favored on assistant-style quality and offline cost.
 
 ![Figure 3. Judge criteria profile](figures/fig03_judge_criteria.png)
 
-*Figure 3. Judge criteria profile comparing S1, S2+R, S3+R, and S7 on the 5 judge criteria (correctness, completeness, grounding, calibration, clarity). S3+R's advantage is concentrated in free-text quality dimensions.*
+*Figure 3. Judge criteria profile comparing Base-RAG, RAFT-RAG, CLM-RAG, and Merge-RAG on the 5 judge criteria (correctness, completeness, grounding, calibration, clarity). CLM-RAG's advantage is concentrated in free-text quality dimensions.*
 
 ### 5.3 By Answer Type
 
@@ -232,28 +239,28 @@ Type-level analysis reveals that performance differences between systems are con
 
 | | Boolean (n=12) | Number (n=7) | Name (n=8) | Names (n=5) | Date (n=5) | Free-text (n=13) |
 |---|----------------|-------------|------------|-------------|------------|-------------------|
-| S1 | 0.833 | 0.714 | 0.500 | 0.450 | 0.200 | 0.739 |
-| S2+R | 0.889 | 0.714 | 0.625 | 0.261 | 0.400 | 0.718 |
-| S3+R | 0.833 | 0.714 | 0.583 | 0.300 | 0.200 | 0.826 |
-| S7 | 0.889 | 0.810 | 0.708 | 0.224 | 0.400 | 0.764 |
+| Base-RAG | 0.833 | 0.714 | 0.500 | 0.450 | 0.200 | 0.739 |
+| RAFT-RAG | 0.889 | 0.714 | 0.625 | 0.261 | 0.400 | 0.718 |
+| CLM-RAG | 0.833 | 0.714 | 0.583 | 0.300 | 0.200 | 0.826 |
+| Merge-RAG | 0.889 | 0.810 | 0.708 | 0.224 | 0.400 | 0.764 |
 
-The largest divergences appear between deterministic extraction and free-text explanation. S2+R outperforms S1 on boolean (+0.056), name (+0.125), and date (+0.200) types, consistent with its supervised training on structured answer extraction. S3+R shows its advantage primarily on free-text (+0.087 vs. S1), where judged quality benefits from the CLM adapter's exposure to corpus-level language patterns.
+The largest divergences appear between deterministic extraction and free-text explanation. RAFT-RAG outperforms Base-RAG on boolean (+0.056), name (+0.125), and date (+0.200) types, consistent with its supervised training on structured answer extraction. CLM-RAG shows its advantage primarily on free-text (+0.087 vs. Base-RAG), where judged quality benefits from the CLM adapter's exposure to corpus-level language patterns.
 
-The breakdown also shows that no system is uniformly strong. The multi-name category remains difficult for the adapted systems, with both S2+R (0.261) and S3+R (0.300) underperforming S1 (0.450). Date extraction remains weak across all systems: even the best system achieves only 0.400 on dates (n=5). These results point to persistent formatting and evidence-utilization limitations that neither training signal fully addresses. The main interpretive point is that near-equal aggregate scores conceal distinct answer behaviors that align with the different adaptation signals.
+The breakdown also shows that no system is uniformly strong. The multi-name category remains difficult for the adapted systems, with both RAFT-RAG (0.261) and CLM-RAG (0.300) underperforming Base-RAG (0.450). Date extraction remains weak across all systems: even the best system achieves only 0.400 on dates (n=5). These results point to persistent formatting and evidence-utilization limitations that neither training signal fully addresses. The main interpretive point is that near-equal aggregate scores conceal distinct answer behaviors that align with the different adaptation signals.
 
-S7 achieves the highest score in 4 of 6 types, including number (0.810) and name (0.708), providing further evidence that the two training signals are partially complementary, though this observation remains secondary given the system's post-hoc nature.
+Merge-RAG achieves the highest score in 4 of 6 types, including number (0.810) and name (0.708), providing further evidence that the two training signals are partially complementary, though this observation remains secondary given the system's post-hoc nature.
 
 ![Figure 4. Per-type score heatmap](figures/fig04_per_type_heatmap.png)
 
-*Figure 4. Per-type score heatmap for S1, S2+R, S3+R, and S7 across the 6 answer types, with sample sizes in labels.*
+*Figure 4. Per-type score heatmap for Base-RAG, RAFT-RAG, CLM-RAG, and Merge-RAG across the 6 answer types, with sample sizes in labels.*
 
 ### 5.4 Retrieval Contribution and the Limits of Pure Parametric Memory
 
-Removing retrieval causes severe quality collapse for both adaptation paradigms. Q\_main drops from 0.669 to 0.263 for RAFT (S2+R to S2, a gap of 0.406) and from 0.667 to 0.185 for CLM (S3+R to S3, a gap of 0.482). This pattern holds across both S\_det and S\_asst: for the CLM system, S\_det drops from 0.599 to 0.135 and S\_asst from 0.826 to 0.303. These gaps are too large to treat retrieval as a minor convenience or as a redundant supplement to parametric adaptation.
+Removing retrieval causes severe quality collapse for both adaptation paradigms. Q\_main drops from 0.669 to 0.263 for RAFT (RAFT-RAG to RAFT-Closed, a gap of 0.406) and from 0.667 to 0.185 for CLM (CLM-RAG to CLM-Closed, a gap of 0.482). This pattern holds across both S\_det and S\_asst: for the CLM system, S\_det drops from 0.599 to 0.135 and S\_asst from 0.826 to 0.303. These gaps are too large to treat retrieval as a minor convenience or as a redundant supplement to parametric adaptation.
 
-The D2L legacy control (S3-legacy) supports the same conclusion from a separate engineering path. It reaches Q\_main = 0.210, slightly above the pure CLM control but far below any retrieval-aware system. Its S\_asst = 0.385 suggests that the hypernetwork-generated adapter retains some corpus-level language patterns, but without evidence retrieval this is insufficient for factual legal QA. Although the D2L implementation is not directly comparable to the active CLM setup, it indicates that document-internalized adaptation without retrieval did not become competitive in this implementation regime, and the main thesis of the paper does not depend on it doing so.
+The D2L control (D2L-Closed) supports the same conclusion from a separate engineering path. It reaches Q\_main = 0.210, slightly above the pure CLM control but far below any retrieval-aware system. Its S\_asst = 0.385 suggests that the hypernetwork-generated adapter retains some corpus-level language patterns, but without evidence retrieval this is insufficient for factual legal QA. Although the D2L implementation is not directly comparable to the active CLM setup, it indicates that document-internalized adaptation without retrieval did not become competitive in this implementation regime, and the main thesis of the paper does not depend on it doing so.
 
-These results indicate that retrieval remains the dominant memory mechanism in this setting. Parametric adaptation without evidence access is insufficient, regardless of whether the adapter was trained with supervised QA labels (S2) or corpus-level language modeling (S3).
+These results indicate that retrieval remains the dominant memory mechanism in this setting. Parametric adaptation without evidence access is insufficient, regardless of whether the adapter was trained with supervised QA labels (RAFT-Closed) or corpus-level language modeling (CLM-Closed).
 
 ### 5.5 Single-Document vs. Multi-Document Difficulty
 
@@ -263,16 +270,16 @@ The split between single-document and multi-document questions yields one of the
 
 | | Single-doc | Multi-doc | Delta |
 |---|-----------|-----------|-------|
-| S1 | 0.694 | 0.338 | -0.356 |
-| S2+R | 0.692 | 0.529 | -0.163 |
-| S3+R | 0.719 | 0.338 | -0.381 |
-| S7 | 0.716 | 0.621 | -0.095 |
+| Base-RAG | 0.694 | 0.338 | -0.356 |
+| RAFT-RAG | 0.692 | 0.529 | -0.163 |
+| CLM-RAG | 0.719 | 0.338 | -0.381 |
+| Merge-RAG | 0.716 | 0.621 | -0.095 |
 
-S1 and S3+R both drop to Q\_main = 0.338 on multi-document items, while S2+R reaches 0.529 and S7 reaches 0.621. This pattern is the most granular evidence for signal complementarity observed in the study, revealing a sharper behavioral distinction than the aggregate table alone.
+Base-RAG and CLM-RAG both drop to Q\_main = 0.338 on multi-document items, while RAFT-RAG reaches 0.529 and Merge-RAG reaches 0.621. This pattern is the most granular evidence for signal complementarity observed in the study, revealing a sharper behavioral distinction than the aggregate table alone.
 
-CLM continued pretraining appears to benefit single-document contextualization: S3+R achieves the highest single-doc score at 0.719, suggesting that corpus-level exposure helps the generator make better use of evidence from a single source. However, S3+R offers no improvement over S1 on multi-doc questions (both at 0.338), indicating that the CLM signal does not help with cross-document aggregation.
+CLM continued pretraining appears to benefit single-document contextualization: CLM-RAG achieves the highest single-doc score at 0.719, suggesting that corpus-level exposure helps the generator make better use of evidence from a single source. However, CLM-RAG offers no improvement over Base-RAG on multi-doc questions (both at 0.338), indicating that the CLM signal does not help with cross-document aggregation.
 
-RAFT-style supervision confers greater robustness to multi-document composition: S2+R's multi-doc score (0.529) represents a 56% relative improvement over S1's 0.338. The RAFT training format, which includes distractors alongside gold chunks, may teach the generator to discriminate between relevant and irrelevant evidence, which helps when evidence spans multiple documents.
+RAFT-style supervision confers greater robustness to multi-document composition: RAFT-RAG's multi-doc score (0.529) represents a 56% relative improvement over Base-RAG's 0.338. The RAFT training format, which includes distractors alongside gold chunks, may teach the generator to discriminate between relevant and irrelevant evidence, which helps when evidence spans multiple documents.
 
 ![Figure 5. Single-doc vs. multi-doc comparison](figures/fig05_singledoc_multidoc.png)
 
@@ -280,11 +287,11 @@ RAFT-style supervision confers greater robustness to multi-document composition:
 
 ### 5.6 Exploratory Adapter Fusion
 
-The merged adapter S7 provides evidence that the two adaptation signals are not redundant. Relative to S2+R, S7 improves Q\_main by +0.036, S\_det by +0.031, and S\_asst by +0.046. Relative to S3+R, it improves Q\_main by +0.037 and S\_det by +0.080, while reducing S\_asst by -0.062. In the document-scope breakdown, S7 partially combines both advantages, achieving the highest scores in both regimes (0.716 single-doc, 0.621 multi-doc) and the smallest single-to-multi-doc gap (delta = -0.095 vs. -0.356 for S1). This pattern is consistent with partial complementarity: the merged system preserves part of the CLM advantage in assistant-style quality while recovering most of the deterministic advantage associated with RAFT-style supervision.
+The merged adapter Merge-RAG provides evidence that the two adaptation signals are not redundant. Relative to RAFT-RAG, Merge-RAG improves Q\_main by +0.036, S\_det by +0.031, and S\_asst by +0.046. Relative to CLM-RAG, it improves Q\_main by +0.037 and S\_det by +0.080, while reducing S\_asst by -0.062. In the document-scope breakdown, Merge-RAG partially combines both advantages, achieving the highest scores in both regimes (0.716 single-doc, 0.621 multi-doc) and the smallest single-to-multi-doc gap (delta = -0.095 vs. -0.356 for Base-RAG). This pattern is consistent with partial complementarity: the merged system preserves part of the CLM advantage in assistant-style quality while recovering most of the deterministic advantage associated with RAFT-style supervision.
 
 The result is methodologically consistent with recent work on LoRA adapter composition: Prabhakar et al. (2024) show that adapter merge schemes can approach multi-task training quality without retraining, and more structured alternatives such as rank-wise clustering (Zhao et al., 2024) suggest further room for improvement, while the present paper uses a simple linear merge.
 
-The result remains exploratory for two reasons. First, S7 is a post-hoc merge rather than a separately trained system, identified after the main experiments. Second, its practical cost is not directly comparable to the headline systems because it inherits prior adaptation cost from both source adapters. The merged system therefore informs interpretation but does not select a practical winner; the main claim of the paper remains intact without S7, which is the appropriate standard for treating it as a secondary finding.
+The result remains exploratory for two reasons. First, Merge-RAG is a post-hoc merge rather than a separately trained system, identified after the main experiments. Second, its practical cost is not directly comparable to the headline systems because it inherits prior adaptation cost from both source adapters. The merged system therefore informs interpretation but does not select a practical winner; the main claim of the paper remains intact without Merge-RAG, which is the appropriate standard for treating it as a secondary finding.
 
 
 ## 6. Discussion and Limitations
@@ -293,27 +300,27 @@ The result remains exploratory for two reasons. First, S7 is a post-hoc merge ra
 
 RQ1 asked whether parametric adaptation yields measurable gains over a strong RAG baseline and how RAFT-style and CLM adaptation differ. The answer is a qualified affirmative.
 
-Both S2+R and S3+R improve over the nonparametric baseline S1, but the gains are moderate (+0.026 and +0.025 Q\_main respectively). Because S1 is already a strong baseline, modest gains are more informative than they would be in a weak-baseline setting. They indicate that adaptation can still matter after retrieval is strong, but they do not support the claim that retrieval-aware adaptation fundamentally changes the problem.
+Both RAFT-RAG and CLM-RAG improve over the nonparametric baseline Base-RAG, but the gains are moderate (+0.026 and +0.025 Q\_main respectively). Because Base-RAG is already a strong baseline, modest gains are more informative than they would be in a weak-baseline setting. They indicate that adaptation can still matter after retrieval is strong, but they do not support the claim that retrieval-aware adaptation fundamentally changes the problem.
 
-The choice of training signal proves more consequential than the presence of an adapter per se. RAFT-style supervision improves deterministic extraction (S\_det: +0.047 over S1) at the cost of a slight decrease in free-text quality (S\_asst: -0.021). CLM continued pretraining improves free-text answer quality (S\_asst: +0.087) while leaving deterministic extraction essentially unchanged (S\_det: -0.002). These complementary profiles mean that the optimal system depends on the deployment priority: factual precision favors S2+R, while explanation quality favors S3+R. S3+R is also roughly half as expensive to train.
+The choice of training signal proves more consequential than the presence of an adapter per se. RAFT-style supervision improves deterministic extraction (S\_det: +0.047 over Base-RAG) at the cost of a slight decrease in free-text quality (S\_asst: -0.021). CLM continued pretraining improves free-text answer quality (S\_asst: +0.087) while leaving deterministic extraction essentially unchanged (S\_det: -0.002). These complementary profiles mean that the optimal system depends on the deployment priority: factual precision favors RAFT-RAG, while explanation quality favors CLM-RAG. CLM-RAG is also roughly half as expensive to train.
 
-The post-hoc merge S7 achieves the highest aggregate score (0.705), suggesting that the two signals are partially complementary. However, because S7 was not retrained and was identified post-hoc, this finding should be interpreted as a direction for future work.
+The post-hoc merge Merge-RAG achieves the highest aggregate score (0.705), suggesting that the two signals are partially complementary. However, because Merge-RAG was not retrained and was identified post-hoc, this finding should be interpreted as a direction for future work.
 
 ### 6.2 Answer to RQ2
 
 RQ2 asked whether pure parametric systems can substitute for retrieval. The answer is negative within the present setup: retrieval remains indispensable.
 
-Neither supervised closed-book adaptation (S2, Q\_main = 0.263) nor corpus-level CLM pretraining without retrieval (S3, Q\_main = 0.185) provides a viable substitute for external evidence retrieval. The D2L legacy control (Q\_main = 0.210) corroborates this from a third direction. On a compact legal benchmark where the corpus fits within the token budgets of larger models, a 2-billion-parameter model cannot internalize sufficient factual detail to answer legal questions without external evidence.
+Neither supervised closed-book adaptation (RAFT-Closed, Q\_main = 0.263) nor corpus-level CLM pretraining without retrieval (CLM-Closed, Q\_main = 0.185) provides a viable substitute for external evidence retrieval. The D2L control (Q\_main = 0.210) corroborates this from a third direction. On a compact legal benchmark where the corpus fits within the token budgets of larger models, a 2-billion-parameter model cannot internalize sufficient factual detail to answer legal questions without external evidence.
 
 This conclusion should be stated narrowly. It applies to the evaluated corpus, split, backbone, and hardware regime; it does not imply that parametric memory is irrelevant in general. It indicates that, on this benchmark, retrieval is indispensable as the main carrier of document knowledge, while parametric adaptation is better interpreted as a complementary method for improving how retrieved evidence is used.
 
 ### 6.3 Error Analysis
 
-Error overlap analysis clarifies both the shared difficulty of the benchmark and the limits of any single system improvement. Fifteen of the 50 evaluation questions are missed by all headline systems (S1, S2+R, S3+R, and S7), indicating that a substantial portion of the remaining difficulty is benchmark-level, not model-specific, with hard cases likely rooted in retrieval coverage gaps or inherent question ambiguity. The Jaccard overlap coefficient across headline systems is 0.714, confirming that the systems share most of their failure modes.
+Error overlap analysis clarifies both the shared difficulty of the benchmark and the limits of any single system improvement. Fifteen of the 50 evaluation questions are missed by all headline systems (Base-RAG, RAFT-RAG, CLM-RAG, and Merge-RAG), indicating that a substantial portion of the remaining difficulty is benchmark-level, not model-specific, with hard cases likely rooted in retrieval coverage gaps or inherent question ambiguity. The Jaccard overlap coefficient across headline systems is 0.714, confirming that the systems share most of their failure modes.
 
 Persistent failure patterns include date extraction (scores at or below 0.400 for all systems), multi-name list normalization (at or below 0.450), and cross-document composition. Among the 15 universally missed questions, recurring themes include unanswerable questions where the gold answer is null, questions requiring information from document regions not well covered by the 3-chunk evidence budget, and questions demanding multi-step cross-document reasoning. Several of these errors persist even when retrieval succeeds, which implies that access to evidence is necessary but not sufficient: some failures reflect remaining difficulty in mapping retrieved context to precise answer behavior.
 
-Local wins by individual systems are sparse: 2 questions are answered correctly only by S1, 2 only by S3+R, and 0 only by S2+R or only by S7. This limited local complementarity suggests that while the systems have different strengths in aggregate, their per-question advantages rarely translate into exclusive wins, consistent with the modest aggregate deltas observed in Section 5.1.
+Local wins by individual systems are sparse: 2 questions are answered correctly only by Base-RAG, 2 only by CLM-RAG, and 0 only by RAFT-RAG or only by Merge-RAG. This limited local complementarity suggests that while the systems have different strengths in aggregate, their per-question advantages rarely translate into exclusive wins, consistent with the modest aggregate deltas observed in Section 5.1.
 
 ### 6.4 Limitations
 
@@ -324,21 +331,21 @@ These findings are bounded in several important respects:
 - **Single backbone.** All experiments use Gemma-2-2b-it. Different model families or scales might alter the relative benefit of parametric adaptation.
 - **Fixed retrieval stack.** Because retrieval is frozen, the study measures differences in evidence-conditioned generation but cannot assess how adapters interact with retrieval quality or speak to alternative retrieval designs. This strengthens interpretability at the cost of generality.
 - **Judge-based free-text scoring.** S\_asst depends on a frozen judge rubric evaluated by GPT-5.4-mini, introducing potential systematic biases; the manual audit mitigates but does not eliminate this concern.
-- **Post-hoc S7.** The adapter merge was identified and evaluated after the main experiments; it was not included in the original experimental plan, inherits prior adaptation cost from both source adapters, and should not be treated as a pre-registered result.
-- **D2L as legacy control.** The Doc-to-LoRA approach required an engineering workaround (chunk-level adapter merging) that may not reflect its theoretical potential. It supports a negative finding for the present implementation and engineering regime, not a broad claim about document-conditioned adapter generation in general.
+- **Post-hoc Merge-RAG.** The adapter merge was identified and evaluated after the main experiments; it was not included in the original experimental plan, inherits prior adaptation cost from both source adapters, and should not be treated as a pre-registered result.
+- **D2L as a secondary control.** The Doc-to-LoRA approach required an engineering workaround (chunk-level adapter merging) that may not reflect its theoretical potential. It supports a negative finding for the present implementation and engineering regime, not a broad claim about document-conditioned adapter generation in general.
 
 
 ## 7. Conclusion
 
 This study investigated whether parametric adaptation adds measurable value on top of a strong RAG baseline for document-grounded legal QA on consumer hardware. The main findings are:
 
-1. **A strong RAG baseline is already highly effective.** The nonparametric S1 system achieves Q\_main = 0.643 on the DIFC legal benchmark, setting a high bar for any further adaptation.
+1. **A strong RAG baseline is already highly effective.** The nonparametric Base-RAG system achieves Q\_main = 0.643 on the DIFC legal benchmark, setting a high bar for any further adaptation.
 
-2. **Parametric adaptation helps, but training signal matters more than the mere presence of an adapter.** Both RAFT-style supervised adaptation (S2+R) and CLM continued pretraining (S3+R) improve over S1, but they do so along different quality axes: RAFT improves deterministic extraction, CLM improves free-text answer quality. The aggregate gains are moderate (+0.026 and +0.025 Q\_main), and the two systems also differ in offline cost.
+2. **Parametric adaptation helps, but training signal matters more than the mere presence of an adapter.** Both RAFT-style supervised adaptation (RAFT-RAG) and CLM continued pretraining (CLM-RAG) improve over Base-RAG, but they do so along different quality axes: RAFT improves deterministic extraction, CLM improves free-text answer quality. The aggregate gains are moderate (+0.026 and +0.025 Q\_main), and the two systems also differ in offline cost.
 
 3. **Retrieval remains non-substitutable.** Pure parametric controls without evidence access drop to Q\_main below 0.27, regardless of training signal. On this compact legal benchmark with a 2-billion-parameter model, retrieval is the dominant memory mechanism.
 
-4. **Post-hoc adapter fusion suggests complementarity.** The merged S7 system achieves the highest observed Q\_main (0.705) and the highest multi-document performance, indicating that supervised and unsupervised training signals encode partially complementary information. The scientific contribution of the paper does not depend on this exploratory result.
+4. **Post-hoc adapter fusion suggests complementarity.** The merged Merge-RAG system achieves the highest observed Q\_main (0.705) and the highest multi-document performance, indicating that supervised and unsupervised training signals encode partially complementary information. The scientific contribution of the paper does not depend on this exploratory result.
 
 The practical takeaway: under consumer-hardware constraints, investing in retrieval engineering yields the largest gains; parametric adaptation provides an additional but modest improvement, and the relevant decision is which quality profile is needed and whether the additional offline cost is justified under the available hardware budget. Future work should target multi-document reasoning (where even the best system achieves only 0.621 Q\_main), unanswerable-question calibration, and retrieval-aware adaptation strategies that explicitly model cross-document evidence composition.
 
@@ -391,7 +398,7 @@ The practical takeaway: under consumer-hardware constraints, investing in retrie
 
 ### A.2 Training-Signal-Specific Parameters
 
-| Parameter | S2+R (RAFT) | S2 (closed-book) | S3 / S3+R (CLM) |
+| Parameter | RAFT-RAG | RAFT-Closed (closed-book) | CLM-Closed / CLM-RAG (CLM) |
 |-----------|-------------|------------------|------------------|
 | Learning rate | 2 x 10^-4 | 2 x 10^-4 | 5 x 10^-5 |
 | Epochs | 3 | 3 | 5 |
@@ -401,7 +408,7 @@ The practical takeaway: under consumer-hardware constraints, investing in retrie
 | Training data | 150 QA pairs (RAFT format) | 150 QA pairs (no context) | ~115K tokens (raw corpus) |
 | Supervision | Supervised (question + evidence -> answer) | Supervised (question -> answer) | Unsupervised (next-token) |
 
-S2 differs from S2+R only in training data format: retrieved context is omitted. The S3/S3+R adapter is trained once via CLM and reused either without retrieval (S3) or inside the fixed retrieval stack (S3+R). The CLM maximum sequence length of 512 is a hardware constraint, not a modeling preference: CLM computes loss over all tokens, and longer sequences exceeded the 8 GB VRAM budget at the logits stage.
+RAFT-Closed differs from RAFT-RAG only in training data format: retrieved context is omitted. The CLM-Closed/CLM-RAG adapter is trained once via CLM and reused either without retrieval (CLM-Closed) or inside the fixed retrieval stack (CLM-RAG). The CLM maximum sequence length of 512 is a hardware constraint, not a modeling preference: CLM computes loss over all tokens, and longer sequences exceeded the 8 GB VRAM budget at the logits stage.
 
 ### A.3 Retrieval Pipeline Parameters
 
@@ -466,15 +473,15 @@ Return JSON: {"correctness": 0|1, "completeness": 0|1, "grounding": 0|1,
 
 | | Boolean (n=12) | Number (n=7) | Name (n=8) | Names (n=5) | Date (n=5) | Free-text (n=13) |
 |---|----------------|-------------|------------|-------------|------------|-------------------|
-| S2 | 0.750 | 0.143 | 0.000 | 0.000 | 0.000 | 0.246 |
-| S3 | 0.333 | 0.000 | 0.125 | 0.000 | 0.000 | 0.303 |
-| S3-leg. | 0.333 | 0.000 | 0.125 | 0.000 | 0.000 | 0.385 |
+| RAFT-Closed | 0.750 | 0.143 | 0.000 | 0.000 | 0.000 | 0.246 |
+| CLM-Closed | 0.333 | 0.000 | 0.125 | 0.000 | 0.000 | 0.303 |
+| D2L-Closed | 0.333 | 0.000 | 0.125 | 0.000 | 0.000 | 0.385 |
 
 ### B.2 Seed-Level Variance
 
 **Table B2. Per-seed Q\_main for trained systems.**
 
-| Seed | S2+R | S3+R | S7 | S2 | S3 |
+| Seed | RAFT-RAG | CLM-RAG | Merge-RAG | RAFT-Closed | CLM-Closed |
 |------|------|------|------|------|------|
 | 42 | 0.673 | 0.674 | 0.678 | 0.263 | 0.182 |
 | 123 | 0.654 | 0.664 | 0.692 | 0.263 | 0.187 |
@@ -492,9 +499,9 @@ Return JSON: {"correctness": 0|1, "completeness": 0|1, "grounding": 0|1,
 
 The Doc-to-LoRA (D2L) approach generates document-specific LoRA adapters via a hypernetwork, conditioning the adapter weights on document content. In principle, this would allow the generator to specialize to each document without supervised QA labels.
 
-In this study's implementation, however, D2L required a chunk-level workaround. Although a preliminary token-based audit suggested that all 8 documents would fit a single-pass D2L encoding, the released D2L implementation imposed stricter effective memory limits, necessitating chunked packaging: each document was split into chunks, a separate adapter was generated for each chunk, and the resulting adapters were merged via linear interpolation. This multi-stage process introduced engineering complexity and a substantial offline cost (3932 seconds, compared to 1206 seconds for S2+R RAFT training).
+In this study's implementation, however, D2L required a chunk-level workaround. Although a preliminary token-based audit suggested that all 8 documents would fit a single-pass D2L encoding, the released D2L implementation imposed stricter effective memory limits, necessitating chunked packaging: each document was split into chunks, a separate adapter was generated for each chunk, and the resulting adapters were merged via linear interpolation. This multi-stage process introduced engineering complexity and a substantial offline cost (3932 seconds, compared to 1206 seconds for RAFT-RAG RAFT training).
 
-The resulting system (S3-legacy) achieved Q\_main = 0.210 without retrieval, placing it between the two pure parametric controls (S2 = 0.263, S3 = 0.185) but far below any retrieval-aware system. Given these results and the engineering constraints, D2L was archived after the pilot evaluation and retained only as a legacy engineering diagnostic and negative control. The branch supports a negative finding for the present implementation regime only; it should not be interpreted as a verdict on document-conditioned adapter generation in general, nor as a competitive alternative to the RAFT or CLM approaches evaluated in this study.
+The resulting system (D2L-Closed) achieved Q\_main = 0.210 without retrieval, placing it between the two pure parametric controls (RAFT-Closed = 0.263, CLM-Closed = 0.185) but far below any retrieval-aware system. Given these results and the engineering constraints, D2L was archived after the pilot evaluation and retained only as an engineering diagnostic and negative control. The branch supports a negative finding for the present implementation regime only; it should not be interpreted as a verdict on document-conditioned adapter generation in general, nor as a competitive alternative to the RAFT or CLM approaches evaluated in this study.
 
 
 ## Appendix D. Use of Generative AI
