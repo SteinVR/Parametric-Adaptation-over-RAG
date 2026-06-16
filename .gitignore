@@ -3,6 +3,7 @@
 __pycache__/
 external/doc-to-lora/
 .env
+.old/
 trained_d2l/
 models/
 *.pt
