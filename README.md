@@ -13,10 +13,7 @@ continued pretraining, domain adaptation, legal QA.
 
 ## What the study asks
 
-The paper studies whether adapting a generator's parameters still adds value once a
-strong RAG baseline is already in place, on a compact legal corpus under an 8 GB VRAM
-budget. The retrieval stack, backbone, PEFT architecture, and evaluation set are held
-constant so the only variable is the **training signal**.
+The paper studies whether adapting a generator's parameters still adds value once a RAG baseline is already in place, on a legal docs corpus. The retrieval stack, backbone, PEFT architecture, and evaluation set are held constant so the only variable is the training signal.
 
 **RQ1.** Does parametric adaptation improve on a strong RAG baseline, and how do
 RAFT-style supervised fine-tuning and supervision-free CLM continued pretraining differ
@@ -254,9 +251,3 @@ Experiment scripts use cell-like `# %%` separators for block-by-block execution.
 The findings are bounded to this corpus (8 documents), the 50-question evaluation set,
 the Gemma-2-2b-it backbone, and the frozen retrieval stack. Free-text scoring depends on
 an LLM judge. See Section 6 of the paper for the full discussion.
-
-## Use of generative AI
-
-Claude (Anthropic) was used for experiment orchestration, pipeline code, analysis, and
-writing assistance. GPT-5.4-mini (OpenAI) is the judge model for free-text scoring
-(`S_asst`). See Appendix D of the paper.
