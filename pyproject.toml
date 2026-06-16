@@ -44,6 +44,15 @@ dependencies = [
     "sentencepiece",
 ]
 
+[project.optional-dependencies]
+# Doc-to-LoRA control (D2L-Closed / EXP-004_d2l_monolithic). Linux + CUDA only.
+# Upstream pulls heavy deps (deepspeed, vllm, flash-attn) on a full resolve; install
+# with `--no-deps` and rely on the base runtime deps above. See README "D2L-Closed".
+d2l = [
+    "ctx-to-lora @ git+https://github.com/SakanaAI/doc-to-lora.git@baa85db4d5df9b29d618af432d6ebf28b3ad5a29",
+    "opt-einsum",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

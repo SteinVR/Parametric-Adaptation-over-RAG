@@ -41,6 +41,11 @@ BACKBONE_QUANTIZATION = "nf4"  # 4-bit for QLoRA
 DOC2LORA_CHECKPOINT = "trained_d2l/gemma_demo/checkpoint-80000"
 DOC2LORA_MAX_CONTEXT_TOKENS = 32_000  # approximate safe limit
 
+# Pretrained hypernetwork checkpoint on the Hugging Face Hub. When the local path
+# above is absent, the loader fetches this file from the Hub (see src/d2l/checkpoint.py).
+DOC2LORA_HF_REPO = "SakanaAI/doc-to-lora"
+DOC2LORA_HF_CHECKPOINT_SUBFOLDER = "gemma_demo/checkpoint-80000"
+
 # =============================================================================
 # Corpus & Goldset
 # =============================================================================

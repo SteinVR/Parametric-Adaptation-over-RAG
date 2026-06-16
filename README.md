@@ -217,10 +217,23 @@ python experiments/EXP-007_error_analysis/main_exp.py        # error analysis + 
 
 Experiment scripts use cell-like `# %%` separators for block-by-block execution.
 
-> **Note on D2L-Closed.** The Doc-to-LoRA control (`EXP-004_d2l_monolithic`) depends on the
-> upstream `doc-to-lora` package and a trained hypernetwork checkpoint, neither of which is
-> versioned here. It is documented as a negative finding (Appendix C of the paper) rather
-> than a turnkey-reproducible system.
+### D2L-Closed (Doc-to-LoRA control)
+
+The Doc-to-LoRA control (`EXP-004_d2l_monolithic`) uses the upstream SakanaAI hypernetwork.
+It runs on **Linux + CUDA only** (the upstream package pulls flash-attn / flashinfer wheels
+built for Linux x86-64). Install the optional dependency and run the experiment:
+
+```bash
+# upstream package as a pinned git dependency (avoid pulling deepspeed/vllm):
+uv pip install --no-deps "git+https://github.com/SakanaAI/doc-to-lora.git@baa85db"
+python experiments/EXP-004_d2l_monolithic/main_exp.py
+```
+
+The pretrained hypernetwork checkpoint (~1.3 GB) is hosted on the Hugging Face Hub at
+[`SakanaAI/doc-to-lora`](https://huggingface.co/SakanaAI/doc-to-lora/tree/main/gemma_demo/checkpoint-80000).
+`src/d2l/checkpoint.py` downloads it automatically on first run when no local checkpoint is
+present (configurable via `DOC2LORA_HF_REPO` in `config.py`). D2L-Closed is a negative
+finding — see Appendix C of the paper for why it is non-competitive at corpus scale.
 
 ---
 

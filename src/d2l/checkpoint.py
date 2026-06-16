@@ -21,17 +21,49 @@ logger = logging.getLogger(__name__)
 
 CHECKPOINT_FILENAME = "pytorch_model.bin"
 
+# Pretrained hypernetwork checkpoint published by SakanaAI on the Hugging Face Hub.
+# https://huggingface.co/SakanaAI/doc-to-lora/tree/main/gemma_demo/checkpoint-80000
+D2L_HF_REPO_ID = "SakanaAI/doc-to-lora"
+D2L_HF_CHECKPOINT_SUBFOLDER = "gemma_demo/checkpoint-80000"
 
-def resolve_checkpoint_file(checkpoint_root: Path | str) -> Path:
-    """Resolve the concrete D2L checkpoint file from a directory or file path."""
+
+def resolve_checkpoint_file(
+    checkpoint_root: Path | str,
+    *,
+    download_if_missing: bool = True,
+) -> Path:
+    """Resolve the concrete D2L checkpoint file from a directory or file path.
+
+    Looks for the checkpoint locally first. When it is absent and
+    ``download_if_missing`` is set, the ~1.3 GB ``pytorch_model.bin`` is fetched
+    from the Hugging Face Hub (``SakanaAI/doc-to-lora``) into the local Hub cache.
+    """
     path = Path(checkpoint_root)
     checkpoint_file = path if path.suffix == ".bin" else path / CHECKPOINT_FILENAME
-    if not checkpoint_file.exists():
+    if checkpoint_file.exists():
+        return checkpoint_file
+
+    if not download_if_missing:
         raise FileNotFoundError(
             f"Doc-to-LoRA checkpoint not found: {checkpoint_file}. "
-            "The experiment expects a local SakanaAI doc-to-lora checkpoint and does not download it."
+            "Pass download_if_missing=True or fetch it from "
+            f"https://huggingface.co/{D2L_HF_REPO_ID}."
         )
-    return checkpoint_file
+
+    logger.info(
+        "Local Doc-to-LoRA checkpoint missing (%s); downloading from Hugging Face Hub %s/%s",
+        checkpoint_file,
+        D2L_HF_REPO_ID,
+        D2L_HF_CHECKPOINT_SUBFOLDER,
+    )
+    from huggingface_hub import hf_hub_download
+
+    downloaded = hf_hub_download(
+        repo_id=D2L_HF_REPO_ID,
+        filename=CHECKPOINT_FILENAME,
+        subfolder=D2L_HF_CHECKPOINT_SUBFOLDER,
+    )
+    return Path(downloaded)
 
 
 def load_d2l_model(
