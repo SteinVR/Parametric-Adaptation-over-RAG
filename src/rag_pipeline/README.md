@@ -11,7 +11,7 @@ pip install PyMuPDF>=1.24 qdrant-client>=1.9 sentence-transformers>=3.0 transfor
 
 Или из `requirements.txt`:
 ```bash
-pip install -r external/pdf_rag_pipeline/requirements.txt
+pip install -r src/rag_pipeline/requirements.txt
 ```
 
 Для работы Dense-эмбеддингов нужна скачанная модель `Qwen/Qwen3-Embedding-0.6B` (HuggingFace).

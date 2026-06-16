@@ -9,7 +9,7 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from external.pdf_rag_pipeline import (
+from src.rag_pipeline import (
     BM25SparseEncoder,
     EvidenceCompressor,
     HybridSearchEngine,

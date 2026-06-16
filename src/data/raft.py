@@ -11,7 +11,7 @@ from typing import Any
 
 from qdrant_client import QdrantClient, models
 
-from external.pdf_rag_pipeline import build_corpus, parse_pdf, serialize_document_tables
+from src.rag_pipeline import build_corpus, parse_pdf, serialize_document_tables
 from src.data.io import load_goldset, load_json
 from src.generation.prompt import format_context_from_chunks, format_prompt
 from src.retrieval.indexer import build_doc_id_map

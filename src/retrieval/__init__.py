@@ -1,1 +1,1 @@
-"""Retrieval wrappers around external/pdf_rag_pipeline."""
+"""Retrieval wrappers around src.rag_pipeline."""

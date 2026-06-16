@@ -10,12 +10,12 @@
 
 ## 2. External Pipeline Integration
 
-- Source: `external/pdf_rag_pipeline/`
+- Source: `src/rag_pipeline/`
 - Pinned commit hash: `8c9a8f70846dcbd697f5e1e0fa180130dc3549b9`
 
 ## 3. Runtime Configuration
 
-### PipelineConfig (from `external/pdf_rag_pipeline/config.py`)
+### PipelineConfig (from `src/rag_pipeline/config.py`)
 
 - `token_chunk_size`: 300
 - `token_chunk_overlap`: 50
