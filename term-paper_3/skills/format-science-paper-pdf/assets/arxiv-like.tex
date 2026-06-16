@@ -1,0 +1,122 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[a4paper,top=28mm,bottom=30mm,left=30mm,right=30mm]{geometry}
+\usepackage{fontspec}
+% Body font: TeX Gyre Termes (a free Times New Roman equivalent) to satisfy the
+% "no fancy font (usually Times or Arial)" requirement; bundled with tectonic.
+\setmainfont{texgyretermes-regular.otf}[
+  BoldFont=texgyretermes-bold.otf,
+  ItalicFont=texgyretermes-italic.otf,
+  BoldItalicFont=texgyretermes-bolditalic.otf
+]
+\setsansfont{texgyreheros-regular.otf}[
+  BoldFont=texgyreheros-bold.otf,
+  ItalicFont=texgyreheros-italic.otf,
+  BoldItalicFont=texgyreheros-bolditalic.otf
+]
+\setmonofont{lmmono10-regular.otf}[
+  ItalicFont=lmmono10-italic.otf
+]
+\usepackage{microtype}
+\usepackage{setspace}
+\setstretch{1.5}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{needspace}
+\usepackage{etoolbox}
+\usepackage{hyperref}
+
+% --- Page-break control (formal requirement: no heading at the bottom of a page,
+%     no orphan/widow lines) ---
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\raggedbottom
+% Reserve vertical space before a heading so it never sits alone at the page bottom.
+\pretocmd{\section}{\needspace{5\baselineskip}}{}{}
+\pretocmd{\subsection}{\needspace{4\baselineskip}}{}{}
+
+% Keep verbatim code blocks (e.g. the judge prompt) inside the text block at 12pt.
+\AtBeginEnvironment{verbatim}{\footnotesize}
+
+\makeatletter
+\define@key{Gin}{alt}{}
+\makeatother
+\setkeys{Gin}{width=0.88\linewidth,height=0.46\textheight,keepaspectratio}
+\providecommand{\pandocbounded}[1]{#1}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=blue
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.72em}
+\setlength{\emergencystretch}{3em}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\pagestyle{plain}
+
+\captionsetup{
+  font=small,
+  labelfont=bf,
+  width=0.88\linewidth
+}
+\newcounter{none}
+
+\renewcommand{\arraystretch}{1.08}
+\setlength{\tabcolsep}{3.2pt}
+
+\let\oldlongtable\longtable
+\let\endoldlongtable\endlongtable
+\renewenvironment{longtable}{\footnotesize\setlength{\tabcolsep}{2.4pt}\oldlongtable}{\endoldlongtable\normalsize}
+
+$if(title)$
+\title{$title$}
+$endif$
+$if(author)$
+\author{$for(author)$$author$$sep$ \and $endfor$$if(email)$\\[3pt]\normalsize\texttt{$email$}$endif$}
+$endif$
+$if(date)$
+\date{$date$}
+$else$
+\date{}
+$endif$
+
+\begin{document}
+
+$if(title)$
+\maketitle
+$endif$
+
+$if(abstract)$
+\section*{Abstract}
+$abstract$
+$if(keywords)$
+
+\vspace{0.6em}\noindent\textbf{Keywords:}~$for(keywords)$$keywords$$sep$, $endfor$
+$endif$
+$endif$
+
+$if(toc)$
+\newpage
+\tableofcontents
+\newpage
+$endif$
+
+$body$
+
+\end{document}
