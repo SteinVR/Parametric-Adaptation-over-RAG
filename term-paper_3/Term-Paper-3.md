@@ -141,7 +141,7 @@ The study evaluates seven systems that occupy distinct methodological roles. Thr
 
 **Table 1. Compared systems and their roles.**
 
-| System (Mnemonic) | Retrieval | Training signal | Supervision | Role |
+| System | Retrieval | Training signal | Supervision | Role |
 |--------|-----------|-----------------|-------------|------|
 | Base-RAG | Yes | None | --- | Headline baseline |
 | RAFT-RAG | Yes | RAFT-style QA | Supervised | Headline |
