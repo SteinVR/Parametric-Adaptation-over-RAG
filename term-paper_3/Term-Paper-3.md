@@ -544,7 +544,7 @@ The resulting system (D2L-Closed) achieved Q\_main = 0.210 without retrieval, pl
 
 The following generative AI tools were used during the preparation of this work:
 
-- **Claude (Anthropic):** Experiment orchestration, code generation for the evaluation and training pipelines, data analysis, and writing assistance (structure development, draft editing).
+- **Claude (Anthropic):** Experiment orchestration, code generation for the evaluation and training pipelines, and data analysis.
 - **GPT-5.4-mini (OpenAI):** Used as the judge model for free-text answer evaluation (S\_asst scoring). The judge prompt is reproduced in Appendix A.5.
 
 Responsibility for the final manuscript remains with the author. If the institutional template requires explicit marking of substantially AI-assisted passages, that marking should be applied during the final formatting pass.
