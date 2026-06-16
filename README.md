@@ -186,8 +186,7 @@ are prebuilt in [`data/processed/`](data/processed). `data/corpus4-100/` and
 ### Environment
 
 Requires Python 3.12 and [`uv`](https://docs.astral.sh/uv/). The Torch stack is pinned for
-CUDA 12.4 (`torch==2.6.0+cu124`, `transformers==4.51.3`); training and inference target a
-single 8 GB GPU.
+CUDA 12.4 (`torch==2.6.0+cu124`, `transformers==4.51.3`).
 
 ```bash
 uv sync
@@ -196,7 +195,8 @@ echo "OPENAI_API_KEY=sk-..." > .env   # used only by the GPT-5.4-mini free-text 
 
 ### Hardware
 
-All experiments were run on a single NVIDIA RTX 4060 (8 GB VRAM) with 32 GB system RAM.
+All experiments were run on resource-constrained hardware: a single NVIDIA RTX 4060
+(8 GB VRAM) with 32 GB system RAM.
 The backbone is `google/gemma-2-2b-it`, quantized to 4-bit NF4. Approximate per-seed
 training cost: RAFT ~20 min, CLM ~10 min.
 
