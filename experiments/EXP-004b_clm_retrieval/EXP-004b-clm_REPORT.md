@@ -102,6 +102,6 @@ Positive delta = retrieval helps CLM system.
 
 ## 9. Artifacts
 
-- Aggregate summary: `/home/xeliaray/Projects/Term-Paper/results/EXP-004b/aggregate_summary.json`
-- Seed outputs: `/home/xeliaray/Projects/Term-Paper/results/EXP-004b`
-- CLM adapters: `/home/xeliaray/Projects/Term-Paper/models/clm`
+- Aggregate summary: `results/EXP-004b/aggregate_summary.json`
+- Seed outputs: `results/EXP-004b`
+- CLM adapters: `models/clm`

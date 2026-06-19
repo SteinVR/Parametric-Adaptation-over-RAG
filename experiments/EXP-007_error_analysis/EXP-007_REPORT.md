@@ -37,24 +37,24 @@
 
 ## Error Analysis
 
-See `/home/xeliaray/Projects/Term-Paper/results/EXP-007/error_analysis.md`.
+See `results/EXP-007/error_analysis.md`.
 
 ## Deep Analysis
 
-See `/home/xeliaray/Projects/Term-Paper/results/EXP-007/deep_analysis.md`.
+See `results/EXP-007/deep_analysis.md`.
 
 ## Figures
 
-- `/home/xeliaray/Projects/Term-Paper/results/figures/main_results_table.png`
-- `/home/xeliaray/Projects/Term-Paper/results/figures/cost_quality_scatter.png`
-- `/home/xeliaray/Projects/Term-Paper/results/figures/per_type_heatmap.png`
-- `/home/xeliaray/Projects/Term-Paper/results/figures/latency_grounding_scatter.png`
-- `/home/xeliaray/Projects/Term-Paper/results/figures/error_overlap_heatmap.png`
-- `/home/xeliaray/Projects/Term-Paper/results/figures/pairwise_win_heatmap.png`
-- `/home/xeliaray/Projects/Term-Paper/results/figures/difficulty_profile.png`
-- `/home/xeliaray/Projects/Term-Paper/results/figures/judge_criteria_profile.png`
-- `/home/xeliaray/Projects/Term-Paper/results/figures/seed_stability.png`
-- `/home/xeliaray/Projects/Term-Paper/results/figures/pareto_frontier.png`
+- `results/figures/main_results_table.png`
+- `results/figures/cost_quality_scatter.png`
+- `results/figures/per_type_heatmap.png`
+- `results/figures/latency_grounding_scatter.png`
+- `results/figures/error_overlap_heatmap.png`
+- `results/figures/pairwise_win_heatmap.png`
+- `results/figures/difficulty_profile.png`
+- `results/figures/judge_criteria_profile.png`
+- `results/figures/seed_stability.png`
+- `results/figures/pareto_frontier.png`
 
 ## Mandatory Caveats
 

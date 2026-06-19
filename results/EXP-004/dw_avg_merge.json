@@ -30,5 +30,5 @@
     "base_model.model.model.layers.8.mlp.down_proj": 0.9971492290496826,
     "base_model.model.model.layers.9.mlp.down_proj": 0.9965832233428955
   },
-  "output_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/monolithic_dw_avg"
+  "output_dir": "models/d2l/monolithic_dw_avg"
 }

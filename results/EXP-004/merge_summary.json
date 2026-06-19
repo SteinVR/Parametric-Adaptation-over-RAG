@@ -1,16 +1,16 @@
 {
   "merge_seconds": 0.0078042380046099424,
   "source_adapter_dirs": [
-    "/home/xeliaray/Projects/Term-Paper/models/d2l/doc1",
-    "/home/xeliaray/Projects/Term-Paper/models/d2l/doc2",
-    "/home/xeliaray/Projects/Term-Paper/models/d2l/doc3",
-    "/home/xeliaray/Projects/Term-Paper/models/d2l/doc4",
-    "/home/xeliaray/Projects/Term-Paper/models/d2l/doc5",
-    "/home/xeliaray/Projects/Term-Paper/models/d2l/doc6",
-    "/home/xeliaray/Projects/Term-Paper/models/d2l/doc7",
-    "/home/xeliaray/Projects/Term-Paper/models/d2l/doc8"
+    "models/d2l/doc1",
+    "models/d2l/doc2",
+    "models/d2l/doc3",
+    "models/d2l/doc4",
+    "models/d2l/doc5",
+    "models/d2l/doc6",
+    "models/d2l/doc7",
+    "models/d2l/doc8"
   ],
   "tensor_count": 52,
-  "reference_config_path": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc1/adapter_config.json",
-  "output_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/monolithic"
+  "reference_config_path": "models/d2l/doc1/adapter_config.json",
+  "output_dir": "models/d2l/monolithic"
 }

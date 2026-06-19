@@ -88,9 +88,9 @@
 
 ## 9. Artifacts
 
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-002/predictions.json`
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-002/eval_report.json`
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-002/eval_results.json`
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-002/eval_summary.csv`
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-002/systems_metrics.json`
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-002/index/`
+- `results/EXP-002/predictions.json`
+- `results/EXP-002/eval_report.json`
+- `results/EXP-002/eval_results.json`
+- `results/EXP-002/eval_summary.csv`
+- `results/EXP-002/systems_metrics.json`
+- `results/EXP-002/index/`

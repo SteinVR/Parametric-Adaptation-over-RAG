@@ -10,7 +10,7 @@
 ## 2. Setup
 
 - Seeds: 42, 123, 777
-- RAFT dataset: `/home/xeliaray/Projects/Term-Paper/data/processed/raft_train.jsonl`
+- RAFT dataset: `data/processed/raft_train.jsonl`
 - Backbone: `google/gemma-2-2b-it`
 
 ## 3. Results
@@ -87,9 +87,9 @@
 
 ## 7. Artifacts
 
-- Aggregate summary: `/home/xeliaray/Projects/Term-Paper/results/EXP-003/aggregate_summary.json`
-- Seed outputs: `/home/xeliaray/Projects/Term-Paper/results/EXP-003`
-- Adapters: `/home/xeliaray/Projects/Term-Paper/models/qlora`
+- Aggregate summary: `results/EXP-003/aggregate_summary.json`
+- Seed outputs: `results/EXP-003`
+- Adapters: `models/qlora`
 
 ## 8. Notes
 

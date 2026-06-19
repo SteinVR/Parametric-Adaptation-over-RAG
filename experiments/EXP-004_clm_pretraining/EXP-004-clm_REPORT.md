@@ -103,6 +103,6 @@ Positive delta = CLM pretraining outperforms supervised closed-book on this metr
 
 ## 10. Artifacts
 
-- Aggregate summary: `/home/xeliaray/Projects/Term-Paper/results/EXP-004_clm/aggregate_summary.json`
-- Seed outputs: `/home/xeliaray/Projects/Term-Paper/results/EXP-004_clm`
-- Adapters: `/home/xeliaray/Projects/Term-Paper/models/clm`
+- Aggregate summary: `results/EXP-004_clm/aggregate_summary.json`
+- Seed outputs: `results/EXP-004_clm`
+- Adapters: `models/clm`
