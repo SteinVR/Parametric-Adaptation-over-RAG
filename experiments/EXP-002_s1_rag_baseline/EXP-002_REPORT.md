@@ -10,12 +10,12 @@
 
 ## 2. External Pipeline Integration
 
-- Source: `external/pdf_rag_pipeline/`
+- Source: `src/rag_pipeline/`
 - Pinned commit hash: `8c9a8f70846dcbd697f5e1e0fa180130dc3549b9`
 
 ## 3. Runtime Configuration
 
-### PipelineConfig (from `external/pdf_rag_pipeline/config.py`)
+### PipelineConfig (from `src/rag_pipeline/config.py`)
 
 - `token_chunk_size`: 300
 - `token_chunk_overlap`: 50
@@ -88,9 +88,9 @@
 
 ## 9. Artifacts
 
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-002/predictions.json`
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-002/eval_report.json`
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-002/eval_results.json`
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-002/eval_summary.csv`
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-002/systems_metrics.json`
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-002/index/`
+- `results/EXP-002/predictions.json`
+- `results/EXP-002/eval_report.json`
+- `results/EXP-002/eval_results.json`
+- `results/EXP-002/eval_summary.csv`
+- `results/EXP-002/systems_metrics.json`
+- `results/EXP-002/index/`

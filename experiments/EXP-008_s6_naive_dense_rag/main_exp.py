@@ -38,7 +38,7 @@ from src.generation.pipeline import GenerationPipeline
 from src.generation.prompt import format_context_from_chunks
 from src.retrieval.indexer import build_doc_id_map
 
-from external.pdf_rag_pipeline import (
+from src.rag_pipeline import (
     build_corpus,
     build_dense_embedder,
     build_index_chunks,

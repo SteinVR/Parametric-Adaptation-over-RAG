@@ -10,7 +10,7 @@ from typing import Any
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from external.pdf_rag_pipeline import (
+from src.rag_pipeline import (
     BM25SparseEncoder,
     PipelineConfig,
     build_and_persist_index,

@@ -11,7 +11,7 @@
 ## 2. Setup
 
 - Seeds: 42, 123, 777
-- Dataset: `/home/xeliaray/Projects/Term-Paper/data/processed/closed_book_train.jsonl`
+- Dataset: `data/processed/closed_book_train.jsonl`
 - Backbone: `google/gemma-2-2b-it`
 - **No retrieval at inference.**
 
@@ -89,6 +89,6 @@ Negative delta = S2 closed-book worse than S2+R → retrieval helps.
 
 ## 8. Artifacts
 
-- Aggregate summary: `/home/xeliaray/Projects/Term-Paper/results/EXP-003b/aggregate_summary.json`
-- Seed outputs: `/home/xeliaray/Projects/Term-Paper/results/EXP-003b`
-- Adapters: `/home/xeliaray/Projects/Term-Paper/models/qlora_closed`
+- Aggregate summary: `results/EXP-003b/aggregate_summary.json`
+- Seed outputs: `results/EXP-003b`
+- Adapters: `models/qlora_closed`

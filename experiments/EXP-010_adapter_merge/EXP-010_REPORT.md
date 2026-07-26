@@ -57,5 +57,5 @@ TODO: Fill after results.
 
 ## 7. Artifacts
 
-- Aggregate summary: `/home/xeliaray/Projects/Term-Paper/results/EXP-010/alpha_0.5/aggregate_summary.json`
-- Seed outputs: `/home/xeliaray/Projects/Term-Paper/results/EXP-010/alpha_0.5`
+- Aggregate summary: `results/EXP-010/alpha_0.5/aggregate_summary.json`
+- Seed outputs: `results/EXP-010/alpha_0.5`

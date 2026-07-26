@@ -51,7 +51,7 @@
 
 - Merge seconds: 0.0
 - Source adapters: 8
-- Output dir: `/home/xeliaray/Projects/Term-Paper/models/d2l/monolithic`
+- Output dir: `models/d2l/monolithic`
 
 ## 6. Eval
 
@@ -103,10 +103,10 @@
 
 ## 11. Artifacts
 
-- Generation records: `/home/xeliaray/Projects/Term-Paper/results/EXP-004/document_generation.json`
-- Sanity results: `/home/xeliaray/Projects/Term-Paper/results/EXP-004/doc_sanity.json`
-- Merge summary: `/home/xeliaray/Projects/Term-Paper/results/EXP-004/merge_summary.json`
-- Validation summary: `/home/xeliaray/Projects/Term-Paper/results/EXP-004/validation.json`
-- Predictions: `/home/xeliaray/Projects/Term-Paper/results/EXP-004/predictions.json`
-- Eval outputs: `/home/xeliaray/Projects/Term-Paper/results/EXP-004`
-- Adapters: `/home/xeliaray/Projects/Term-Paper/models/d2l`
+- Generation records: `results/EXP-004/document_generation.json`
+- Sanity results: `results/EXP-004/doc_sanity.json`
+- Merge summary: `results/EXP-004/merge_summary.json`
+- Validation summary: `results/EXP-004/validation.json`
+- Predictions: `results/EXP-004/predictions.json`
+- Eval outputs: `results/EXP-004`
+- Adapters: `models/d2l`

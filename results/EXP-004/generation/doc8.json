@@ -12,7 +12,7 @@
   "peak_vram_mb": 2131.111328125,
   "peak_rss_mb": 3657.7109375,
   "chunk_merge_mean_explained_variance": 0.9900024922994467,
-  "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc8",
+  "adapter_dir": "models/d2l/doc8",
   "adapter_file_size_bytes": 9592301,
   "tensor_count": 52
 }

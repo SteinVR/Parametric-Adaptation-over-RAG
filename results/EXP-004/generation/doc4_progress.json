@@ -23,7 +23,7 @@
   ],
   "rss_mb": 3704.859375,
   "used_chunk_fallback": true,
-  "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc4",
+  "adapter_dir": "models/d2l/doc4",
   "adapter_file_size_bytes": 9592301,
   "chunk_merge_mean_explained_variance": 0.989362916121116
 }

@@ -39,5 +39,5 @@ Negative delta = S6 worse than S1 → full pipeline adds value.
 
 ## 6. Artifacts
 
-- FAISS index: `/home/xeliaray/Projects/Term-Paper/results/EXP-008/faiss_index`
-- Results: `/home/xeliaray/Projects/Term-Paper/results/EXP-008/main`
+- FAISS index: `results/EXP-008/faiss_index`
+- Results: `results/EXP-008/main`

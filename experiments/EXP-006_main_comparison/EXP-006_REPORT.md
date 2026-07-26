@@ -64,8 +64,8 @@
 
 ## Artifacts
 
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-006/main_results.csv`
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-006/per_type_breakdown.csv`
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-006/single_vs_multi_doc.csv`
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-006/deltas.json`
-- `/home/xeliaray/Projects/Term-Paper/results/EXP-006/gradient_plot.png`
+- `results/EXP-006/main_results.csv`
+- `results/EXP-006/per_type_breakdown.csv`
+- `results/EXP-006/single_vs_multi_doc.csv`
+- `results/EXP-006/deltas.json`
+- `results/EXP-006/gradient_plot.png`

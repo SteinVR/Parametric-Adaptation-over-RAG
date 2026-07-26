@@ -13,7 +13,7 @@
     "peak_vram_mb": 2131.1123046875,
     "peak_rss_mb": 3601.16796875,
     "chunk_merge_mean_explained_variance": 0.9892441286490514,
-    "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc1",
+    "adapter_dir": "models/d2l/doc1",
     "adapter_file_size_bytes": 9592301,
     "tensor_count": 52
   },
@@ -31,7 +31,7 @@
     "peak_vram_mb": 2131.1123046875,
     "peak_rss_mb": 3747.30859375,
     "chunk_merge_mean_explained_variance": 0.9919803027923291,
-    "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc2",
+    "adapter_dir": "models/d2l/doc2",
     "adapter_file_size_bytes": 9592301,
     "tensor_count": 52
   },
@@ -49,7 +49,7 @@
     "peak_vram_mb": 2131.1123046875,
     "peak_rss_mb": 3714.98828125,
     "chunk_merge_mean_explained_variance": 0.9891175031661987,
-    "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc3",
+    "adapter_dir": "models/d2l/doc3",
     "adapter_file_size_bytes": 9592301,
     "tensor_count": 52
   },
@@ -67,7 +67,7 @@
     "peak_vram_mb": 2131.1123046875,
     "peak_rss_mb": 3705.0078125,
     "chunk_merge_mean_explained_variance": 0.989362916121116,
-    "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc4",
+    "adapter_dir": "models/d2l/doc4",
     "adapter_file_size_bytes": 9592301,
     "tensor_count": 52
   },
@@ -85,7 +85,7 @@
     "peak_vram_mb": 2131.1123046875,
     "peak_rss_mb": 3678.96484375,
     "chunk_merge_mean_explained_variance": 0.9901417127022376,
-    "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc5",
+    "adapter_dir": "models/d2l/doc5",
     "adapter_file_size_bytes": 9592301,
     "tensor_count": 52
   },
@@ -103,7 +103,7 @@
     "peak_vram_mb": 2131.1123046875,
     "peak_rss_mb": 3668.921875,
     "chunk_merge_mean_explained_variance": 0.9915090294984671,
-    "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc6",
+    "adapter_dir": "models/d2l/doc6",
     "adapter_file_size_bytes": 9592301,
     "tensor_count": 52
   },
@@ -121,7 +121,7 @@
     "peak_vram_mb": 2131.1123046875,
     "peak_rss_mb": 3679.87109375,
     "chunk_merge_mean_explained_variance": 0.9891610076794257,
-    "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc7",
+    "adapter_dir": "models/d2l/doc7",
     "adapter_file_size_bytes": 9592301,
     "tensor_count": 52
   },
@@ -139,7 +139,7 @@
     "peak_vram_mb": 2131.111328125,
     "peak_rss_mb": 3657.7109375,
     "chunk_merge_mean_explained_variance": 0.9900024922994467,
-    "adapter_dir": "/home/xeliaray/Projects/Term-Paper/models/d2l/doc8",
+    "adapter_dir": "models/d2l/doc8",
     "adapter_file_size_bytes": 9592301,
     "tensor_count": 52
   }

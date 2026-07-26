@@ -8,7 +8,7 @@ from pathlib import Path
 
 import torch
 
-from external.pdf_rag_pipeline import PipelineConfig
+from src.rag_pipeline import PipelineConfig
 from src.evaluation.schemas import PageRef, Prediction
 from src.generation.adapters import load_backbone_with_adapter
 from src.generation.loader import unload_model

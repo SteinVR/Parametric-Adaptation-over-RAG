@@ -1,9 +1,17 @@
+# Editor / OS
 /.claude
 /.codex
+.DS_Store
+
+# Python
 __pycache__/
-external/doc-to-lora/
+.venv/
 .env
+
+# Local archives / scratch
 .old/
+
+# Model artifacts and weights (not versioned)
 trained_d2l/
 models/
 *.pt

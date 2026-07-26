@@ -26,7 +26,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 import torch
 
 import config as cfg
-from external.pdf_rag_pipeline import PipelineConfig
+from src.rag_pipeline import PipelineConfig
 from src.data.io import load_goldset, load_json, save_json
 from src.evaluation.runner import EvalRunner
 from src.evaluation.schemas import PageRef, Prediction
