@@ -1,0 +1,4 @@
+interface:
+  display_name: "Science Paper PDF"
+  short_description: "Format Markdown as arXiv-like PDFs"
+  default_prompt: "Use $format-science-paper-pdf to format this Markdown research paper as an arXiv-like PDF."
