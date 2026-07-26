@@ -14,7 +14,7 @@ No training — inference-only experiment using existing artifacts from EXP-004.
 |----------|--------|------|
 | Qdrant index | EXP-002 | `results/EXP-002/index/` |
 | S3 CLM adapters (3 seeds) | EXP-004 | `models/clm/seed_{42,123,777}/` |
-| Retrieval pipeline | EXP-002 | `external/pdf_rag_pipeline/` + `src/retrieval/staged.py` |
+| Retrieval pipeline | EXP-002 | `src/rag_pipeline/` + `src/retrieval/staged.py` |
 | Eval split | EXP-001 | `data/splits/split_v1.json` (50 eval questions) |
 
 ## Pipeline

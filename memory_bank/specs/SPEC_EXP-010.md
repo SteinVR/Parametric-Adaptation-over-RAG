@@ -23,7 +23,7 @@ Test whether linear interpolation of existing CLM and RAFT adapters can combine 
 | Merge alpha | 0.5 |
 | Seeds | 42, 123, 777 |
 | Base model | `google/gemma-2-2b-it` |
-| Retrieval stack | Same as S1 (`external/pdf_rag_pipeline`) |
+| Retrieval stack | Same as S1 (`src/rag_pipeline`) |
 | Training | None (eval-only merge) |
 | Scoring | Same protocol as `SPEC-evaluation.md` |
 

@@ -151,7 +151,7 @@ The study evaluates seven systems that occupy distinct methodological roles. Thr
 | CLM-Closed | No | CLM on corpus | Unsupervised | Control |
 | D2L-Closed | No | D2L hypernetwork | Supervised | Control |
 
-![Figure 1. System overview schematic](figures/fig01_system_schematic.png)
+![Figure 1. System overview schematic](../assets/figures/fig01_system_schematic.png)
 
 *Figure 1. System overview schematic. Base-RAG routes queries through the shared retrieval stack to the base generator; RAFT-RAG and CLM-RAG route through retrieval to an adapted generator; Merge-RAG uses a merged adapter; controls bypass retrieval entirely.*
 
@@ -220,7 +220,7 @@ The nonparametric baseline Base-RAG already reaches Q\_main = 0.643, establishin
 
 Merge-RAG reaches the highest observed score (0.705 +/- 0.035) through post-hoc adapter interpolation. However, its higher seed variance (std = 0.035 vs. 0.014 and 0.023 for the headline adapters) and post-hoc nature warrant cautious interpretation. It strengthens the case for partial complementarity between the two adaptation signals, but it does not supersede the controlled headline comparison on which the paper's main claim depends.
 
-![Figure 2. Improvement over Base-RAG baseline](figures/fig02_delta_bars.png)
+![Figure 2. Improvement over Base-RAG baseline](../assets/figures/fig02_delta_bars.png)
 
 *Figure 2. Improvement over the Base-RAG baseline. Grouped bars show Delta-Q\_main, Delta-S\_det, and Delta-S\_asst for RAFT-RAG, CLM-RAG, and Merge-RAG relative to Base-RAG: RAFT raises S\_det, CLM raises S\_asst, and the merge raises both.*
 
@@ -234,7 +234,7 @@ The delta-to-Base-RAG view makes the contrast explicit. Relative to the baseline
 
 CLM-RAG also incurs lower offline cost (581 s vs. 1206 s per seed), as it requires no task-specific label generation. This matters under tight resource constraints, where training time competes with other workloads. The comparison thus records a tie on Q\_main and grounding, with RAFT-RAG favored on deterministic extraction and CLM-RAG favored on assistant-style quality and offline cost.
 
-![Figure 3. Judge criteria profile](figures/fig03_judge_criteria.png)
+![Figure 3. Judge criteria profile](../assets/figures/fig03_judge_criteria.png)
 
 *Figure 3. Judge criteria profile comparing Base-RAG, RAFT-RAG, CLM-RAG, and Merge-RAG on the 5 judge criteria (correctness, completeness, grounding, calibration, clarity). CLM-RAG's advantage is concentrated in free-text quality dimensions.*
 
@@ -259,7 +259,7 @@ The breakdown also shows that no system is uniformly strong. The multi-name cate
 
 Merge-RAG achieves the highest score in 4 of 6 types, including number (0.810) and name (0.708), providing further evidence that the two training signals are partially complementary, though this observation remains secondary given the system's post-hoc nature.
 
-![Figure 4. Per-type score heatmap](figures/fig04_per_type_heatmap.png)
+![Figure 4. Per-type score heatmap](../assets/figures/fig04_per_type_heatmap.png)
 
 *Figure 4. Per-type score heatmap for Base-RAG, RAFT-RAG, CLM-RAG, and Merge-RAG across the 6 answer types, with sample sizes in labels.*
 
@@ -290,7 +290,7 @@ CLM continued pretraining appears to benefit single-document contextualization: 
 
 RAFT-style supervision confers greater robustness to multi-document composition: RAFT-RAG's multi-doc score (0.437) represents a 41% relative improvement over Base-RAG's 0.310. The RAFT training format, which includes distractors alongside gold chunks, may teach the generator to discriminate between relevant and irrelevant evidence, which helps when evidence spans multiple documents.
 
-![Figure 5. Single-doc vs. multi-doc comparison](figures/fig05_singledoc_multidoc.png)
+![Figure 5. Single-doc vs. multi-doc comparison](../assets/figures/fig05_singledoc_multidoc.png)
 
 *Figure 5. Single-document vs. multi-document Q\_main per system, annotated with per-system delta.*
 
@@ -498,15 +498,15 @@ Return JSON: {"correctness": 0|1, "completeness": 0|1, "grounding": 0|1,
 | 777 | 0.680 | 0.656 | 0.713 | 0.268 | 0.187 |
 | Std | 0.014 | 0.023 | 0.035 | 0.005 | 0.003 |
 
-![Figure B1. Error overlap among headline systems](figures/figB1_error_overlap_heatmap.png)
+![Figure B1. Error overlap among headline systems](../assets/figures/figB1_error_overlap_heatmap.png)
 
 *Figure B1. Failure-overlap Jaccard among headline systems. Higher values indicate that two systems fail on more of the same evaluation questions.*
 
-![Figure B2. Seed stability for trained systems](figures/figB2_seed_stability.png)
+![Figure B2. Seed stability for trained systems](../assets/figures/figB2_seed_stability.png)
 
 *Figure B2. Per-seed Q\_main for trained systems, with the Base-RAG baseline shown as a dashed reference line.*
 
-![Figure B3. Pairwise win rates among headline systems](figures/figB3_pairwise_win_rates.png)
+![Figure B3. Pairwise win rates among headline systems](../assets/figures/figB3_pairwise_win_rates.png)
 
 *Figure B3. Pairwise win rates among headline systems. Each off-diagonal cell reports the fraction of evaluation questions where the row system scores higher than the column system; ties are not counted as wins.*
 

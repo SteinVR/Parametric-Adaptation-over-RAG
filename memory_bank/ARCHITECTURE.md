@@ -94,7 +94,7 @@ See `memory_bank/SPEC-systems.md` for detailed system definitions.
 | Quantization | **4-bit NF4** for all QLoRA training and inference | Standard QLoRA recipe |
 | Embedding model | **Qwen3-Embedding-0.6B** for retrieval index | Shared across retrieval-aware systems |
 | Reranker | **Qwen3-Reranker-0.6B** cross-encoder for S1 retrieval pipeline | Lexical fallback if model fails |
-| S1 retrieval stack | **Full hybrid pipeline** from `external/pdf_rag_pipeline/` | Dense+sparse, RRF, reranker, evidence compressor |
+| S1 retrieval stack | **Full hybrid pipeline** from `src/rag_pipeline/` | Dense+sparse, RRF, reranker, evidence compressor |
 
 ---
 

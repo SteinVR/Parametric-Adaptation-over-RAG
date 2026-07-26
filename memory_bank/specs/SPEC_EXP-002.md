@@ -4,7 +4,7 @@
 
 ## Goal
 
-Build working RAG pipeline on Gemma-2-2b-it over 8-doc corpus using full hybrid retrieval stack from external project (`external/pdf_rag_pipeline/`). Establish nonparametric baseline. Freeze shared infrastructure (prompt template, answer parser) used by all downstream experiments.
+Build working RAG pipeline on Gemma-2-2b-it over 8-doc corpus using the integrated full hybrid retrieval stack (`src/rag_pipeline/`). Establish nonparametric baseline. Freeze shared infrastructure (prompt template, answer parser) used by all downstream experiments.
 
 ## Pipeline
 
@@ -21,7 +21,7 @@ Build working RAG pipeline on Gemma-2-2b-it over 8-doc corpus using full hybrid 
 
 ## External Pipeline Integration
 
-- **Source:** `external/pdf_rag_pipeline/` (imported from separate project)
+- **Source:** `src/rag_pipeline/` (originally imported from a separate project)
 - **At experiment start:** pin source commit hash in REPORT.md
 - **Config parameters to document:**
   - From `PipelineConfig`: `token_chunk_size`, `token_chunk_overlap`, `enabled_chunk_families`, `candidate_budget`, `candidate_multiplier`, `dense_weight`, `sparse_weight`, `rrf_k`

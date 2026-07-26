@@ -10,7 +10,7 @@
 ### S1 — Classical RAG (Headline)
 
 - **Role:** Strong nonparametric baseline
-- **Pipeline:** full hybrid retrieval stack from `external/pdf_rag_pipeline/`:
+- **Pipeline:** full hybrid retrieval stack from `src/rag_pipeline/`:
   ingestion (PyMuPDF + table serializer) → corpus assembly → hierarchical chunking (page, section, clause, microchunk, table) → Qdrant hybrid index (dense + sparse) → RRF fusion → cross-encoder reranking → page-diverse evidence compression → generation
 - **Backbone:** Gemma-2-2b-it (same as all systems)
 - **Embedding:** Qwen3-Embedding-0.6B (prompt_name=document for indexing, prompt_name=query for retrieval)
