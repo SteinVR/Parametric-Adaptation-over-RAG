@@ -1,0 +1,13 @@
+coverage,system,mean_score,n_questions
+Full (n=30),Base-RAG,0.785,30
+Full (n=30),RAFT-RAG,0.7425,30
+Full (n=30),CLM-RAG,0.8178,30
+Full (n=30),Merge-RAG,0.7785,30
+Partial (n=5),Base-RAG,0.72,5
+Partial (n=5),RAFT-RAG,0.56,5
+Partial (n=5),CLM-RAG,0.5333,5
+Partial (n=5),Merge-RAG,0.68,5
+None (n=12),Base-RAG,0.3917,12
+None (n=12),RAFT-RAG,0.6028,12
+None (n=12),CLM-RAG,0.475,12
+None (n=12),Merge-RAG,0.6083,12

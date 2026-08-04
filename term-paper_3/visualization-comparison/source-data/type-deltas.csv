@@ -1,0 +1,19 @@
+system,answer_type,n,delta_vs_base
+RAFT-RAG,Boolean (n=12),12,0.0556
+RAFT-RAG,Number (n=7),7,0.0
+RAFT-RAG,Name (n=8),8,0.125
+RAFT-RAG,Names (n=5),5,-0.1886
+RAFT-RAG,Date (n=5),5,0.2
+RAFT-RAG,Free-text (n=13),13,-0.0205
+CLM-RAG,Boolean (n=12),12,0.0
+CLM-RAG,Number (n=7),7,0.0
+CLM-RAG,Name (n=8),8,0.0833
+CLM-RAG,Names (n=5),5,-0.15
+CLM-RAG,Date (n=5),5,0.0
+CLM-RAG,Free-text (n=13),13,0.0872
+Merge-RAG,Boolean (n=12),12,0.0556
+Merge-RAG,Number (n=7),7,0.0952
+Merge-RAG,Name (n=8),8,0.2083
+Merge-RAG,Names (n=5),5,-0.2256
+Merge-RAG,Date (n=5),5,0.2
+Merge-RAG,Free-text (n=13),13,0.0256

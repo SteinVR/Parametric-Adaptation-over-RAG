@@ -1,0 +1,5 @@
+paradigm,retrieval_state,q_main
+RAFT,With retrieval,0.6689
+CLM,With retrieval,0.6671
+RAFT,Without retrieval,0.263
+CLM,Without retrieval,0.1854
