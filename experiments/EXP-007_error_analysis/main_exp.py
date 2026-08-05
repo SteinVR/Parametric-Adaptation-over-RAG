@@ -220,6 +220,9 @@ def _collect_consolidated() -> tuple[pd.DataFrame, pd.DataFrame]:
             peak_infer, peak_infer_std = _extract_stat(aggregate.get("peak_infer_vram_mb"))
             peak_train, peak_train_std = _extract_stat(aggregate.get("peak_train_vram_mb"))
             offline_cost, offline_cost_std = _extract_stat(aggregate.get("train_time_seconds"))
+            if system_id == "S7":
+                # Zero means no additional merge training, not zero inherited cost.
+                offline_cost, offline_cost_std = None, None
             breakdown_source = aggregate.get("breakdown_by_type", {})
         else:
             report = seed_reports[0]
@@ -330,18 +333,26 @@ def _load_question_metadata() -> dict[str, dict[str, Any]]:
     metadata: dict[str, dict[str, Any]] = {}
     for question_id in split["eval"]:
         ref = refs_by_id[question_id]
+        tags = {str(tag) for tag in ref.get("tags", [])}
         doc_ids = {
             item.get("doc_id")
             for item in ref.get("gold_retrieval", [])
             if isinstance(item, dict) and item.get("doc_id")
         }
+        if len(doc_ids) > 1 and "multi_document" not in tags:
+            raise ValueError(
+                f"Question {question_id} has multi-document evidence but lacks the "
+                "multi_document tag"
+            )
         metadata[question_id] = {
             "question": ref.get("question"),
             "answer": ref.get("answer"),
             "answer_type": ref.get("answer_type"),
             "difficulty": ref.get("difficulty"),
             "is_unanswerable": ref.get("answer") is None,
-            "is_multi_doc": len(doc_ids) > 1,
+            # Negative comparative questions may have no gold evidence pages;
+            # retain their semantic document scope from the benchmark tag.
+            "is_multi_doc": "multi_document" in tags,
         }
     return metadata
 
@@ -714,9 +725,10 @@ def _plot_main_results_table(consolidated_df: pd.DataFrame) -> None:
 def _plot_cost_quality_scatter(consolidated_df: pd.DataFrame) -> None:
     fig, ax = plt.subplots(figsize=(8.5, 5.5), dpi=160)
 
-    for _, row in consolidated_df.iterrows():
+    plottable = consolidated_df.dropna(subset=["offline_cost_seconds"])
+    for _, row in plottable.iterrows():
         system = row["system"]
-        x = float(row["offline_cost_seconds"] if not pd.isna(row["offline_cost_seconds"]) else 0.0)
+        x = float(row["offline_cost_seconds"])
         y = float(row["q_main"])
         size = 120
         color = "#1D7874" if row["class"] == "Headline" else "#9E6A3A"
@@ -724,6 +736,19 @@ def _plot_cost_quality_scatter(consolidated_df: pd.DataFrame) -> None:
             color = "#2E8B57"
         ax.scatter(x, y, s=size, c=color, edgecolors="#1f1f1f", linewidth=0.8, alpha=0.9)
         ax.text(x + 6, y + 0.003, system, fontsize=9)
+
+    omitted = consolidated_df[consolidated_df["offline_cost_seconds"].isna()]["system"].tolist()
+    if omitted:
+        ax.text(
+            0.99,
+            0.02,
+            "Cost unavailable: " + ", ".join(omitted),
+            transform=ax.transAxes,
+            ha="right",
+            va="bottom",
+            fontsize=8,
+            color="#555555",
+        )
 
     ax.set_xlabel("Offline Packaging Cost (seconds)")
     ax.set_ylabel("Q_main")
@@ -888,12 +913,12 @@ def _plot_seed_stability(stability_df: pd.DataFrame) -> None:
 
 def _compute_pareto(consolidated_df: pd.DataFrame) -> pd.DataFrame:
     df = consolidated_df[["system", "offline_cost_seconds", "q_main"]].copy()
-    df = df.fillna({"offline_cost_seconds": 0.0})
+    comparable = df.dropna(subset=["offline_cost_seconds", "q_main"])
 
-    pareto_flags: list[bool] = []
-    for _, row in df.iterrows():
+    pareto_by_system: dict[str, bool] = {}
+    for _, row in comparable.iterrows():
         dominated = False
-        for _, other in df.iterrows():
+        for _, other in comparable.iterrows():
             if other["system"] == row["system"]:
                 continue
             no_worse_cost = float(other["offline_cost_seconds"]) <= float(row["offline_cost_seconds"])
@@ -905,22 +930,23 @@ def _compute_pareto(consolidated_df: pd.DataFrame) -> pd.DataFrame:
             if no_worse_cost and no_worse_quality and strictly_better:
                 dominated = True
                 break
-        pareto_flags.append(not dominated)
+        pareto_by_system[str(row["system"])] = not dominated
 
-    df["is_pareto"] = pareto_flags
+    df["is_pareto"] = df["system"].map(pareto_by_system).astype("boolean")
     return df
 
 
 def _plot_pareto_frontier(consolidated_df: pd.DataFrame) -> pd.DataFrame:
     pareto_df = _compute_pareto(consolidated_df)
+    plottable = pareto_df.dropna(subset=["offline_cost_seconds", "q_main", "is_pareto"])
 
     fig, ax = plt.subplots(figsize=(8.5, 5.4), dpi=160)
-    for _, row in pareto_df.iterrows():
+    for _, row in plottable.iterrows():
         color = "#2E8B57" if row["is_pareto"] else "#A7A7A7"
         ax.scatter(row["offline_cost_seconds"], row["q_main"], c=color, s=140, edgecolors="#1f1f1f")
         ax.text(row["offline_cost_seconds"] + 6, row["q_main"] + 0.0025, row["system"], fontsize=9)
 
-    frontier = pareto_df[pareto_df["is_pareto"]].sort_values("offline_cost_seconds")
+    frontier = plottable[plottable["is_pareto"]].sort_values("offline_cost_seconds")
     ax.plot(frontier["offline_cost_seconds"], frontier["q_main"], color="#2E8B57", linewidth=1.6)
 
     ax.set_xlabel("Offline cost (seconds)")
@@ -965,7 +991,7 @@ def _write_deep_analysis(
     criteria_pivot = criteria_df.pivot(index="criterion", columns="system", values="mean_score")
     grounding_leader = criteria_pivot.loc["grounding"].sort_values(ascending=False).index[0]
 
-    pareto_systems = pareto_df[pareto_df["is_pareto"]]["system"].tolist()
+    pareto_systems = pareto_df[pareto_df["is_pareto"].fillna(False)]["system"].tolist()
 
     lines = [
         "# Deep Analysis",

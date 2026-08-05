@@ -2,7 +2,7 @@
 title: "Parametric Adaptation Methods for Document-Grounded Legal QA"
 author:
   - "Aleksandr Loginov"
-email: "alex.stenberg432@gmail.com"
+email: "s4allogi@uni-trier.de"
 keywords:
   - "Retrieval-augmented generation"
   - "Parameter-efficient fine-tuning"
@@ -48,7 +48,7 @@ The central question is whether adapting the generator adds value once retrieval
 
 The evaluation is conducted with one legal benchmark, one frozen language model, one hardware configuration, and one fixed retrieval design. Two research questions are addressed.
 
-**RQ1.** Does parametric adaptation yield gains over the RAG baseline on a compact legal benchmark under tight resource constraints, and how do RAFT-style supervised adaptation and supervision-free CLM continued pretraining differ as retrieval-conditioned generators?
+**RQ1.** Does parametric adaptation yield gains over the RAG baseline on a compact legal benchmark under tight resource constraints, and how do RAFT-style supervised adaptation and self-supervised CLM continued pretraining differ as retrieval-conditioned generators?
 
 **RQ2.** How far can pure parametric systems reach without retrieval on this benchmark, and does retrieval remain indispensable?
 
@@ -100,7 +100,7 @@ Retrieval-aware supervised fine-tuning is compared with base-model RAG and domai
 
 ### 3.1 Corpus and Benchmark
 
-The benchmark is built on 8 PDF documents from the DIFC legal corpus, comprising statutes, regulations, and court judgments. Together, the documents span approximately 176 pages and 115,000 tokens. A pool of 200 question-answer pairs was authored by domain experts, covering six answer types. These comprise free-text explanations (53 questions), boolean lookups (48), numeric extractions (36), named entity lookups (30), multi-name lists (17), and date extractions (16). The distribution includes 26 multi-document comparative questions (13%) and 17 unanswerable questions (8.5%), ensuring that evaluation is not limited to simple single-document lookups. Difficulty labels span easy, medium, and hard cases.
+The benchmark is built on 8 PDF documents from the DIFC legal corpus, comprising statutes, regulations, and court judgments. Together, the documents span approximately 176 pages and 115,000 tokens. A pool of 200 question-answer pairs was authored by domain experts, covering six answer types. These comprise free-text explanations (53 questions), boolean lookups (48), numeric extractions (36), named entity lookups (30), multi-name lists (17), and date extractions (16). The distribution includes 29 multi-document comparative questions (14.5%), including negative comparative items with no gold evidence pages, and 17 unanswerable questions (8.5%), ensuring that evaluation is not limited to simple single-document lookups. Difficulty labels span easy, medium, and hard cases.
 
 The benchmark combines heterogeneous answer types, from boolean lookups to free-text legal explanations. This heterogeneity exposes distinct failure modes and prevents aggregate scores from masking type-specific weaknesses. The multi-document subset additionally provides a natural stress test for systems that may differ in local contextualization versus cross-document aggregation.
 
@@ -118,7 +118,7 @@ The retrieval configuration is held constant across all retrieval-aware systems 
 
 1. **Ingestion and hierarchical chunking.** Documents are parsed and split into five chunk families comprising page-level, section-level, clause-level, microchunks (300 tokens, 50-token overlap), and table blocks. Metadata - including entities, dates, heading paths, and BM25 terms - is extracted for each chunk.
 
-2. **Hybrid retrieval.** Each query is embedded using Qwen3-Embedding-0.6B (384 dimensions) for dense retrieval and tokenized for BM25 sparse retrieval (k1 = 1.5, b = 0.75). Both channels prefetch 30 candidates.
+2. **Hybrid retrieval.** Each query is embedded using Qwen3-Embedding-0.6B (1,024 dimensions) for dense retrieval and tokenized for BM25 sparse retrieval (k1 = 1.5, b = 0.75). Both channels prefetch 30 candidates.
 
 3. **Reciprocal Rank Fusion (RRF).** Dense and sparse candidate lists are fused with equal weights and k = 60, producing a ranked list of 10 candidates.
 
@@ -141,11 +141,11 @@ Seven systems occupy distinct methodological roles. Three form the headline comp
 |--------|-----------|-----------------|-------------|------|
 | Base-RAG | Yes | None | --- | Headline baseline |
 | RAFT-RAG | Yes | RAFT-style QA | Supervised | Headline |
-| CLM-RAG | Yes | CLM on corpus | Unsupervised | Headline |
-| Merge-RAG | Yes | Merged RAFT + CLM | Post-hoc | Exploratory |
-| RAFT-Closed | No | RAFT-style QA | Supervised | Control |
-| CLM-Closed | No | CLM on corpus | Unsupervised | Control |
-| D2L-Closed | No | D2L hypernetwork | Supervised | Control |
+| CLM-RAG | Yes | CLM on corpus | Self-supervised | Headline |
+| Merge-RAG | Yes | Post-hoc RAFT + CLM merge | Inherited mixed | Exploratory |
+| RAFT-Closed | No | Closed-book QA | Supervised | Control |
+| CLM-Closed | No | CLM on corpus | Self-supervised | Control |
+| D2L-Closed | No | D2L context distillation | Self-distilled | Control |
 
 ![Figure 1. System overview schematic](../assets/figures/fig01_system_schematic.png)
 
@@ -185,9 +185,11 @@ The evaluation protocol combines deterministic scoring for structured answer typ
 
 **Grounding (G).** For retrieval-aware systems, grounding is computed as F\_beta (beta = 2.5) on page-level (doc\_id, page\_number) pairs, comparing the final evidence set against gold retrieval references. The elevated beta emphasizes recall, penalizing missing gold pages more than including extra pages. Because retrieval is fixed, grounding serves as a control on evidence access. The constant G = 0.567 confirms identical page-level evidence coverage across the retrieval-aware systems. Adapter effects are therefore evaluated through changes in evidence-conditioned generation.
 
-**Operational metrics.** Latency (time-to-first-token and end-to-end), peak inference VRAM, offline training cost, and malformed output rate are reported for all systems. The full breakdown is given in Appendix B.3, and Table 2 summarizes the headline figures. Quality and resource expenditure are interpreted together, with direct offline-cost comparison restricted to systems that are genuinely comparable in training or packaging effort.
+**Operational metrics.** Generation time-to-first-token (TTFT), generation latency, peak generator VRAM, offline adaptation or packaging cost, and malformed output rate are reported. Retrieval-stage latency was not recorded per question and is excluded from the latency columns. The full breakdown is given in Appendix B.3, and Table 2 summarizes the headline figures. Quality and resource expenditure are interpreted together, with direct offline-cost comparison restricted to systems that are genuinely comparable in training or packaging effort.
 
 \clearpage
+
+\Needspace{32\baselineskip}
 
 ## 5. Results
 
@@ -195,26 +197,24 @@ The evaluation protocol combines deterministic scoring for structured answer typ
 
 Table 2 presents the aggregate results across all systems. The headline systems are grouped at the top, followed by the exploratory post-hoc merge, and then the negative controls.
 
-**Table 2. Main results on the 50-question evaluation set.** Trained systems report mean +/- std across 3 seeds. Offline cost is per-seed wall-clock training time. Merge-RAG is excluded from direct offline-cost comparison because it inherits prior adaptation cost from both source adapters.
+**Table 2. Main results on the 50-question evaluation set.** Seeded quality values are mean +/- sample std across 3 seeds, and seeded operational values are means across seeds. Base-RAG and D2L-Closed are single runs.
 
 | | Q\_main | S\_det | S\_asst | G | Latency (ms) | VRAM (MB) | Offline (s) |
 |---|---------|--------|---------|------|--------------|-----------|------------|
 | **Headline** | | | | | | | |
-| Base-RAG | 0.643 | 0.601 | 0.739 | 0.567 | 479 | 5201 | --- |
+| Base-RAG | 0.642 | 0.601 | 0.738 | 0.567 | 479 | n.c. (b) | --- |
 | RAFT-RAG | 0.669 +/- 0.014 | 0.648 +/- 0.015 | 0.718 +/- 0.018 | 0.567 | 492 | 3069 | 1206 |
 | CLM-RAG | 0.667 +/- 0.023 | 0.599 +/- 0.016 | 0.826 +/- 0.062 | 0.567 | 525 | 3069 | 581 |
 | **Post-hoc** | | | | | | | |
-| Merge-RAG | 0.705 +/- 0.035 | 0.679 +/- 0.048 | 0.764 +/- 0.018 | 0.567 | 527 | 3069 | n.c.* |
+| Merge-RAG | 0.705 +/- 0.034 | 0.679 +/- 0.048 | 0.764 +/- 0.018 | 0.567 | 527 | 3069 | n.c. (a) |
 | **Controls** | | | | | | | |
-| RAFT-Closed | 0.263 +/- 0.005 | 0.270 | 0.246 | --- | 257 | 3067 | 88 |
-| CLM-Closed | 0.185 +/- 0.003 | 0.135 | 0.303 | --- | 195 | 3077 | 581 |
+| RAFT-Closed | 0.263 +/- 0.005 | 0.270 +/- 0.000 | 0.246 +/- 0.015 | --- | 257 | 3067 | 88 |
+| CLM-Closed | 0.185 +/- 0.003 | 0.135 +/- 0.000 | 0.303 +/- 0.009 | --- | 195 | 3077 | 581 |
 | D2L-Closed | 0.210 | 0.135 | 0.385 | --- | 179 | 3072 | 3932 |
 
-\* Not directly comparable. Merge-RAG inherits the combined offline cost of RAFT-RAG (1206 s) and CLM-RAG (581 s). The merge itself is instantaneous.
+The RAG baseline (Base-RAG) reaches Q\_main = 0.642, establishing a difficult starting point for any adapted retrieval-aware system. Both retrieval-aware adapters improve on it. RAFT-RAG attains 0.669 +/- 0.014, and CLM-RAG attains 0.667 +/- 0.023. The observed improvements are moderate (+0.026 for RAFT-RAG and +0.025 for CLM-RAG) and consistent across seeds. No paired significance test or confidence interval over the 50 evaluation questions is reported. These values therefore describe observed differences and do not establish statistical gains. The gains are small and measured with fixed evidence selection.
 
-The RAG baseline (Base-RAG) reaches Q\_main = 0.643, establishing a difficult starting point for any adapted retrieval-aware system. Both retrieval-aware adapters improve on it. RAFT-RAG attains 0.669 +/- 0.014, and CLM-RAG attains 0.667 +/- 0.023. The observed improvements are moderate (+0.026 for RAFT-RAG and +0.025 for CLM-RAG) and consistent across seeds. No paired significance test or confidence interval over the 50 evaluation questions is reported. These values therefore describe observed differences and do not establish statistical gains. The gains are small and measured with fixed evidence selection.
-
-Merge-RAG reaches the highest observed score (0.705 +/- 0.035) through post-hoc adapter interpolation. Its higher seed variance (std = 0.035 vs. 0.014 and 0.023 for the headline adapters) and post-hoc nature warrant cautious interpretation. Partial complementarity between the two adaptation signals is suggested. The predefined headline comparison remains primary.
+Merge-RAG reaches the highest observed score (0.705 +/- 0.034) through post-hoc adapter interpolation. Its higher seed variance (std = 0.034 vs. 0.014 and 0.023 for the headline adapters) and post-hoc nature warrant cautious interpretation. Partial complementarity between the two adaptation signals is suggested. The predefined headline comparison remains primary.
 
 ![Figure 2. Improvement over Base-RAG](../assets/figures/fig02_delta_bars.png)
 
@@ -244,7 +244,7 @@ Type-level analysis reveals that performance differences between systems are con
 
 | | Boolean (n=12) | Number (n=7) | Name (n=8) | Names (n=5) | Date (n=5) | Free-text (n=13) |
 |---|----------------|-------------|------------|-------------|------------|-------------------|
-| Base-RAG | 0.833 | 0.714 | 0.500 | 0.450 | 0.200 | 0.739 |
+| Base-RAG | 0.833 | 0.714 | 0.500 | 0.450 | 0.200 | 0.738 |
 | RAFT-RAG | 0.889 | 0.714 | 0.625 | 0.261 | 0.400 | 0.718 |
 | CLM-RAG | 0.833 | 0.714 | 0.583 | 0.300 | 0.200 | 0.826 |
 | Merge-RAG | 0.889 | 0.810 | 0.708 | 0.224 | 0.400 | 0.764 |
@@ -277,16 +277,16 @@ Multi-document questions score lower than single-document questions across all s
 
 | | Single-doc | Multi-doc | Delta |
 |---|-----------|-----------|-------|
-| Base-RAG | 0.696 | 0.310 | -0.386 |
-| RAFT-RAG | 0.694 | 0.437 | -0.257 |
-| CLM-RAG | 0.722 | 0.310 | -0.412 |
-| Merge-RAG | 0.718 | 0.523 | -0.195 |
+| Base-RAG | 0.712 | 0.279 | -0.433 |
+| RAFT-RAG | 0.710 | 0.385 | -0.325 |
+| CLM-RAG | 0.738 | 0.279 | -0.459 |
+| Merge-RAG | 0.735 | 0.463 | -0.272 |
 
-The RAG baseline and CLM-RAG both reach Q\_main = 0.310 on multi-document items. RAFT-RAG reaches 0.437, and Merge-RAG reaches 0.523. This breakdown reveals a sharper behavioral distinction than the aggregate table alone.
+The RAG baseline and CLM-RAG both reach Q\_main = 0.279 on multi-document items. RAFT-RAG reaches 0.385, and Merge-RAG reaches 0.463. This breakdown reveals a sharper behavioral distinction than the aggregate table alone.
 
-On single-document questions, CLM-RAG has the highest observed mean at 0.722, narrowly above Merge-RAG at 0.718. Given the 0.004 difference, overlapping seed-level variation, and absence of a paired significance test, this result does not establish a meaningful CLM-RAG advantage. On multi-document questions, CLM-RAG and the RAG baseline both score 0.310. No cross-document aggregation gain is observed for CLM-RAG.
+On single-document questions, CLM-RAG has the highest observed mean at 0.738, narrowly above Merge-RAG at 0.735. Given the 0.003 difference, overlapping seed-level variation, and absence of a paired significance test, this result does not establish a meaningful CLM-RAG advantage. On multi-document questions, CLM-RAG and the RAG baseline both score 0.279. No cross-document aggregation gain is observed for CLM-RAG.
 
-RAFT-style supervision confers greater robustness to multi-document composition. RAFT-RAG's multi-doc score (0.437) represents a 41% relative improvement over the baseline's 0.310. The RAFT training format, which includes distractors alongside gold chunks, may teach the generator to discriminate between relevant and irrelevant evidence when evidence spans multiple documents.
+RAFT-RAG is more robust on multi-document composition in this setup. Its multi-document score (0.385) represents a 38% relative improvement over the baseline's 0.279. The RAFT training format, which includes distractors alongside gold chunks, may teach the generator to discriminate between relevant and irrelevant evidence when evidence spans multiple documents.
 
 ![Figure 5. Single-doc vs. multi-doc comparison](../assets/figures/fig05_singledoc_multidoc.png)
 
@@ -294,11 +294,11 @@ RAFT-style supervision confers greater robustness to multi-document composition.
 
 ### 5.6 Exploratory Adapter Fusion
 
-The merged adapter Merge-RAG provides evidence of partial complementarity between the two adaptation signals. Relative to RAFT-RAG, Merge-RAG improves Q\_main by +0.036, S\_det by +0.031, and S\_asst by +0.046. Relative to CLM-RAG, it improves Q\_main by +0.037 and S\_det by +0.080, with an S\_asst change of -0.062. In the document-scope breakdown, Merge-RAG reaches 0.718 on single-document questions, just below CLM-RAG at 0.722, and the highest multi-document score at 0.523. It also has the smallest single-to-multi-document gap (delta = -0.195 vs. -0.386 for the RAG baseline). The merged system preserves part of the CLM advantage in assistant-style quality and recovers most of the deterministic advantage associated with RAFT-style supervision.
+The merged adapter Merge-RAG provides evidence of partial complementarity between the two adaptation signals. Relative to RAFT-RAG, Merge-RAG improves Q\_main by +0.036, S\_det by +0.031, and S\_asst by +0.046. Relative to CLM-RAG, it improves Q\_main by +0.037 and S\_det by +0.080, with an S\_asst change of -0.062. In the document-scope breakdown, Merge-RAG reaches 0.735 on single-document questions, just below CLM-RAG at 0.738, and the highest multi-document score at 0.463. It also has the smallest single-to-multi-document gap (delta = -0.272 vs. -0.433 for the RAG baseline). The merged system preserves part of the CLM advantage in assistant-style quality and recovers most of the deterministic advantage associated with RAFT-style supervision.
 
 The result is methodologically consistent with recent work on LoRA adapter composition. Prabhakar et al. (2024) show that adapter merge schemes can approach multi-task training quality without retraining, and more structured alternatives such as rank-wise clustering (Zhao et al., 2024) suggest further room for improvement. The current experiment uses a simple linear merge.
 
-The result remains post-hoc for two reasons. First, Merge-RAG was constructed from separately trained adapters after the main experiments. Its advantage carries higher seed variance (std = 0.035, with per-seed Q\_main values of 0.734 / 0.667 / 0.713), the widest spread among the trained retrieval-aware systems. Second, its practical cost is not directly comparable to the headline systems because it inherits prior adaptation cost from both source adapters. The merged system is therefore retained for interpretation and excluded from practical system selection. Its post-hoc status limits the result to evidence of signal complementarity and does not establish a general recipe.
+The result remains post-hoc for two reasons. First, Merge-RAG was constructed from separately trained adapters after the main experiments. Its advantage carries higher seed variance (std = 0.034, with per-seed Q\_main values of 0.734 / 0.667 / 0.713), the widest spread among the trained retrieval-aware systems. Second, its practical cost is not directly comparable to the headline systems because it inherits prior adaptation cost from both source adapters. The merged system is therefore retained for interpretation and excluded from practical system selection. Its post-hoc status limits the result to evidence of signal complementarity and does not establish a general recipe.
 
 \clearpage
 
@@ -336,7 +336,7 @@ Local wins by individual systems are sparse. Two questions are answered correctl
 The following limitations apply.
 
 - **Compact corpus and single legal setting.** The benchmark comprises 8 documents (~115K tokens) from the DIFC legal corpus. Transfer to larger corpora, other jurisdictions, and unseen document collections is not measured.
-- **Evaluation scope and single split.** The fixed evaluation split contains 50 questions; the multi-name and date categories contain 5 items each, and the multi-document subset contains 8. The three seeds quantify training stochasticity but do not quantify sampling uncertainty over questions. No cross-validation, paired significance test, or confidence interval over questions is reported. Reallocating questions from the existing pool would change the RAFT training set and define a new experiment. Broader validation requires an independent question set and a complete rerun of every system and seed.
+- **Evaluation scope and single split.** The fixed evaluation split contains 50 questions; the multi-name and date categories contain 5 items each, and the multi-document subset contains only 9 items (8 deterministic and 1 free-text). Its Q\_main value is therefore particularly sensitive to individual questions and, on the assistant-style component, to a single item. The three seeds quantify training stochasticity but do not quantify sampling uncertainty over questions. No cross-validation, paired significance test, or confidence interval over questions is reported. Reallocating questions from the existing pool would change the RAFT training set and define a new experiment. Broader validation requires an independent question set and a complete rerun of every system and seed.
 - **Single model and hardware configuration.** All experiments use Gemma-2-2b-it on one RTX 4060. Different model families, scales, and memory budgets may change both the quality profile and relative training cost of the adaptation methods.
 - **Training-recipe confounding.** RAFT and CLM differ in objective, data, learning rate, epoch count, and maximum sequence length. The reported comparison covers the complete adaptation recipes. An isolated causal effect of the objective cannot be estimated.
 - **Fixed retrieval.** The evaluation measures differences in evidence-conditioned generation under one frozen retrieval configuration. Interactions between generator adaptation and retrieval quality remain unmeasured, as do results under alternative retrieval designs.
@@ -349,11 +349,11 @@ The following limitations apply.
 
 Generator-side adaptation was evaluated after a fixed retrieval configuration had been established. Distinct answer profiles were produced by the RAFT and CLM training recipes under identical evidence access. Four hypotheses are suggested by these profiles.
 
-**RAFT-style supervision appears to specialize the generator for controlled extraction and evidence composition.** RAFT-RAG improves S\_det by +0.047 over the RAG baseline and reaches 0.437 on multi-document questions, compared with 0.310 for the baseline. Its S\_asst decreases by 0.021. This pattern supports the hypothesis that direct QA supervision with gold and distractor passages strengthens evidence discrimination and target-conforming answer production. The responsible RAFT components cannot be isolated from the current experiment. Distractor exposure, multi-document training examples, and the balance between deterministic and free-text targets should be ablated separately.
+**RAFT-style supervision appears to specialize the generator for controlled extraction and evidence composition.** RAFT-RAG improves S\_det by +0.047 over the RAG baseline and reaches 0.385 on multi-document questions, compared with 0.279 for the baseline. Its S\_asst decreases by 0.021. This pattern supports the hypothesis that direct QA supervision with gold and distractor passages strengthens evidence discrimination and target-conforming answer production. The responsible RAFT components cannot be isolated from the current experiment. Distractor exposure, multi-document training examples, and the balance between deterministic and free-text targets should be ablated separately.
 
-**CLM continued pretraining appears to improve domain-conditioned explanation quality.** CLM-RAG produces the highest free-text score, with S\_asst = 0.826 and a gain of +0.087 over the baseline. Its offline training time is approximately half that of RAFT-RAG. No gain is observed on the eight multi-document questions. These results support the hypothesis that next-token training on corpus text improves domain-specific expression and local contextualization without directly teaching cross-document evidence selection. This hypothesis can be tested through cross-document CLM sequences, auxiliary evidence-selection objectives, and mixed CLM-plus-QA training.
+**CLM continued pretraining appears to improve domain-conditioned explanation quality.** CLM-RAG produces the highest free-text score, with S\_asst = 0.826 and a gain of +0.087 over the baseline. Its offline training time is approximately half that of RAFT-RAG. No gain is observed on the 9 multi-document questions. These results support the hypothesis that next-token training on corpus text improves domain-specific expression and local contextualization without directly teaching cross-document evidence selection. This hypothesis can be tested through cross-document CLM sequences, auxiliary evidence-selection objectives, and mixed CLM-plus-QA training.
 
-**Adapter fusion suggests partial compatibility between the learned updates.** Merge-RAG reaches the highest observed aggregate score (0.705) and multi-document score (0.523), while retaining part of the CLM free-text gain. Its post-hoc construction and higher seed variance prevent a prescriptive conclusion. Validation-selected merge weights, rank-wise composition, learned adapter routing, and joint multi-objective training should be compared under a pre-specified protocol.
+**Adapter fusion suggests partial compatibility between the learned updates.** Merge-RAG reaches the highest observed aggregate score (0.705) and multi-document score (0.463), while retaining part of the CLM free-text gain. Its post-hoc construction and higher seed variance prevent a prescriptive conclusion. Validation-selected merge weights, rank-wise composition, learned adapter routing, and joint multi-objective training should be compared under a pre-specified protocol.
 
 **Scalable composition is a testable requirement for D2L-style document internalization in this setup.** The D2L experiment required 108 chunk-level adapters because full documents exceeded the effective per-adapter limit. This result motivates hierarchical adapter composition, document-level routing, and hypernetworks trained for the target model and context scale. These directions concern generator-side knowledge integration and can be evaluated without changing the RAG retriever.
 
@@ -393,6 +393,8 @@ The closed-book controls remain below Q\_main = 0.27, so external evidence remai
 
 ### A.1 QLoRA Configuration (Shared)
 
+**Table A1. QLoRA configuration shared by the RAFT and CLM adapters.**
+
 | Parameter      | Value                          |
 | -------------- | ------------------------------ |
 | PEFT method    | QLoRA                          |
@@ -407,6 +409,8 @@ The closed-book controls remain below Q\_main = 0.27, so external evidence remai
 
 ### A.2 Training-Signal-Specific Parameters
 
+**Table A2. Training-signal-specific hyperparameters.**
+
 | Parameter | RAFT-RAG | RAFT-Closed (closed-book) | CLM-Closed / CLM-RAG (CLM) |
 |-----------|-------------|------------------|------------------|
 | Learning rate | 2 x 10^-4 | 2 x 10^-4 | 5 x 10^-5 |
@@ -415,15 +419,19 @@ The closed-book controls remain below Q\_main = 0.27, so external evidence remai
 | Max seq. length | 4096 | 4096 | 512 |
 | Effective batch size | 4 | 4 (micro-batch 1, grad. accum. 4) | 4 (micro-batch 1, grad. accum. 4) |
 | Training data | 150 QA pairs (RAFT format) | 150 QA pairs (no context) | ~115K tokens (raw corpus) |
-| Supervision | Supervised (question + evidence -> answer) | Supervised (question -> answer) | Unsupervised (next-token) |
+| Supervision | Supervised (question + evidence -> answer) | Supervised (question -> answer) | Self-supervised (next-token; no QA labels) |
 
 RAFT-Closed differs from RAFT-RAG only in training data format. Retrieved context is omitted. The CLM-Closed/CLM-RAG adapter is trained once via CLM and reused either without retrieval (CLM-Closed) or with retrieval (CLM-RAG). The CLM maximum sequence length of 512 is imposed by available memory. CLM computes loss over all tokens, and longer sequences exceeded the memory budget at the logits stage.
 
+\Needspace{20\baselineskip}
+
 ### A.3 Retrieval Parameters
+
+**Table A3. Fixed retrieval configuration shared by all retrieval-aware systems.**
 
 | Parameter | Value |
 |-----------|-------|
-| Embedding model | Qwen3-Embedding-0.6B (384-dim) |
+| Embedding model | Qwen3-Embedding-0.6B (1,024-dim) |
 | Sparse encoder | BM25 Okapi (k1=1.5, b=0.75) |
 | Chunk size (microchunk) | 300 tokens |
 | Chunk overlap | 50 tokens |
@@ -437,14 +445,18 @@ RAFT-Closed differs from RAFT-RAG only in training data format. Retrieved contex
 | Evidence budget | 3 |
 | Max chunks per page | 1 (page-diverse) |
 
+\Needspace{11\baselineskip}
+
 ### A.4 Generation Parameters
+
+**Table A4. Shared generation configuration.**
 
 | Parameter | Value |
 |-----------|-------|
 | Model | Gemma-2-2b-it |
 | Temperature | 0.0 (greedy) |
 | Max new tokens | 256 |
-| Constrained decoding | Boolean and names types (via Outlines) |
+| Constrained decoding | Boolean and multi-name (`names`) types (via Outlines) |
 
 ### A.5 Judge Prompt (Frozen)
 
@@ -480,7 +492,7 @@ Return JSON: {"correctness": 0|1, "completeness": 0|1, "grounding": 0|1,
 
 ### B.1 Control System Per-Type Breakdown
 
-**Table B1. Per-type scores for control systems.** As in Table 3, each cell reports S\_det for the deterministic types or S\_asst for free-text.
+**Table B1. Per-type scores for control systems.** As in Table 3, each cell reports S\_det for the deterministic types or S\_asst for free-text. RAFT-Closed and CLM-Closed are means across 3 seeds; D2L-Closed is a single run.
 
 | | Boolean (n=12) | Number (n=7) | Name (n=8) | Names (n=5) | Date (n=5) | Free-text (n=13) |
 |---|----------------|-------------|------------|-------------|------------|-------------------|
@@ -490,14 +502,14 @@ Return JSON: {"correctness": 0|1, "completeness": 0|1, "grounding": 0|1,
 
 ### B.2 Seed-Level Variance
 
-**Table B2. Per-seed Q\_main for trained systems.**
+**Table B2. Per-seed Q\_main for seeded systems.** Std is the sample standard deviation across the 3 seeds.
 
 | Seed | RAFT-RAG | CLM-RAG | Merge-RAG | RAFT-Closed | CLM-Closed |
 |------|------|------|------|------|------|
 | 42 | 0.673 | 0.651 | 0.734 | 0.263 | 0.182 |
 | 123 | 0.654 | 0.693 | 0.667 | 0.258 | 0.187 |
 | 777 | 0.680 | 0.656 | 0.713 | 0.268 | 0.187 |
-| Std | 0.014 | 0.023 | 0.035 | 0.005 | 0.003 |
+| Std | 0.014 | 0.023 | 0.034 | 0.005 | 0.003 |
 
 ![Figure B1. Error overlap among headline systems](../assets/figures/figB1_error_overlap_heatmap.png)
 
@@ -511,21 +523,23 @@ Return JSON: {"correctness": 0|1, "completeness": 0|1, "grounding": 0|1,
 
 *Figure B3. Pairwise win rates among headline systems. Each off-diagonal cell reports the fraction of evaluation questions where the row system scores higher than the column system. Ties are not counted as wins.*
 
-### B.3 Operational Metrics (All Systems)
-
 \Needspace{18\baselineskip}
 
-**Table B3. Operational metrics on the 50-question evaluation set.** TTFT is median time-to-first-token. Latency is median and 95th-percentile end-to-end. Peak VRAM is measured at inference. Offline cost is per-seed training wall-clock. Malformed rate is the fraction of evaluation answers that failed structured parsing. Values are medians across seeds for trained systems.
+### B.3 Operational Metrics (All Systems)
 
-| | TTFT med (ms) | E2E med (ms) | E2E p95 (ms) | Peak infer VRAM (MB) | Offline (s) | Malformed |
+**Table B3. Operational metrics on the 50-question evaluation set.** TTFT and generation latency exclude retrieval. Seeded entries are arithmetic means of the 3 seed-level statistics. Malformed is the structured-parsing failure rate. Offline is training wall-clock for RAFT and CLM and adapter-generation/merge time for D2L.
+
+| | TTFT med (ms) | Gen. med (ms) | Gen. p95 (ms) | VRAM (MB) | Offline (s) | \scriptsize Malformed |
 |---|---:|---:|---:|---:|---:|---:|
-| Base-RAG | 335 | 479 | 2089 | 5201 | --- | 0.02 |
+| Base-RAG | 335 | 479 | 2089 | n.c. (b) | --- | 0.02 |
 | RAFT-RAG | 319 | 492 | 1966 | 3069 | 1206 | 0.00 |
 | CLM-RAG | 316 | 525 | 2869 | 3069 | 581 | 0.00 |
-| Merge-RAG | 335 | 527 | 1949 | 3069 | n.c. | 0.00 |
+| Merge-RAG | 335 | 527 | 1949 | 3069 | n.c. (a) | 0.00 |
 | RAFT-Closed | 51 | 257 | 1223 | 3067 | 88 | 0.00 |
-| CLM-Closed | 58 | 195 | 2350 | 3077 | 581 | 0.20 |
+| CLM-Closed | 58 | 195 | 2349 | 3077 | 581 | 0.20 |
 | D2L-Closed | 56 | 179 | 1606 | 3072 | 3932 | 0.16 |
+
+For constrained boolean and multi-name outputs, Outlines does not expose token-level timing; the recorded TTFT therefore equals full generation latency for those answers.
 
 Malformed rates are negligible for the retrieval-aware adapted systems but rise for the closed-book controls (CLM-Closed 0.20, D2L-Closed 0.16), consistent with their weaker control over structured output formatting without evidence context.
 

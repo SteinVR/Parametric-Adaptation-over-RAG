@@ -1,7 +1,7 @@
-\documentclass[10pt,letterpaper]{article}
+\documentclass[11pt,a4paper]{article}
 
 % Portable PDFLaTeX setup using packages available in arXiv's TeX Live.
-\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage[a4paper,top=22mm,bottom=22mm,left=30mm,right=30mm]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
@@ -33,10 +33,11 @@
 \makeatletter
 \define@key{Gin}{alt}{}
 \makeatother
-\setkeys{Gin}{width=0.92\linewidth,height=0.43\textheight,keepaspectratio}
+\setkeys{Gin}{width=0.90\linewidth,height=0.34\textheight,keepaspectratio}
 \providecommand{\pandocbounded}[1]{#1}
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\floatplacement{figure}{H}
 
 \hypersetup{
   colorlinks=true,
@@ -48,7 +49,10 @@
 }
 
 \setlength{\parindent}{1.25em}
-\setlength{\parskip}{0.25em}
+\setlength{\parskip}{0pt plus 0.5pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
+\setlength{\textfloatsep}{12pt plus 2pt minus 3pt}
+\setlength{\floatsep}{10pt plus 2pt minus 2pt}
 \setlength{\emergencystretch}{3em}
 \setcounter{secnumdepth}{2}
 \pagestyle{plain}
@@ -56,7 +60,8 @@
 \captionsetup{
   font=small,
   labelfont=bf,
-  width=0.92\linewidth
+  width=0.90\linewidth,
+  skip=6pt
 }
 \newcounter{none}
 
@@ -65,7 +70,7 @@
 
 \let\oldlongtable\longtable
 \let\endoldlongtable\endlongtable
-\renewenvironment{longtable}{\footnotesize\setlength{\tabcolsep}{2.2pt}\oldlongtable}{\endoldlongtable\normalsize}
+\renewenvironment{longtable}{\footnotesize\setlength{\tabcolsep}{1.5pt}\oldlongtable}{\endoldlongtable\normalsize}
 
 $if(title)$
 \title{$title$}
@@ -85,11 +90,6 @@ $if(abstract)$
 \begin{abstract}
 $abstract$
 \end{abstract}
-$if(keywords)$
-\noindent\textbf{Keywords:}~$for(keywords)$$keywords$$sep$, $endfor$
-
-\medskip
-$endif$
 $endif$
 
 $body$

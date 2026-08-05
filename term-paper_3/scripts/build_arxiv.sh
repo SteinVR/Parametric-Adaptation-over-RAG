@@ -38,14 +38,7 @@ sed -E \
   -e '/^\\clearpage$/d' \
   -e 's/±/$\\pm$/g' \
   -e 's#\(\.\./assets/figures/([^)]*)\)#(figures/\1)#g' \
-  "$prepared" | \
-awk '
-  $0 == "# Use of Generative AI" {
-    print "\\enlargethispage{2\\baselineskip}"
-    print ""
-  }
-  { print }
-' > "$work_dir/arxiv-manuscript.md"
+  "$prepared" > "$work_dir/arxiv-manuscript.md"
 
 for figure in \
   fig01_system_schematic.png \

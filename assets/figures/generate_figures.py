@@ -494,13 +494,19 @@ def fig05_singledoc_multidoc() -> None:
     """Single vs multi-document performance as a gap/slope chart."""
 
     df = pd.read_csv(DOC_SCOPE).set_index("system")
+    single_counts = {int(value) for value in df["single_doc_n"].dropna()}
+    multi_counts = {int(value) for value in df["multi_doc_n"].dropna()}
+    if len(single_counts) != 1 or len(multi_counts) != 1:
+        raise ValueError("Document-scope sample sizes must be constant across systems")
+    single_n = single_counts.pop()
+    multi_n = multi_counts.pop()
     single = {system: df.loc[system, "single_doc_q_main"] for system in HEADLINE}
     multi = {system: df.loc[system, "multi_doc_q_main"] for system in HEADLINE}
 
     fig, ax = plt.subplots(figsize=(6.3, 3.8))
     x = np.array([0, 1])
 
-    left_offsets = {"S1": -0.010, "S2+R": -0.026, "S3+R": 0.026, "S7": 0.010}
+    left_offsets = {"S1": -0.004, "S2+R": -0.030, "S3+R": 0.035, "S7": 0.005}
     right_offsets = {"S1": -0.015, "S2+R": 0.000, "S3+R": 0.015, "S7": 0.000}
 
     for system in HEADLINE:
@@ -539,7 +545,9 @@ def fig05_singledoc_multidoc() -> None:
     ax.set_xlim(-0.35, 1.25)
     ax.set_ylim(0.25, 0.78)
     ax.set_xticks(x)
-    ax.set_xticklabels(["Single-document\n(n=42)", "Multi-document\n(n=8)"])
+    ax.set_xticklabels(
+        [f"Single-document\n(n={single_n})", f"Multi-document\n(n={multi_n})"]
+    )
     ax.set_ylabel("Q_main")
     ax.set_title("Multi-Document Questions Expose the Largest Gap")
     clean_axes(ax, "y")
