@@ -1,0 +1,97 @@
+\documentclass[10pt,letterpaper]{article}
+
+% Portable PDFLaTeX setup using packages available in arXiv's TeX Live.
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{needspace}
+\usepackage{etoolbox}
+\usepackage{hyperref}
+
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\raggedbottom
+\pretocmd{\section}{\needspace{4\baselineskip}}{}{}
+\pretocmd{\subsection}{\needspace{3\baselineskip}}{}{}
+
+\AtBeginEnvironment{verbatim}{\footnotesize}
+
+\makeatletter
+\define@key{Gin}{alt}{}
+\makeatother
+\setkeys{Gin}{width=0.92\linewidth,height=0.43\textheight,keepaspectratio}
+\providecommand{\pandocbounded}[1]{#1}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=blue,
+  pdfauthor={$for(author)$$author$$sep$, $endfor$},
+  pdftitle={$title$}
+}
+
+\setlength{\parindent}{1.25em}
+\setlength{\parskip}{0.25em}
+\setlength{\emergencystretch}{3em}
+\setcounter{secnumdepth}{2}
+\pagestyle{plain}
+
+\captionsetup{
+  font=small,
+  labelfont=bf,
+  width=0.92\linewidth
+}
+\newcounter{none}
+
+\renewcommand{\arraystretch}{1.05}
+\setlength{\tabcolsep}{3pt}
+
+\let\oldlongtable\longtable
+\let\endoldlongtable\endlongtable
+\renewenvironment{longtable}{\footnotesize\setlength{\tabcolsep}{2.2pt}\oldlongtable}{\endoldlongtable\normalsize}
+
+$if(title)$
+\title{$title$}
+$endif$
+$if(author)$
+\author{$for(author)$$author$$sep$ \and $endfor$$if(email)$\\[2pt]\small\texttt{$email$}$endif$}
+$endif$
+\date{}
+
+\begin{document}
+
+$if(title)$
+\maketitle
+$endif$
+
+$if(abstract)$
+\begin{abstract}
+$abstract$
+\end{abstract}
+$if(keywords)$
+\noindent\textbf{Keywords:}~$for(keywords)$$keywords$$sep$, $endfor$
+
+\medskip
+$endif$
+$endif$
+
+$body$
+
+\end{document}
