@@ -7,7 +7,7 @@ skill_dir="$paper_dir/skills/format-science-paper-pdf"
 input="$paper_dir/Term-Paper-3.md"
 pdf_dir="$repo_dir/output/pdf"
 archive_dir="$repo_dir/output/arxiv"
-preview_pdf="$pdf_dir/Parametric-Adaptation-Methods-arXiv.pdf"
+preview_pdf="$pdf_dir/Parametric-Adaptation-Methods-RAG.pdf"
 archive="$archive_dir/Parametric-Adaptation-Methods-arXiv.zip"
 
 for tool in python3 pandoc tectonic zip; do

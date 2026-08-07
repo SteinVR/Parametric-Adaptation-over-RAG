@@ -3,6 +3,7 @@ title: "Parametric Adaptation Methods for Document-Grounded Legal QA"
 author:
   - "Aleksandr Loginov"
 email: "s4allogi@uni-trier.de"
+reference-style: "apa7"
 keywords:
   - "Retrieval-augmented generation"
   - "Parameter-efficient fine-tuning"
@@ -91,7 +92,7 @@ These two paradigms represent different assumptions about how parametric adaptat
 
 ### 2.4 Research Gap and Positioning
 
-Adjacent parts of the problem are addressed by existing work. General legal reasoning capabilities are evaluated by LegalBench (Guha et al., 2023). Retrieval precision is evaluated in LegalBench-RAG (Pipitone & Houir Alami, 2024). Retrieval corpora, retrieval algorithms, rerankers, language models, and evaluation metrics are varied in LRAGE to measure whole-pipeline sensitivity (Park et al., 2025).
+Adjacent parts of the problem are addressed by existing work. General legal reasoning capabilities are evaluated by LegalBench (Guha et al., 2023). Retrieval precision is evaluated in LegalBench-RAG (Pipitone & Alami, 2024). Retrieval corpora, retrieval algorithms, rerankers, language models, and evaluation metrics are varied in LRAGE to measure whole-pipeline sensitivity (Park et al., 2025).
 
 Retrieval-aware supervised fine-tuning is compared with base-model RAG and domain-specific supervised fine-tuning across non-legal benchmarks in the original RAFT study (Zhang et al., 2024). A matched corpus-level CLM condition is absent from that comparison. The resulting gap is addressed through a controlled comparison between RAFT-style supervision and corpus-level CLM under the same language model, PEFT architecture, retrieved evidence, and evaluation protocol. The conclusions are restricted to legal QA on the evaluated benchmark and resource-constrained hardware. Moderate gains are observed over the RAG baseline, and the quality profile depends on the selected training recipe.
 
@@ -362,43 +363,43 @@ The closed-book controls remain below Q\_main = 0.27, so external evidence remai
 
 ## References
 
-- Charakorn, R., Cetin, E., Uesaka, S., & Lange, R. T. (2026). Doc-to-LoRA: Learning to instantly internalize contexts. *arXiv preprint arXiv:2602.15902*. https://arxiv.org/abs/2602.15902
+- Charakorn, R., Cetin, E., Uesaka, S., & Lange, R. T. (2026). *Doc-to-LoRA: Learning to instantly internalize contexts* [Preprint]. arXiv. <https://arxiv.org/abs/2602.15902>
 
-- Cormack, G. V., Clarke, C. L. A., & Büttcher, S. (2009). Reciprocal rank fusion outperforms Condorcet and individual rank learning methods. *Proceedings of the 32nd International ACM SIGIR Conference on Research and Development in Information Retrieval*, 758--759. https://doi.org/10.1145/1571941.1572114
+- Cormack, G. V., Clarke, C. L. A., & Büttcher, S. (2009). Reciprocal rank fusion outperforms Condorcet and individual rank learning methods. In *Proceedings of the 32nd International ACM SIGIR Conference on Research and Development in Information Retrieval* (pp. 758--759). Association for Computing Machinery. <https://doi.org/10.1145/1571941.1572114>
 
-- Dettmers, T., Pagnoni, A., Holtzman, A., & Zettlemoyer, L. (2023). QLoRA: Efficient finetuning of quantized LLMs. *Advances in Neural Information Processing Systems, 36*. https://arxiv.org/abs/2305.14314
+- Dettmers, T., Pagnoni, A., Holtzman, A., & Zettlemoyer, L. (2023). QLoRA: Efficient finetuning of quantized LLMs. In A. Oh, T. Naumann, A. Globerson, K. Saenko, M. Hardt, & S. Levine (Eds.), *Advances in neural information processing systems* (Vol. 36, pp. 10088--10115). Curran Associates, Inc. <https://doi.org/10.52202/075280-0441>
 
-- Gemma Team, Riviere, M., Pathak, S., Sessa, P. G., Hardin, C., Bhupatiraju, S., et al. (2024). Gemma 2: Improving open language models at a practical size. *arXiv preprint arXiv:2408.00118*. https://arxiv.org/abs/2408.00118
+- Gemma Team, Riviere, M., Pathak, S., Sessa, P. G., Hardin, C., Bhupatiraju, S., Hussenot, L., Mesnard, T., Shahriari, B., Ramé, A., Ferret, J., Liu, P., Tafti, P., Friesen, A., Casbon, M., Ramos, S., Kumar, R., Le Lan, C., Jerome, S., . . . Andreev, A. (2024). *Gemma 2: Improving open language models at a practical size* [Preprint]. arXiv. <https://arxiv.org/abs/2408.00118>
 
-- Guha, N., Nyarko, J., Ho, D. E., Ré, C., Chilton, A., Narayana, A., et al. (2023). LegalBench: A collaboratively built benchmark for measuring legal reasoning in large language models. *Advances in Neural Information Processing Systems, 36, Datasets and Benchmarks Track*. https://arxiv.org/abs/2308.11462
+- Guha, N., Nyarko, J., Ho, D. E., Ré, C., Chilton, A., Narayana, A., Chohlas-Wood, A., Peters, A., Waldon, B., Rockmore, D. N., Zambrano, D., Talisman, D., Hoque, E., Surani, F., Fagan, F., Sarfaty, G., Dickinson, G. M., Porat, H., Hegland, J., . . . Li, Z. (2023). LegalBench: A collaboratively built benchmark for measuring legal reasoning in large language models. In A. Oh, T. Naumann, A. Globerson, K. Saenko, M. Hardt, & S. Levine (Eds.), *Advances in neural information processing systems* (Vol. 36, pp. 44123--44279). Curran Associates, Inc. <https://doi.org/10.52202/075280-1915>
 
-- Gururangan, S., Marasovic, A., Swayamdipta, S., Lo, K., Beltagy, I., Downey, D., & Smith, N. A. (2020). Don't stop pretraining: Adapt language models to domains and tasks. *Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics*, 8342--8360. https://aclanthology.org/2020.acl-main.740/
+- Gururangan, S., Marasović, A., Swayamdipta, S., Lo, K., Beltagy, I., Downey, D., & Smith, N. A. (2020). Don't stop pretraining: Adapt language models to domains and tasks. In D. Jurafsky, J. Chai, N. Schluter, & J. Tetreault (Eds.), *Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics* (pp. 8342--8360). Association for Computational Linguistics. <https://doi.org/10.18653/v1/2020.acl-main.740>
 
-- Han, Z., Gao, C., Liu, J., Zhang, J., & Zhang, S. Q. (2024). Parameter-efficient fine-tuning for large models: A comprehensive survey. *Transactions on Machine Learning Research*. https://openreview.net/forum?id=lIsCS8b6zj
+- Han, Z., Gao, C., Liu, J., Zhang, J., & Zhang, S. Q. (2024). Parameter-efficient fine-tuning for large models: A comprehensive survey. *Transactions on Machine Learning Research*. <https://openreview.net/forum?id=lIsCS8b6zj>
 
-- Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., Wang, L., & Chen, W. (2022). LoRA: Low-rank adaptation of large language models. *International Conference on Learning Representations*. https://openreview.net/forum?id=nZeVKeeFYf9
+- Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., Wang, L., & Chen, W. (2022). LoRA: Low-rank adaptation of large language models. In *International Conference on Learning Representations*. <https://openreview.net/forum?id=nZeVKeeFYf9>
 
-- Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W., Rocktäschel, T., Riedel, S., & Kiela, D. (2020). Retrieval-augmented generation for knowledge-intensive NLP tasks. *Advances in Neural Information Processing Systems, 33*, 9459--9474. https://arxiv.org/abs/2005.11401
+- Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W., Rocktäschel, T., Riedel, S., & Kiela, D. (2020). Retrieval-augmented generation for knowledge-intensive NLP tasks. In H. Larochelle, M. Ranzato, R. Hadsell, M. F. Balcan, & H. Lin (Eds.), *Advances in neural information processing systems* (Vol. 33, pp. 9459--9474). Curran Associates, Inc. <https://proceedings.neurips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html>
 
-- Park, M., Oh, H., Choi, E., & Hwang, W. (2025). LARGE: Legal retrieval augmented generation evaluation tool. *arXiv preprint arXiv:2504.01840*. https://arxiv.org/abs/2504.01840
+- Park, M., Oh, H., Choi, E., & Hwang, W. (2025). *LRAGE: Legal retrieval augmented generation evaluation tool* [Preprint]. arXiv. <https://arxiv.org/abs/2504.01840>
 
-- Pipitone, N., & Houir Alami, G. (2024). LegalBench-RAG: A benchmark for retrieval-augmented generation in the legal domain. *arXiv preprint arXiv:2408.10343*. https://arxiv.org/abs/2408.10343
+- Pipitone, N., & Alami, G. H. (2024). *LegalBench-RAG: A benchmark for retrieval-augmented generation in the legal domain* [Preprint]. arXiv. <https://arxiv.org/abs/2408.10343>
 
-- Prabhakar, A., Li, Y., Narasimhan, K., Kakade, S., Malach, E., & Jelassi, S. (2025). LoRA Soups: Merging LoRAs for practical skill composition tasks. *Proceedings of the 31st International Conference on Computational Linguistics: Industry Track*, 644--655. https://aclanthology.org/2025.coling-industry.55/
+- Prabhakar, A., Li, Y., Narasimhan, K., Kakade, S., Malach, E., & Jelassi, S. (2025). LoRA Soups: Merging LoRAs for practical skill composition tasks. In O. Rambow, L. Wanner, M. Apidianaki, H. Al-Khalifa, B. Di Eugenio, S. Schockaert, K. Darwish, & A. Agarwal (Eds.), *Proceedings of the 31st International Conference on Computational Linguistics: Industry Track* (pp. 644--655). Association for Computational Linguistics. <https://aclanthology.org/2025.coling-industry.55/>
 
-- Pradhan, A., Ortan, A., Verma, A., & Seshadri, M. (2025). LLM-as-a-Judge: Rapid evaluation of legal document recommendation for retrieval-augmented generation. *Proceedings of the 2nd Workshop on Evaluating and Applying Recommender Systems with Large Language Models (EARL 2025)*. https://arxiv.org/abs/2509.12382
+- Pradhan, A., Ortan, A., Verma, A., & Seshadri, M. (2025). *LLM-as-a-judge: Rapid evaluation of legal document recommendation for retrieval-augmented generation* [Preprint]. arXiv. <https://arxiv.org/abs/2509.12382>
 
-- Robertson, S., & Zaragoza, H. (2009). The probabilistic relevance framework: BM25 and beyond. *Foundations and Trends in Information Retrieval, 3*(4), 333--389. https://doi.org/10.1561/1500000019
+- Robertson, S., & Zaragoza, H. (2009). The probabilistic relevance framework: BM25 and beyond. *Foundations and Trends in Information Retrieval, 3*(4), 333--389. <https://doi.org/10.1561/1500000019>
 
-- Willard, B. T., & Louf, R. (2023). Efficient guided generation for large language models. *arXiv preprint arXiv:2307.09702*. https://arxiv.org/abs/2307.09702
+- Willard, B. T., & Louf, R. (2023). *Efficient guided generation for large language models* [Preprint]. arXiv. <https://arxiv.org/abs/2307.09702>
 
-- Xu, L., Xie, H., Qin, S. J., Tao, X., & Wang, F. L. (2026). Parameter-efficient fine-tuning methods for pretrained language models: A critical review and assessment. *IEEE Transactions on Pattern Analysis and Machine Intelligence, 48*(6), 6107--6126. https://doi.org/10.1109/TPAMI.2026.3657354
+- Xu, L., Xie, H., Qin, S. J., Tao, X., & Wang, F. L. (2026). Parameter-efficient fine-tuning methods for pretrained language models: A critical review and assessment. *IEEE Transactions on Pattern Analysis and Machine Intelligence, 48*(6), 6107--6126. <https://doi.org/10.1109/TPAMI.2026.3657354>
 
-- Zhang, T., Patil, S. G., Jain, N., Shen, S., Zaharia, M., Stoica, I., & Gonzalez, J. E. (2024). RAFT: Adapting language model to domain specific RAG. *First Conference on Language Modeling*. https://openreview.net/forum?id=rzQGHXNReU
+- Zhang, T., Patil, S. G., Jain, N., Shen, S., Zaharia, M., Stoica, I., & Gonzalez, J. E. (2024). RAFT: Adapting language model to domain specific RAG. In *First Conference on Language Modeling*. <https://openreview.net/forum?id=rzQGHXNReU>
 
-- Zhang, Y., Li, M., Long, D., Zhang, X., Lin, H., Yang, B., Xie, P., Yang, A., Liu, D., Lin, J., Huang, F., & Zhou, J. (2025). Qwen3 Embedding: Advancing text embedding and reranking through foundation models. *arXiv preprint arXiv:2506.05176*. https://arxiv.org/abs/2506.05176
+- Zhang, Y., Li, M., Long, D., Zhang, X., Lin, H., Yang, B., Xie, P., Yang, A., Liu, D., Lin, J., Huang, F., & Zhou, J. (2025). *Qwen3 Embedding: Advancing text embedding and reranking through foundation models* [Preprint]. arXiv. <https://arxiv.org/abs/2506.05176>
 
-- Zhao, Z., Shen, T., Zhu, D., Li, Z., Su, J., Wang, X., & Wu, F. (2025). Merging LoRAs like playing LEGO: Pushing the modularity of LoRA to extremes through rank-wise clustering. *International Conference on Learning Representations*. https://arxiv.org/abs/2409.16167
+- Zhao, Z., Shen, T., Zhu, D., Li, Z., Su, J., Wang, X., & Wu, F. (2025). Merging LoRAs like playing LEGO: Pushing the modularity of LoRA to extremes through rank-wise clustering. In *The Thirteenth International Conference on Learning Representations*. <https://openreview.net/forum?id=j6fsbpAllN>
 
 
 ## Appendix A. Hyperparameters and Prompts

@@ -32,6 +32,7 @@
 \usepackage{enumitem}
 \usepackage{needspace}
 \usepackage{etoolbox}
+\usepackage{xurl}
 \usepackage{hyperref}
 
 % --- Page-break control (formal requirement: no heading at the bottom of a page,
@@ -76,6 +77,15 @@
 \setcounter{secnumdepth}{2}
 \setcounter{tocdepth}{2}
 \pagestyle{plain}
+
+% APA 7 reference-list layout: unnumbered entries with a 0.5-inch hanging indent.
+\newcommand{\APAReferenceSetup}{%
+  \raggedright
+  \setlength{\leftskip}{0.5in}%
+  \setlength{\parindent}{-0.5in}%
+  \setlength{\parskip}{0pt}%
+  \Urlmuskip=0mu plus 1mu\relax
+}
 
 \captionsetup{
   font=small,

@@ -228,6 +228,62 @@ def number_references(lines: list[str]) -> list[str]:
     return out
 
 
+def format_apa_references(lines: list[str]) -> list[str]:
+    """Render a Markdown reference list as APA-style hanging paragraphs.
+
+    The source remains an easy-to-edit bullet list. For PDF output, the bullets
+    are removed, the heading is centered and bold, and the entries are wrapped
+    in a local TeX group configured by both LaTeX templates.
+    """
+    out: list[str] = []
+    in_refs = False
+    in_code = False
+
+    def close_references() -> None:
+        nonlocal in_refs
+        if in_refs:
+            out.extend(["", r"\par", r"\endgroup", ""])
+            in_refs = False
+
+    for line in lines:
+        if line.startswith("```"):
+            in_code = not in_code
+            out.append(line)
+            continue
+
+        if not in_code:
+            match = HEADING_RE.match(line)
+            if match:
+                title = match.group(2).strip().lower()
+                if title == "references":
+                    in_refs = True
+                    out.extend([
+                        r"\phantomsection",
+                        r"\addcontentsline{toc}{section}{References}",
+                        r"\begin{center}",
+                        r"\textbf{References}",
+                        r"\end{center}",
+                        "",
+                        r"\begingroup",
+                        r"\APAReferenceSetup",
+                        "",
+                    ])
+                    continue
+                close_references()
+
+            if in_refs and line.strip() == r"\clearpage":
+                close_references()
+
+            if in_refs and line.startswith("- "):
+                out.extend([line[2:], "", r"\par", ""])
+                continue
+
+        out.append(line)
+
+    close_references()
+    return out
+
+
 def normalize_pipe_tables(lines: list[str]) -> list[str]:
     def split(row: str) -> list[str]:
         return [cell.strip() for cell in row.strip().strip("|").split("|")]
@@ -315,7 +371,11 @@ def main() -> None:
     body = convert_tables_and_figures(body)
     body = normalize_pipe_tables(body)
     body = number_sections_and_back_matter(body)
-    body = number_references(body)
+    apa_references = any(
+        re.match(r'^reference-style:\s*["\']?apa7["\']?\s*$', line.strip(), re.IGNORECASE)
+        for line in meta
+    )
+    body = format_apa_references(body) if apa_references else number_references(body)
     write_yaml(meta, abstract, body, args.output)
 
 
