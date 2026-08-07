@@ -56,6 +56,13 @@
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
+% Prefer sharing a page with surrounding text over creating a sparse float-only
+% page. A dedicated float page remains available for genuinely large figures.
+\renewcommand{\topfraction}{0.90}
+\renewcommand{\bottomfraction}{0.80}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.80}
+
 \hypersetup{
   colorlinks=true,
   linkcolor=black,

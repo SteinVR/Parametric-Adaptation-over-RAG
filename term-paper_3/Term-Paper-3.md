@@ -273,7 +273,7 @@ These results indicate that retrieval remains the dominant memory mechanism in t
 
 Multi-document questions score lower than single-document questions across all systems. Table 4 presents the document-scope breakdown.
 
-**Table 4. Q\_main by document scope (headline and exploratory systems).** Based on 42 single-document and 8 multi-document evaluation questions.
+**Table 4. Q\_main by document scope (headline and exploratory systems).** Based on 41 single-document and 9 multi-document evaluation questions.
 
 | | Single-doc | Multi-doc | Delta |
 |---|-----------|-----------|-------|
@@ -282,15 +282,15 @@ Multi-document questions score lower than single-document questions across all s
 | CLM-RAG | 0.738 | 0.279 | -0.459 |
 | Merge-RAG | 0.735 | 0.463 | -0.272 |
 
+![Figure 5. Q-main by document scope](../assets/figures/fig05_singledoc_multidoc.png)
+
+*Figure 5. Q\_main by document scope. Whiskers show one sample standard deviation across 3 seeds; Base-RAG is a single run. Single: n = 41 (29 deterministic, 12 free-text); multi: n = 9 (8 deterministic, 1 free-text). Delta is multi-document minus single-document.*
+
 The RAG baseline and CLM-RAG both reach Q\_main = 0.279 on multi-document items. RAFT-RAG reaches 0.385, and Merge-RAG reaches 0.463. This breakdown reveals a sharper behavioral distinction than the aggregate table alone.
 
 On single-document questions, CLM-RAG has the highest observed mean at 0.738, narrowly above Merge-RAG at 0.735. Given the 0.003 difference, overlapping seed-level variation, and absence of a paired significance test, this result does not establish a meaningful CLM-RAG advantage. On multi-document questions, CLM-RAG and the RAG baseline both score 0.279. No cross-document aggregation gain is observed for CLM-RAG.
 
-RAFT-RAG is more robust on multi-document composition in this setup. Its multi-document score (0.385) represents a 38% relative improvement over the baseline's 0.279. The RAFT training format, which includes distractors alongside gold chunks, may teach the generator to discriminate between relevant and irrelevant evidence when evidence spans multiple documents.
-
-![Figure 5. Single-doc vs. multi-doc comparison](../assets/figures/fig05_singledoc_multidoc.png)
-
-*Figure 5. Single-document vs. multi-document Q\_main per system, annotated with per-system delta.*
+RAFT-RAG shows a smaller observed single-to-multi-document gap than Base-RAG and CLM-RAG in this setup. Its multi-document score (0.385) represents a 38% relative improvement over the baseline's 0.279. The RAFT training format, which includes distractors alongside gold chunks, may teach the generator to discriminate between relevant and irrelevant evidence when evidence spans multiple documents.
 
 ### 5.6 Exploratory Adapter Fusion
 
