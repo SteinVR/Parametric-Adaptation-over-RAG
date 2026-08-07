@@ -138,7 +138,9 @@ def convert_tables_and_figures(lines: list[str]) -> list[str]:
     return out
 
 
-def number_sections_and_back_matter(lines: list[str]) -> list[str]:
+def number_sections_and_back_matter(
+    lines: list[str], page_break_policy: str = "all"
+) -> list[str]:
     """Switch from manually numbered headings to native LaTeX numbering.
 
     Operates on already-promoted headings (``#`` = section, ``##`` = subsection):
@@ -146,7 +148,11 @@ def number_sections_and_back_matter(lines: list[str]) -> list[str]:
     - Strips the baked-in ``1.``/``1.1`` (and appendix ``A.1``) prefixes so LaTeX
       generates the numbers, producing an aligned ``\\numberline`` table of
       contents.
-    - Puts ``References`` and each ``Appendix`` on a fresh page (``\\clearpage``).
+    - Controls major page breaks with ``page_break_policy``: ``all`` keeps
+      manuscript-authored breaks and starts every back-matter section on a new
+      page; ``backmatter`` starts References and the first appendix on new
+      pages while keeping the appendix block continuous; ``none`` adds no
+      forced breaks.
     - Marks ``References`` unnumbered.
     - Routes the appendices through ``\\appendix`` (auto-lettered A, B, C, ...)
       under a single bold ``Appendices`` entry in the contents.
@@ -166,6 +172,11 @@ def number_sections_and_back_matter(lines: list[str]) -> list[str]:
             out.append(line)
             continue
 
+        if line.strip() == r"\clearpage":
+            if page_break_policy == "all":
+                out.append(line)
+            continue
+
         match = HEADING_RE.match(line)
         if not match:
             out.append(line)
@@ -175,12 +186,17 @@ def number_sections_and_back_matter(lines: list[str]) -> list[str]:
         title = match.group(2).strip()
 
         if len(hashes) == 1 and title.lower() == "references":
-            out.extend(["\\clearpage", "", "# References {-}"])
+            if page_break_policy != "none":
+                out.extend([r"\clearpage", ""])
+            out.append("# References {-}")
             continue
 
         appendix = APPENDIX_HEAD_RE.match(title) if len(hashes) == 1 else None
         if appendix:
-            out.extend(["\\clearpage", ""])
+            if page_break_policy == "all" or (
+                page_break_policy == "backmatter" and not appendix_started
+            ):
+                out.extend([r"\clearpage", ""])
             if not appendix_started:
                 out.extend([
                     "\\appendix",
@@ -188,6 +204,8 @@ def number_sections_and_back_matter(lines: list[str]) -> list[str]:
                     "\\counterwithin{table}{section}",
                     "",
                     "\\counterwithin{figure}{section}",
+                    "",
+                    "\\phantomsection",
                     "",
                     "\\addcontentsline{toc}{section}{Appendices}",
                     "",
@@ -232,8 +250,8 @@ def format_apa_references(lines: list[str]) -> list[str]:
     """Render a Markdown reference list as APA-style hanging paragraphs.
 
     The source remains an easy-to-edit bullet list. For PDF output, the bullets
-    are removed, the heading is centered and bold, and the entries are wrapped
-    in a local TeX group configured by both LaTeX templates.
+    are removed, the heading uses the document's section hierarchy, and the
+    entries are wrapped in a local TeX group configured by both LaTeX templates.
     """
     out: list[str] = []
     in_refs = False
@@ -258,11 +276,9 @@ def format_apa_references(lines: list[str]) -> list[str]:
                 if title == "references":
                     in_refs = True
                     out.extend([
+                        r"\section*{References}",
                         r"\phantomsection",
                         r"\addcontentsline{toc}{section}{References}",
-                        r"\begin{center}",
-                        r"\textbf{References}",
-                        r"\end{center}",
                         "",
                         r"\begingroup",
                         r"\APAReferenceSetup",
@@ -359,6 +375,15 @@ def main() -> None:
     parser.add_argument("input", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("--from-heading", default="")
+    parser.add_argument(
+        "--page-break-policy",
+        choices=("all", "backmatter", "none"),
+        default="all",
+        help=(
+            "Control forced page breaks: all, References plus the first "
+            "appendix only (backmatter), or none."
+        ),
+    )
     args = parser.parse_args()
 
     lines = args.input.read_text(encoding="utf-8").splitlines()
@@ -370,7 +395,7 @@ def main() -> None:
     body = promote_headings(body)
     body = convert_tables_and_figures(body)
     body = normalize_pipe_tables(body)
-    body = number_sections_and_back_matter(body)
+    body = number_sections_and_back_matter(body, args.page_break_policy)
     apa_references = any(
         re.match(r'^reference-style:\s*["\']?apa7["\']?\s*$', line.strip(), re.IGNORECASE)
         for line in meta

@@ -29,13 +29,13 @@ mkdir -p "$package_dir/figures" "$build_dir"
 python3 "$skill_dir/scripts/prepare_markdown.py" \
   "$input" \
   "$prepared" \
-  --from-heading "# Abstract"
+  --from-heading "# Abstract" \
+  --page-break-policy backmatter
 
 # The submission archive must use relative paths and contain only referenced files.
-# The term-paper build starts references and every appendix on a new page; the
-# arXiv build stays compact and lets those sections flow naturally.
+# References and the appendix block are separated from adjacent major sections;
+# individual appendices remain continuous to avoid unnecessary blank space.
 sed -E \
-  -e '/^\\clearpage$/d' \
   -e 's/±/$\\pm$/g' \
   -e 's#\(\.\./assets/figures/([^)]*)\)#(figures/\1)#g' \
   "$prepared" > "$work_dir/arxiv-manuscript.md"

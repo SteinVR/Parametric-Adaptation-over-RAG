@@ -345,6 +345,7 @@ The following limitations apply.
 - **Post-hoc adapter fusion.** Merge-RAG was introduced after the headline experiments and inherits the prior adaptation cost of both source adapters. Its result requires confirmation with a pre-specified merge procedure, a separate validation set for merge selection, and additional seeds.
 - **D2L implementation scope.** The released hypernetwork's per-adapter token limit required splitting the corpus into 108 chunks and merging the resulting adapters. This differs from document-level conditioning, and no bespoke hypernetwork was trained for the modern target model.
 
+\newpage
 
 ## 7. Conclusion
 
