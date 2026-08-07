@@ -86,13 +86,13 @@ The central experimental axis contrasts two training signals applied to the same
 
 **RAFT-style supervised adaptation.** Inspired by Retrieval-Augmented Fine-Tuning (Zhang et al., 2024), the adapter is trained on question-answer pairs where the input includes retrieved evidence chunks (both gold and distractor passages). This directly optimizes answer generation from evidence-rich contexts, exposing the adapter to the QA task distribution. Supervision is provided through the reference answers.
 
-**CLM continued pretraining.** The adapter is trained on the raw corpus text using a standard causal language modeling (CLM) objective - next-token prediction on all tokens (Gururangan et al., 2020). No QA labels or task-specific formatting are used. The adapter is exposed to the corpus distribution without any task-specific supervision, relying solely on the language modeling objective to absorb domain patterns.
+**CLM continued pretraining.** The adapter is trained on the raw corpus text (Gururangan et al., 2020) using a standard causal language modeling (CLM) objective - next-token prediction on all tokens. No QA labels or task-specific formatting are used. The adapter is exposed to the corpus distribution without any task-specific supervision, relying solely on the language modeling objective to absorb domain patterns.
 
 These two paradigms represent different assumptions about how parametric adaptation should interact with retrieval. RAFT-style training directly supervises answer production from retrieved evidence. CLM pretraining exposes the model to the corpus through next-token prediction. RAFT-style adaptation may favor deterministic extraction because its targets follow the QA task distribution. CLM adaptation may favor assistant-style answer quality because local contextualization is adjusted without task-specific labels. The empirical question is which of these tendencies becomes visible once both are tested against the same RAG baseline.
 
 ### 2.4 Research Gap and Positioning
 
-Adjacent parts of the problem are addressed by existing work. General legal reasoning capabilities are evaluated by LegalBench (Guha et al., 2023). Retrieval precision is evaluated in LegalBench-RAG (Pipitone & Alami, 2024). Retrieval corpora, retrieval algorithms, rerankers, language models, and evaluation metrics are varied in LRAGE to measure whole-pipeline sensitivity (Park et al., 2025).
+Adjacent parts of the problem are addressed by existing work. General legal reasoning capabilities are evaluated by LegalBench (Guha et al., 2023). Retrieval precision is evaluated in LegalBench-RAG (Pipitone & Houir Alami, 2024). Retrieval corpora, retrieval algorithms, rerankers, language models, and evaluation metrics are varied in LRAGE to measure whole-pipeline sensitivity (Park et al., 2025).
 
 Retrieval-aware supervised fine-tuning is compared with base-model RAG and domain-specific supervised fine-tuning across non-legal benchmarks in the original RAFT study (Zhang et al., 2024). A matched corpus-level CLM condition is absent from that comparison. The resulting gap is addressed through a controlled comparison between RAFT-style supervision and corpus-level CLM under the same language model, PEFT architecture, retrieved evidence, and evaluation protocol. The conclusions are restricted to legal QA on the evaluated benchmark and resource-constrained hardware. Moderate gains are observed over the RAG baseline, and the quality profile depends on the selected training recipe.
 
@@ -383,7 +383,7 @@ The closed-book controls remain below Q\_main = 0.27, so external evidence remai
 
 - Park, M., Oh, H., Choi, E., & Hwang, W. (2025). *LRAGE: Legal retrieval augmented generation evaluation tool* [Preprint]. arXiv. <https://arxiv.org/abs/2504.01840>
 
-- Pipitone, N., & Alami, G. H. (2024). *LegalBench-RAG: A benchmark for retrieval-augmented generation in the legal domain* [Preprint]. arXiv. <https://arxiv.org/abs/2408.10343>
+- Pipitone, N., & Houir Alami, G. (2024). *LegalBench-RAG: A benchmark for retrieval-augmented generation in the legal domain* [Preprint]. arXiv. <https://arxiv.org/abs/2408.10343>
 
 - Prabhakar, A., Li, Y., Narasimhan, K., Kakade, S., Malach, E., & Jelassi, S. (2025). LoRA Soups: Merging LoRAs for practical skill composition tasks. In O. Rambow, L. Wanner, M. Apidianaki, H. Al-Khalifa, B. Di Eugenio, S. Schockaert, K. Darwish, & A. Agarwal (Eds.), *Proceedings of the 31st International Conference on Computational Linguistics: Industry Track* (pp. 644--655). Association for Computational Linguistics. <https://aclanthology.org/2025.coling-industry.55/>
 
