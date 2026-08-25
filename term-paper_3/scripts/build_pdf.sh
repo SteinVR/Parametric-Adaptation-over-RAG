@@ -6,5 +6,5 @@ repo_dir="$(cd "$paper_dir/.." && pwd)"
 
 "$paper_dir/skills/format-science-paper-pdf/scripts/render_science_paper_pdf.sh" \
   "$paper_dir/Term-Paper-3.md" \
-  "$repo_dir/When-Retrieval-Is-Already-in-Place.pdf" \
+  "$repo_dir/Parametric-Adaptation-Methods-RAG.pdf" \
   "# Abstract"

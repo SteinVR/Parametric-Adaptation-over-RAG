@@ -5,9 +5,7 @@ paper_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 repo_dir="$(cd "$paper_dir/.." && pwd)"
 skill_dir="$paper_dir/skills/format-science-paper-pdf"
 input="$paper_dir/Term-Paper-3.md"
-pdf_dir="$repo_dir/output/pdf"
 archive_dir="$repo_dir/output/arxiv"
-preview_pdf="$pdf_dir/Parametric-Adaptation-Methods-RAG.pdf"
 archive="$archive_dir/Parametric-Adaptation-Methods-arXiv.zip"
 
 for tool in python3 pandoc tectonic zip; do
@@ -17,7 +15,7 @@ for tool in python3 pandoc tectonic zip; do
   fi
 done
 
-mkdir -p "$pdf_dir" "$archive_dir"
+mkdir -p "$archive_dir"
 
 work_dir="$(mktemp -d)"
 trap 'rm -rf "$work_dir"' EXIT
@@ -62,8 +60,6 @@ pandoc "$work_dir/arxiv-manuscript.md" \
 
 (cd "$package_dir" && tectonic --outdir "$build_dir" main.tex)
 
-cp "$build_dir/main.pdf" "$preview_pdf"
 (cd "$package_dir" && zip -X -q -r "$archive" main.tex figures)
 
-echo "$preview_pdf"
 echo "$archive"

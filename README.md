@@ -1,13 +1,14 @@
-# When Retrieval Is Already in Place: Parametric Adaptation Methods for Document-Grounded Legal QA
+# Parametric Adaptation Methods for Document-Grounded Legal QA
 
 Code, data, and experiments for the paper of the same title. The repository is the
 technical companion to the article: it holds the retrieval-augmented generation (RAG)
 stack, the QLoRA training and evaluation pipelines, the DIFC legal benchmark, and the
 scripts that reproduce every table and figure in the paper.
 
-**Paper:** [`When-Retrieval-Is-Already-in-Place.pdf`](./When-Retrieval-Is-Already-in-Place.pdf)
-· Author: Aleksandr Loginov · Keywords: RAG, parameter-efficient fine-tuning, QLoRA,
-continued pretraining, domain adaptation, legal QA.
+**Paper:** [`Parametric-Adaptation-Methods-RAG.pdf`](./Parametric-Adaptation-Methods-RAG.pdf)
+(pre-paper) · [`Parametric-Adaptation-Methods-RAG_uni.pdf`](./Parametric-Adaptation-Methods-RAG_uni.pdf)
+(university format) · Author: Aleksandr Loginov · Keywords: RAG,
+parameter-efficient fine-tuning, QLoRA, continued pretraining, domain adaptation, legal QA.
 
 ---
 
@@ -240,7 +241,8 @@ finding — see Appendix C of the paper for why it is non-competitive at corpus 
 ## Repository layout
 
 ```
-├── When-Retrieval-Is-Already-in-Place.pdf   # the paper
+├── Parametric-Adaptation-Methods-RAG.pdf        # pre-paper
+├── Parametric-Adaptation-Methods-RAG_uni.pdf    # university submission format
 ├── config.py                 # global paths, seeds, hyperparameters, metric weights
 ├── pyproject.toml / uv.lock  # environment (uv, Python 3.12, CUDA 12.4 Torch stack)
 ├── src/

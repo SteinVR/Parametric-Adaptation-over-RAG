@@ -1,22 +1,19 @@
-## Structure
-- **corpus/** — base directory for corpus versions and variants.
-- **corpus4-100/** — primary corpus (v4, 100 documents) with gold standards, benchmarks, question pools, shard manifests, and candidate/draft/review documents.
-- **corpus4_2-100/** — enhanced corpus variant (v4.2, 100 documents) with improved annotations, smoke test reports, and comprehensive text views.
-- **goldset/** — gold standard reference dataset containing validated question-answer pairs, benchmark results, and dataset merging utilities.
-- **manifests/** — metadata manifests tracking corpus versions, shard distributions, question inventory, and structural versioning.
-- **processed/** — cleaned and preprocessed data ready for model training and evaluation.
-- **splits/** — data splits for train/dev/test phases used in experiments.
-- **old_corpus/** — archive of legacy corpus versions for historical reference.
+# Dataset scope
 
-## Active Dataset for All Experiments
+- `corpus/` contains the active eight DIFC legal PDFs used by the experiments.
+- `goldset/goldset.benchmark.json` is the frozen 200-question benchmark; `goldset.questions.json` is its question inventory.
+- `splits/split_v1.json` is the frozen 150-train / 50-evaluation split.
+- `processed/` contains derived RAFT and closed-book training tables.
+- `corpus4-100/` and `corpus4_2-100/` preserve the two four-document, 100-question construction batches that were merged into the active benchmark. The `100` denotes questions, not documents.
+- `manifests/` records corpus metadata. `old_corpus/` is historical provenance and is not an active experiment input.
 
-**Primary source:** `goldset/`
+Use the paths in root `config.py` and the loaders under `src/data/` rather than selecting files by a similar-looking name.
 
-All experiments (EXP-002 through EXP-010) use the **goldset** as the canonical evaluation dataset:
-- **goldset.benchmark.json** — reference Q&A pairs with benchmark metadata for evaluation
-- **goldset.questions.json** — complete question inventory
-- **Dataset scale:** 8 documents, 200 question-answer pairs
-- **Train/eval split:** 150 training examples (S2), 50 evaluation examples
-- **Status:** Frozen before experiments; all experiment configurations reference `GOLDSET_PATH` from `config.py`
+## Frozen-data guardrails
 
-The source corpora (corpus4-100 and corpus4_2-100) are processed and merged into this goldset prior to experimental runs.
+- Do not modify the active PDFs, benchmark, split, or derived training tables unless the user explicitly requests a dataset revision.
+- Preserve question IDs, answer types, reference answers, evidence page references, document IDs, and the established semantics for unanswerable items.
+- Never allow the 50 evaluation questions or their answers to enter supervised training data. Validate schema and leakage against the frozen benchmark, split, audit artifacts, and loaders under `src/data/`.
+- Treat `corpus4-*` and `old_corpus/` as provenance. Do not silently substitute them for `corpus/` or `goldset/` in current experiments.
+- A legitimate frozen-data change invalidates downstream artifacts. Re-run the relevant audit, update manifests and derived tables, and identify which experiment results and paper claims must be regenerated.
+- Prefer deterministic scripts for transformations. Do not hand-edit large JSON/JSONL/CSV outputs when the producing script can express the change.
