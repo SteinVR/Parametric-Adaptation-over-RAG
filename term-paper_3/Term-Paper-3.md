@@ -17,7 +17,7 @@ keywords:
 
 The value of parameter-efficient adaptation remains unclear when Retrieval-Augmented Generation (RAG) already supplies the source documents for document-grounded legal QA. RAFT-style supervised fine-tuning and Causal Language Modeling (CLM) continued pretraining are compared on the same frozen language model using a benchmark constructed from eight DIFC legal documents and a fixed retrieval configuration.
 
-Closed-book controls remain weak, confirming the continued need for retrieved evidence in this setup. Within the retrieval-aware systems, RAFT shows higher observed deterministic extraction and multi-document composition, while CLM shows higher observed free-text synthesis and explanation quality. Their aggregate differences from Base-RAG are not statistically supported on the 50-question holdout because paired bootstrap 95% confidence intervals include zero. A post-hoc adapter merge recovers the observed deterministic difference and yields the highest aggregate and multi-document scores. Its seed variance is higher, and CLM's free-text advantage is only partially retained. Under hardware constraints, the training signal should be selected for the required answer profile. Adapter fusion remains exploratory.
+Closed-book controls remain weak, confirming the continued need for retrieved evidence in this setup. Within the retrieval-aware systems, RAFT shows higher observed deterministic extraction and multi-document composition, while CLM shows higher observed free-text synthesis and explanation quality. Paired bootstrap intervals for both aggregate differences include zero. A post-hoc adapter merge recovers the observed deterministic difference and yields the highest aggregate and multi-document scores. Its seed variance is higher, and CLM's free-text advantage is only partially retained. Under hardware constraints, the training signal should be selected for the required answer profile. Adapter fusion remains exploratory.
 
 # Table of Contents
 
@@ -88,7 +88,7 @@ The central experimental axis contrasts two training signals applied to the same
 
 **CLM continued pretraining.** The adapter is trained on the raw corpus text (Gururangan et al., 2020) using a standard causal language modeling (CLM) objective - next-token prediction on all tokens. No QA labels or task-specific formatting are used. The adapter is exposed to the corpus distribution without any task-specific supervision, relying solely on the language modeling objective to absorb domain patterns.
 
-These two paradigms represent different assumptions about how parametric adaptation should interact with retrieval. RAFT-style training directly supervises answer production from retrieved evidence. CLM pretraining exposes the model to the corpus through next-token prediction. These mechanisms motivate two working hypotheses rather than established findings. **H1.** RAFT-style adaptation may favor deterministic extraction because its targets follow the QA task distribution. **H2.** CLM adaptation may favor assistant-style answer quality because local contextualization is adjusted without task-specific labels. The empirical question is which of these tendencies becomes visible once both are tested against the same RAG baseline.
+These two paradigms represent different assumptions about how parametric adaptation should interact with retrieval. RAFT-style training directly supervises answer production from retrieved evidence. CLM pretraining exposes the model to the corpus through next-token prediction. I therefore formulate two working hypotheses: **H1.** RAFT-style adaptation may favor deterministic extraction because its targets follow the QA task distribution. **H2.** CLM adaptation may favor assistant-style answer quality because local contextualization is adjusted without task-specific labels. The empirical question is which of these tendencies becomes visible once both are tested against the same RAG baseline.
 
 ### 2.4 Research Gap and Positioning
 
@@ -101,7 +101,7 @@ Retrieval-aware supervised fine-tuning is compared with base-model RAG and domai
 
 ### 3.1 Corpus and Benchmark
 
-I selected eight documents from the legal materials distributed for the Agentic RAG Legal Challenge and built the benchmark from this subset (Agentic RAG Legal Challenge, 2026). The documents originate from the Dubai International Financial Centre (DIFC) and comprise statutes, regulations, court judgments, and court orders (Agentic RAG Legal Challenge, 2026). The exact selection is listed in Appendix A.6. Together, the documents span approximately 176 pages and 115,000 tokens. I authored the 200 question-answer pairs and assembled the pool to cover six answer types. These comprise free-text explanations (53 questions), boolean lookups (48), numeric extractions (36), named entity lookups (30), multi-name lists (17), and date extractions (16). The distribution includes 29 multi-document comparative questions (14.5%), including negative comparative items with no gold evidence pages, and 17 unanswerable questions (8.5%), ensuring that evaluation is not limited to simple single-document lookups. Difficulty labels span easy, medium, and hard cases.
+I selected eight publicly available legal documents from the Dubai International Financial Centre (DIFC) and constructed the benchmark from them (Dubai International Financial Centre, n.d.; DIFC Courts, n.d.). The documents comprise statutes, regulations, court judgments, and court orders. The exact selection and formal document identifiers are listed in Appendix A.6. Together, the documents span approximately 176 pages and 115,000 tokens. I authored the 200 question-answer pairs and assembled the pool to cover six answer types. These comprise free-text explanations (53 questions), boolean lookups (48), numeric extractions (36), named entity lookups (30), multi-name lists (17), and date extractions (16). The distribution includes 29 multi-document comparative questions (14.5%), including negative comparative items with no gold evidence pages, and 17 unanswerable questions (8.5%), ensuring that evaluation is not limited to simple single-document lookups. Difficulty labels span easy, medium, and hard cases.
 
 The benchmark combines heterogeneous answer types, from boolean lookups to free-text legal explanations. This heterogeneity exposes distinct failure modes and prevents aggregate scores from masking type-specific weaknesses. The multi-document subset additionally provides a natural stress test for systems that may differ in local contextualization versus cross-document aggregation.
 
@@ -322,11 +322,11 @@ The result remains post-hoc for two reasons. First, Merge-RAG was constructed fr
 
 ### 6.1 Answer to RQ1
 
-RQ1 asked whether parametric adaptation yields gains over the RAG baseline and how RAFT-style and CLM adaptation differ. The aggregate answer is rather inconclusive than affirmative.
+RQ1 asked whether parametric adaptation yields gains over the RAG baseline and how RAFT-style and CLM adaptation differ. The aggregate result is inconclusive.
 
 RAFT-RAG and CLM-RAG have moderately higher observed Q\_main than Base-RAG (+0.026 and +0.025), but their paired bootstrap 95% intervals are [-0.074, +0.129] and [-0.056, +0.108]. Both include zero. The direct RAFT-RAG versus CLM-RAG difference is +0.002 with an interval of [-0.086, +0.088]. Adaptation therefore changes the observed answer profile, but this holdout does not establish an aggregate gain or an aggregate winner at the 95% confidence level.
 
-The observed profile differs by training signal. RAFT-style supervision has higher deterministic extraction than the baseline (S\_det = +0.047), with a slight decrease in free-text quality (S\_asst = -0.021). CLM continued pretraining has higher free-text answer quality (S\_asst = +0.087), with essentially unchanged deterministic extraction (S\_det = -0.002). These component differences remain descriptive because the formal paired analysis is defined for the primary Q\_main metric. They motivate RAFT-RAG for factual extraction and CLM-RAG for explanation quality and lower offline cost, rather than proving that either training signal is generally superior.
+The observed profile differs by training signal. RAFT-style supervision has higher deterministic extraction than the baseline (S\_det = +0.047), with a slight decrease in free-text quality (S\_asst = -0.021). CLM continued pretraining has higher free-text answer quality (S\_asst = +0.087), with essentially unchanged deterministic extraction (S\_det = -0.002). Paired uncertainty was evaluated only for Q\_main, so the component-score differences remain descriptive.
 
 The post-hoc merge Merge-RAG achieves the highest aggregate score (0.705), suggesting that the two signals are partially complementary. Merge-RAG was identified after the headline experiments and was not retrained.
 
@@ -351,7 +351,7 @@ Local wins by individual systems are sparse. Two questions are answered correctl
 The following limitations apply.
 
 - **Compact corpus and single legal setting.** The benchmark comprises 8 documents (~115K tokens) from the DIFC legal corpus. Transfer to larger corpora, other jurisdictions, and unseen document collections is not measured.
-- **Evaluation scope and single split.** The fixed evaluation split contains 50 questions; the multi-name and date categories contain 5 items each, and the multi-document subset contains only 9 items (8 deterministic and 1 free-text). Its Q\_main value is therefore particularly sensitive to individual questions and, on the assistant-style component, to a single item. The paired bootstrap quantifies question-level uncertainty within this holdout, conditional on scores averaged across the observed training seeds, and all RQ1 intervals include zero. It does not replace cross-validation or estimate transfer to an independent question set. Reallocating questions from the existing pool would change the RAFT training set and define a new experiment. Broader validation requires an independently constructed question set and a complete rerun of every system and seed.
+- **Evaluation scope and single split.** The fixed evaluation split contains 50 questions; the multi-name and date categories contain 5 items each, and the multi-document subset contains only 9 items (8 deterministic and 1 free-text). Its Q\_main value is therefore particularly sensitive to individual questions and, on the assistant-style component, to a single item. The paired bootstrap characterizes uncertainty within this fixed holdout but does not replace validation on an independent question set. Reallocating questions from the existing pool would change the RAFT training set and define a new experiment. Broader validation requires an independently constructed question set and a complete rerun of every system and seed.
 - **Single model and hardware configuration.** All experiments use Gemma-2-2b-it on one RTX 4060. Different model families, scales, and memory budgets may change both the quality profile and relative training cost of the adaptation methods.
 - **Training-recipe confounding.** RAFT and CLM differ in objective, data, learning rate, epoch count, and maximum sequence length. The reported comparison covers the complete adaptation recipes. An isolated causal effect of the objective cannot be estimated.
 - **Fixed retrieval.** The evaluation measures differences in evidence-conditioned generation under one frozen retrieval configuration. Interactions between generator adaptation and retrieval quality remain unmeasured, as do results under alternative retrieval designs.
@@ -363,9 +363,9 @@ The following limitations apply.
 
 ## 7. Conclusion
 
-Generator-side adaptation was evaluated after a fixed retrieval configuration had been established. The RAFT and CLM training recipes produced distinct observed answer profiles under identical evidence access, but the paired intervals for both aggregate differences from Base-RAG include zero. The following four profiles are therefore treated as hypotheses rather than established findings.
+Generator-side adaptation was evaluated after a fixed retrieval configuration had been established. RAFT and CLM produced different observed quality profiles without a clear aggregate winner. The following four profiles are framed as hypotheses for further testing.
 
-**RAFT-style supervision appears to specialize the generator for controlled extraction and evidence composition.** RAFT-RAG has an observed S\_det difference of +0.047 over the RAG baseline and reaches 0.385 on multi-document questions, compared with 0.279 for the baseline. Its observed S\_asst difference is -0.021. This pattern is consistent with the hypothesis that direct QA supervision with gold and distractor passages strengthens evidence discrimination and target-conforming answer production, but the current paired analysis does not establish that mechanism. The responsible RAFT components cannot be isolated from the current experiment. Distractor exposure, multi-document training examples, and the balance between deterministic and free-text targets should be ablated separately.
+**RAFT-style supervision appears to specialize the generator for controlled extraction and evidence composition.** RAFT-RAG has an observed S\_det difference of +0.047 over the RAG baseline and reaches 0.385 on multi-document questions, compared with 0.279 for the baseline. Its observed S\_asst difference is -0.021. This pattern is consistent with the hypothesis that direct QA supervision with gold and distractor passages strengthens evidence discrimination and target-conforming answer production. This experiment does not isolate which part of the RAFT recipe produced the observed profile. Distractor exposure, multi-document training examples, and the balance between deterministic and free-text targets should be ablated separately.
 
 **CLM continued pretraining appears to improve domain-conditioned explanation quality.** CLM-RAG produces the highest free-text score, with S\_asst = 0.826 and an observed difference of +0.087 over the baseline. Its offline training time is approximately half that of RAFT-RAG. No difference is observed on the 9 multi-document questions. These results motivate the hypothesis that next-token training on corpus text improves domain-specific expression and local contextualization without directly teaching cross-document evidence selection. This hypothesis can be tested through cross-document CLM sequences, auxiliary evidence-selection objectives, and mixed CLM-plus-QA training.
 
@@ -378,7 +378,9 @@ The closed-book controls remain below Q\_main = 0.27, so external evidence remai
 
 ## References
 
-- Agentic RAG Legal Challenge. (2026). *Agentic RAG Legal Challenge*. <https://agentic-challenge.ai/>
+- DIFC Courts. (n.d.). *Judgments & orders*. Retrieved August 25, 2026, from <https://www.difccourts.ae/rules-decisions/judgments-orders>
+
+- Dubai International Financial Centre. (n.d.). *DIFC legal database*. Retrieved August 25, 2026, from <https://www.difc.com/business/laws-and-regulations/legal-database>
 
 - Charakorn, R., Cetin, E., Uesaka, S., & Lange, R. T. (2026). *Doc-to-LoRA: Learning to instantly internalize contexts* [Preprint]. arXiv. <https://arxiv.org/abs/2602.15902>
 
@@ -531,7 +533,7 @@ The evaluated eight-document subset contains the following materials.
 7. *(1) Ozias (2) Ori (3) Octavio v (1) Obadiah (2) Oaklen*, Case No. ENF 269/2023, order with reasons dated 1 July 2025.
 8. *LXT Real Estate Broker L.L.C v SIR Real Estate LLC*, Claim No. CA 005/2025, reasons dated 21 January 2026 for the order dated 13 January 2026.
 
-Source: materials distributed for the Agentic RAG Legal Challenge (2026).
+Official repositories: DIFC Legal Database (Dubai International Financial Centre, n.d.) and DIFC Courts Judgments & Orders (DIFC Courts, n.d.).
 
 
 ## Appendix B. Supplementary Tables and Figures
@@ -609,118 +611,3 @@ The following generative AI tools were used during the preparation of this work:
 - **GPT-5.4-mini (OpenAI):** Used as the judge model for free-text answer evaluation (S\_asst scoring). The judge prompt is reproduced in Appendix A.5.
 
 Responsibility for the final manuscript remains with the author.
-
-
-<!-- markco-comments
-{
-  "version": 2,
-  "comments": [
-    {
-      "id": "ba3d9278-4988-4bed-bb5c-a183978a3a53",
-      "anchor": {
-        "text": "Their aggregate differences from Base-RAG are not statistically supported on the 50-question holdout because paired bootstrap 95% confidence intervals include zero.",
-        "startLine": 19,
-        "startChar": 299,
-        "endLine": 19,
-        "endChar": 463
-      },
-      "content": "А зачем это писать в abstract?",
-      "author": "SteinVR",
-      "createdAt": "2026-08-25T16:03:33.985Z"
-    },
-    {
-      "id": "e1f43adb-5d1b-4b51-a0e4-024ca53cc6f6",
-      "anchor": {
-        "text": "These mechanisms motivate two working hypotheses rather than established findings",
-        "startLine": 90,
-        "startChar": 278,
-        "endLine": 90,
-        "endChar": 359
-      },
-      "content": "Зачем это предложение вставлено?\nУбрать, если ненужно",
-      "author": "SteinVR",
-      "createdAt": "2026-08-25T16:05:06.272Z",
-      "updatedAt": "2026-08-25T18:31:52.174Z"
-    },
-    {
-      "id": "6299ac1f-e230-4acb-b64e-94d4e734ca18",
-      "anchor": {
-        "text": "Agentic RAG Legal Challenge",
-        "startLine": 103,
-        "startChar": 72,
-        "endLine": 103,
-        "endChar": 99
-      },
-      "content": "А зачем вообще упомянать Agentic RAG Challenge? \nДокументы им не принадлежат.\n\nВ работе были взяты отдельные документы и на их основе создан датасет",
-      "author": "SteinVR",
-      "createdAt": "2026-08-25T16:09:03.743Z"
-    },
-    {
-      "id": "6d4a074b-d7ac-4aab-8b2f-042b3eb72456",
-      "anchor": {
-        "text": "These component differences remain descriptive because the formal paired analysis is defined for the primary Q\\_main metric. They motivate RAFT-RAG for factual extraction and CLM-RAG for explanation quality and lower offline cost, rather than proving that either training signal is generally superior.",
-        "startLine": 328,
-        "startChar": 362,
-        "endLine": 328,
-        "endChar": 663
-      },
-      "content": "Зачем это?\nУбрать, если ненужно",
-      "author": "SteinVR",
-      "createdAt": "2026-08-25T18:31:17.073Z",
-      "updatedAt": "2026-08-25T18:31:58.274Z"
-    },
-    {
-      "id": "383a1471-37c8-422f-bc55-300a33da5a4f",
-      "anchor": {
-        "text": "The paired bootstrap quantifies question-level uncertainty within this holdout, conditional on scores averaged across the observed training seeds, and all RQ1 intervals include zero. It does not replace cross-validation or estimate transfer to an independent question set",
-        "startLine": 353,
-        "startChar": 370,
-        "endLine": 353,
-        "endChar": 641
-      },
-      "content": "Я уже несколько раз читал об этом. Оставь эту информацию только в одном месте.",
-      "author": "SteinVR",
-      "createdAt": "2026-08-25T18:35:52.475Z"
-    },
-    {
-      "id": "7eafa3a5-1268-4651-a283-48f1fee94fef",
-      "anchor": {
-        "text": "but the paired intervals for both aggregate differences from Base-RAG include zero",
-        "startLine": 365,
-        "startChar": 210,
-        "endLine": 365,
-        "endChar": 292
-      },
-      "content": "В чем прикол писать одно и тоже раз за разом",
-      "author": "SteinVR",
-      "createdAt": "2026-08-25T18:36:55.372Z"
-    },
-    {
-      "id": "679422cc-082a-4cc8-9ecc-2bac27a08fd9",
-      "anchor": {
-        "text": "The following four profiles are therefore treated as hypotheses rather than established findings.",
-        "startLine": 365,
-        "startChar": 294,
-        "endLine": 365,
-        "endChar": 391
-      },
-      "content": "Убрать rather than. Он меня бесит. Переформулировать",
-      "author": "SteinVR",
-      "createdAt": "2026-08-25T18:38:04.023Z"
-    },
-    {
-      "id": "a67a663d-f4c3-4c10-9eb8-eec66aa1b5fe",
-      "anchor": {
-        "text": "but the current paired analysis does not establish that mechanism",
-        "startLine": 367,
-        "startChar": 503,
-        "endLine": 367,
-        "endChar": 568
-      },
-      "content": "Всмысле?",
-      "author": "SteinVR",
-      "createdAt": "2026-08-25T18:40:50.480Z"
-    }
-  ]
-}
--->
