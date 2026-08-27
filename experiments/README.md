@@ -4,6 +4,11 @@ This directory contains the experiment implementations and local reports for the
 paper. The folders are organized by experiment ID, but several IDs also map to
 system names used in the paper (`S1`, `S2+R`, `S3+R`, and so on).
 
+The catalog and reports describe outputs produced by each experiment. Local
+retrieval indexes, smoke-run outputs, runtime progress files, and auxiliary plots
+under `results/figures/` are regenerated during execution and are not included in
+the public checkout. Final evaluation outputs and publication figures are retained.
+
 ## Dependency graph
 
 ```mermaid

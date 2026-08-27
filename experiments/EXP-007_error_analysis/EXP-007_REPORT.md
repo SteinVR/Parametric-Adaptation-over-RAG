@@ -19,6 +19,31 @@
 
 **Verdict:** No single practical winner
 
+## RQ1 Paired Bootstrap
+
+The headline `Q_main` contrasts use a paired stratified bootstrap with 10,000
+replicates. Scores are paired by question ID; deterministic (n=37) and free-text
+(n=13) questions are resampled separately to preserve the 0.7/0.3 metric
+definition. Trained-system scores are averaged per question across seeds before
+resampling.
+
+| Contrast | Delta Q_main | Paired bootstrap 95% CI |
+|----------|-------------:|------------------------:|
+| S2+R - S1 | +0.026 | [-0.074, +0.129] |
+| S3+R - S1 | +0.025 | [-0.056, +0.108] |
+| S2+R - S3+R | +0.002 | [-0.086, +0.088] |
+
+All three intervals include zero. The positive aggregate differences over S1
+are observed point estimates, not statistically supported gains on this
+holdout. Reproduce the analysis with:
+
+```bash
+python3 experiments/EXP-007_error_analysis/paired_rq1_bootstrap.py
+```
+
+Machine-readable results are stored in
+`results/EXP-007/rq1_paired_bootstrap.json`.
+
 ## EXP-010 Impact (S7)
 
 - S7 reaches `Q_main=0.7045`, best among all included systems.

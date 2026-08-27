@@ -17,6 +17,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from matplotlib.lines import Line2D
 import numpy as np
 import pandas as pd
 
@@ -491,68 +492,149 @@ def fig04_per_type_heatmap() -> None:
 
 
 def fig05_singledoc_multidoc() -> None:
-    """Single vs multi-document performance as a gap/slope chart."""
+    """Compare categorical document-scope subsets without implying a trend."""
 
     df = pd.read_csv(DOC_SCOPE).set_index("system")
-    single = {system: df.loc[system, "single_doc_q_main"] for system in HEADLINE}
-    multi = {system: df.loc[system, "multi_doc_q_main"] for system in HEADLINE}
+    single_counts = {int(value) for value in df["single_doc_n"].dropna()}
+    multi_counts = {int(value) for value in df["multi_doc_n"].dropna()}
+    if len(single_counts) != 1 or len(multi_counts) != 1:
+        raise ValueError("Document-scope sample sizes must be constant across systems")
+    single_n = single_counts.pop()
+    multi_n = multi_counts.pop()
+    single_color = "#4E79A7"
+    multi_color = "#F28E2B"
+    y = np.arange(len(HEADLINE))
 
     fig, ax = plt.subplots(figsize=(6.3, 3.8))
-    x = np.array([0, 1])
+    for row, system in enumerate(HEADLINE):
+        single_value = float(df.loc[system, "single_doc_q_main"])
+        multi_value = float(df.loc[system, "multi_doc_q_main"])
+        delta = float(df.loc[system, "delta_multi_minus_single"])
+        single_std = float(df.loc[system, "single_doc_std"])
+        multi_std = float(df.loc[system, "multi_doc_std"])
+        seeded = system != "S1"
 
-    left_offsets = {"S1": -0.010, "S2+R": -0.026, "S3+R": 0.026, "S7": 0.010}
-    right_offsets = {"S1": -0.015, "S2+R": 0.000, "S3+R": 0.015, "S7": 0.000}
-
-    for system in HEADLINE:
-        vals = [single[system], multi[system]]
-        ax.plot(
-            x,
-            vals,
-            marker="o",
-            markersize=5.5,
-            linewidth=1.9,
-            color=COLORS[system],
-            label=system,
-            linestyle="--" if system == "S7" else "-",
+        ax.errorbar(
+            single_value,
+            row,
+            xerr=single_std if seeded else None,
+            fmt="o",
+            markersize=6.3,
+            markerfacecolor="white",
+            markeredgecolor=single_color,
+            markeredgewidth=1.4,
+            ecolor=single_color,
+            elinewidth=1.0,
+            capsize=2.5,
+            zorder=3,
         )
+        ax.errorbar(
+            multi_value,
+            row,
+            xerr=multi_std if seeded else None,
+            fmt="s",
+            markersize=5.9,
+            markerfacecolor=multi_color,
+            markeredgecolor=multi_color,
+            markeredgewidth=1.0,
+            ecolor=multi_color,
+            elinewidth=1.0,
+            capsize=2.5,
+            zorder=3,
+        )
+
         ax.text(
-            -0.05,
-            vals[0] + left_offsets[system],
-            f"{DISPLAY[system]}  {vals[0]:.3f}",
+            single_value - (single_std if seeded else 0.0) - 0.012,
+            row,
+            f"{single_value:.3f}",
             ha="right",
             va="center",
-            fontsize=7.5,
-            color=COLORS[system],
-            fontweight="bold" if system == "S7" else "normal",
+            fontsize=7.7,
+            color=single_color,
         )
         ax.text(
-            1.05,
-            vals[1] + right_offsets[system],
-            f"{vals[1]:.3f}",
+            multi_value + (multi_std if seeded else 0.0) + 0.012,
+            row,
+            f"{multi_value:.3f}",
             ha="left",
             va="center",
-            fontsize=7.5,
-            color=COLORS[system],
-            fontweight="bold" if system == "S7" else "normal",
+            fontsize=7.7,
+            color=multi_color,
+        )
+        ax.text(
+            0.805,
+            row,
+            f"{delta:+.3f}",
+            ha="left",
+            va="center",
+            fontsize=7.7,
+            color="#444444",
         )
 
-    ax.set_xlim(-0.35, 1.25)
-    ax.set_ylim(0.25, 0.78)
-    ax.set_xticks(x)
-    ax.set_xticklabels(["Single-document\n(n=42)", "Multi-document\n(n=8)"])
-    ax.set_ylabel("Q_main")
-    ax.set_title("Multi-Document Questions Expose the Largest Gap")
-    clean_axes(ax, "y")
-
+    ax.set_xlim(0.22, 0.91)
+    ax.set_xticks(np.arange(0.3, 0.81, 0.1))
+    ax.set_yticks(y)
+    ax.set_yticklabels([DISPLAY[system] for system in HEADLINE])
+    ax.invert_yaxis()
+    ax.set_xlabel(r"$Q_{\mathrm{main}}$ (focused scale)")
+    ax.set_title(r"$Q_{\mathrm{main}}$ by Document Scope", loc="left", pad=30)
     ax.text(
-        0.52,
-        0.66,
-        "RAFT-RAG and Merge-RAG retain\nmore multi-doc quality",
-        ha="center",
-        va="center",
+        0.0,
+        1.035,
+        (
+            f"Single: n={single_n} (29 det, 12 free-text)   |   "
+            f"Multi: n={multi_n} (8 det, 1 free-text)"
+        ),
+        transform=ax.transAxes,
+        ha="left",
+        va="bottom",
         fontsize=7.7,
-        color="#444444",
-        bbox=dict(boxstyle="round,pad=0.25", facecolor="#FFFFFF", edgecolor="#DDDDDD"),
+        color="#555555",
+    )
+    clean_axes(ax, "x")
+    ax.tick_params(axis="y", length=0)
+    ax.text(
+        0.84,
+        1.01,
+        "Delta (Multi - Single)",
+        transform=ax.transAxes,
+        ha="left",
+        va="bottom",
+        fontsize=7.2,
+        color="#666666",
+    )
+
+    legend_handles = [
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            linestyle="none",
+            markerfacecolor="white",
+            markeredgecolor=single_color,
+            markeredgewidth=1.4,
+            markersize=6.0,
+            label="Single-document",
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="s",
+            linestyle="none",
+            markerfacecolor=multi_color,
+            markeredgecolor=multi_color,
+            markersize=5.6,
+            label="Multi-document",
+        ),
+    ]
+    ax.legend(
+        handles=legend_handles,
+        frameon=False,
+        loc="lower left",
+        bbox_to_anchor=(0.0, -0.29),
+        ncol=2,
+        handletextpad=0.5,
+        columnspacing=1.5,
     )
 
     save(fig, "fig05_singledoc_multidoc.png")

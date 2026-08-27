@@ -1,15 +1,57 @@
 # Editor / OS
 /.claude
 /.codex
+.idea/
+.vscode/
 .DS_Store
 
 # Python
 __pycache__/
+*.py[cod]
 .venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .env
+.env.*
+!.env.example
 
 # Local archives / scratch
 .old/
+/tmp/
+/output/
+*.log
+
+# Private working material stays on dev
+AGENTS.md
+CLAUDE.md
+/docs/
+/external/
+/logs/
+/memory_bank/
+/term-paper/
+/term-paper_2/
+/term-paper_3/
+/data/old_corpus/
+/Eigenstaendigkeitserklaerung_*.pdf
+/Parametric-Adaptation-Methods-RAG_frontpage_uni.pdf
+
+# Regenerable runtime state and intermediate analysis
+.lock
+/results/**/index/
+/results/**/faiss_index/
+/results/**/smoke/
+/results/**/generation/*_progress.json
+/results/figures/
+/experiments/**/REPORT.md
+
+# Publish finalized benchmark inputs, not construction drafts
+/data/corpus4-100/*
+!/data/corpus4-100/dev-gold-corpus4-100-v1.benchmark.json
+!/data/corpus4-100/dev-gold-corpus4-100-v1.assistant_scores.json
+/data/corpus4_2-100/*
+!/data/corpus4_2-100/dev-gold-corpus4_2-100-v1.benchmark.json
+!/data/corpus4_2-100/dev-gold-corpus4_2-100-v1.assistant_scores.json
 
 # Model artifacts and weights (not versioned)
 trained_d2l/

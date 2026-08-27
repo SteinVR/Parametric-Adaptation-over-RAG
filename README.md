@@ -1,4 +1,4 @@
-# When Retrieval Is Already in Place: Parametric Adaptation Methods for Document-Grounded Legal QA
+# Parametric Adaptation Methods for Document-Grounded Legal QA
 
 Code, data, and experiments for the paper of the same title. The repository is the
 technical companion to the article: it holds the retrieval-augmented generation (RAG)
@@ -6,8 +6,9 @@ stack, the QLoRA training and evaluation pipelines, the DIFC legal benchmark, an
 scripts that reproduce every table and figure in the paper.
 
 **Paper:** [`Parametric-Adaptation-Methods-RAG.pdf`](./Parametric-Adaptation-Methods-RAG.pdf)
-· Author: Aleksandr Loginov · Keywords: RAG, parameter-efficient fine-tuning, QLoRA,
-continued pretraining, domain adaptation, legal QA.
+(pre-paper) · [`Parametric-Adaptation-Methods-RAG_uni.pdf`](./Parametric-Adaptation-Methods-RAG_uni.pdf)
+(university format) · Author: Aleksandr Loginov · Keywords: RAG,
+parameter-efficient fine-tuning, QLoRA, continued pretraining, domain adaptation, legal QA.
 
 ---
 
@@ -27,9 +28,9 @@ remain indispensable?
 - **Retrieval is the foundation.** Removing retrieval collapses quality for every adapter
   (Q_main drops from ~0.67 to below 0.27). A 2B backbone cannot internalize the corpus
   well enough to answer without external evidence.
-- **The training signal matters more than the adapter itself.** RAFT-style supervision
-  improves deterministic extraction (boolean, date, name); CLM continued pretraining
-  improves free-text explanation quality. The two gains are orthogonal.
+- **The training signals show different observed profiles.** RAFT-style supervision
+  gives higher deterministic extraction scores (boolean, date, name); CLM continued
+  pretraining gives higher free-text scores on this holdout.
 - **A post-hoc adapter merge** combines part of both profiles and gives the strongest
   multi-document reasoning, at higher seed variance. Reported as exploratory.
 
@@ -123,11 +124,11 @@ Aggregate results on the 50-question evaluation set (trained systems: mean ± st
 | | Q_main | S_det | S_asst | G | Offline (s) |
 |---|---|---|---|---|---|
 | **Headline** | | | | | |
-| Base-RAG  | 0.643          | 0.601          | 0.739          | 0.567 | — |
+| Base-RAG  | 0.642          | 0.601          | 0.738          | 0.567 | — |
 | RAFT-RAG  | 0.669 ± 0.014  | 0.648 ± 0.015  | 0.718 ± 0.018  | 0.567 | 1206 |
 | CLM-RAG   | 0.667 ± 0.023  | 0.599 ± 0.016  | 0.826 ± 0.062  | 0.567 | 581 |
 | **Post-hoc** | | | | | |
-| Merge-RAG | 0.705 ± 0.035  | 0.679 ± 0.048  | 0.764 ± 0.018  | 0.567 | n.c.* |
+| Merge-RAG | 0.705 ± 0.034  | 0.679 ± 0.048  | 0.764 ± 0.018  | 0.567 | n.c.* |
 | **Controls** | | | | | |
 | RAFT-Closed | 0.263 ± 0.005 | 0.270 | 0.246 | — | 88 |
 | CLM-Closed  | 0.185 ± 0.003 | 0.135 | 0.303 | — | 581 |
@@ -140,9 +141,15 @@ is instantaneous.
 |---|---|
 | ![Improvement over Base-RAG](assets/figures/fig02_delta_bars.png) | ![Per-type heatmap](assets/figures/fig04_per_type_heatmap.png) |
 
-RAFT-RAG raises deterministic extraction, CLM-RAG raises free-text quality, and the merge
-raises both. On the single- vs multi-document split, RAFT-style supervision and the merge
-are the most robust to multi-document composition
+The aggregate differences are small observed point estimates. Paired stratified
+bootstrap 95% intervals for RAFT-RAG vs Base-RAG, CLM-RAG vs Base-RAG, and RAFT-RAG vs
+CLM-RAG all include zero; they do not establish reliable aggregate gains on this
+holdout. See [`results/EXP-007/rq1_paired_bootstrap.json`](results/EXP-007/rq1_paired_bootstrap.json).
+
+RAFT-RAG has higher observed deterministic extraction, CLM-RAG has higher free-text
+quality, and the merge raises both relative to Base-RAG. On the document-scope split
+(41 single-document and 9 multi-document questions), RAFT-style supervision and the
+merge retain more multi-document quality
 (see [`assets/figures/fig05_singledoc_multidoc.png`](assets/figures/fig05_singledoc_multidoc.png)).
 
 Full tables, per-type breakdowns, and supplementary figures are in
@@ -169,7 +176,9 @@ by [`assets/figures/generate_figures.py`](assets/figures/generate_figures.py).
 
 **Benchmark** ([`data/goldset/goldset.benchmark.json`](data/goldset)): 200 human-authored
 QA pairs across six answer types — free_text (53), boolean (48), number (36), name (30),
-names (17), date (16). Difficulty: easy 98 / medium 71 / hard 31. Multi-document: 26 (13%).
+names (17), date (16). Difficulty: easy 98 / medium 71 / hard 31. Multi-document: 29 (14.5%),
+using the benchmark's semantic tags, including negative comparative questions with
+no gold evidence pages.
 Unanswerable: 17 (8.5%).
 
 **Split** ([`data/splits/split_v1.json`](data/splits)): a frozen 150-train / 50-eval split,
@@ -177,7 +186,9 @@ stratified by answer type, difficulty, and single-/multi-document status. All sy
 evaluated on the same 50 questions; supervised training uses the other 150; CLM training
 uses raw corpus text and is independent of the split. RAFT and closed-book training tables
 are prebuilt in [`data/processed/`](data/processed). `data/corpus4-100/` and
-`data/corpus4_2-100/` hold the goldset-construction history (candidates, drafts, reviews).
+`data/corpus4_2-100/` retain the two finalized source batches and their reference-score
+files. The batches are inputs to [`data/goldset/merge_goldsets.py`](data/goldset/merge_goldsets.py);
+intermediate candidates, drafts, reviews, and working text views are not distributed.
 
 ---
 
@@ -213,9 +224,15 @@ python experiments/EXP-004b_clm_retrieval/main_exp.py        # CLM-RAG (3 seeds)
 python experiments/EXP-010_adapter_merge/main_exp.py         # Merge-RAG (post-hoc)
 python experiments/EXP-006_main_comparison/main_exp.py       # aggregate tables + deltas
 python experiments/EXP-007_error_analysis/main_exp.py        # error analysis + figures
+python experiments/EXP-007_error_analysis/paired_rq1_bootstrap.py  # paired RQ1 intervals
 ```
 
 Experiment scripts use cell-like `# %%` separators for block-by-block execution.
+
+Local retrieval indexes and smoke-run outputs are not distributed. Run `EXP-002`
+before experiments that depend on its shared index; `EXP-008` builds its own FAISS
+index. `EXP-006`, `EXP-007`, and the paired bootstrap use the committed evaluation
+outputs and do not require new training, generation, or paid judging.
 
 ### D2L-Closed (Doc-to-LoRA control)
 
@@ -240,7 +257,8 @@ finding — see Appendix C of the paper for why it is non-competitive at corpus 
 ## Repository layout
 
 ```
-├── Parametric-Adaptation-Methods-RAG.pdf   # the paper
+├── Parametric-Adaptation-Methods-RAG.pdf        # pre-paper
+├── Parametric-Adaptation-Methods-RAG_uni.pdf    # university submission format
 ├── config.py                 # global paths, seeds, hyperparameters, metric weights
 ├── pyproject.toml / uv.lock  # environment (uv, Python 3.12, CUDA 12.4 Torch stack)
 ├── src/
@@ -256,6 +274,12 @@ finding — see Appendix C of the paper for why it is non-competitive at corpus 
 ├── results/                  # aggregated outputs, benchmarks, figures
 └── assets/figures/           # figures used in this README and the paper
 ```
+
+The public branch contains the final PDFs, implementation, frozen data, measured
+experiment outputs, and publication figures. Internal notes, manuscript working
+files, agent instructions, caches, and intermediate build files stay out of it.
+Auxiliary plots under `results/figures/` are generated locally; the publication
+figures are versioned under `assets/figures/`.
 
 ---
 

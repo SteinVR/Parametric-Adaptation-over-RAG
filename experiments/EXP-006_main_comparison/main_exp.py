@@ -219,6 +219,10 @@ def _load_aggregate(agg_path: Path, results_dir: Path, system_id: str, system_cl
     peak_infer = aggregate.get("peak_infer_vram_mb")
     peak_train = aggregate.get("peak_train_vram_mb")
     offline_cost = aggregate.get("train_time_seconds")
+    if system_id == "S7":
+        # The aggregate records zero because the merge performs no new training,
+        # but presenting that as zero offline cost would ignore both source runs.
+        offline_cost = None
 
     return SystemResult(
         system_id=system_id,
@@ -284,7 +288,7 @@ def _fmt(value: float | None, digits: int = 4) -> str:
 def write_main_results_csv(results: dict[str, SystemResult]) -> None:
     exp_cfg.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     with exp_cfg.MAIN_RESULTS_CSV.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(
             [
                 "system",
@@ -352,7 +356,7 @@ def write_main_results_csv(results: dict[str, SystemResult]) -> None:
 
 def write_per_type_breakdown(results: dict[str, SystemResult]) -> None:
     with exp_cfg.PER_TYPE_BREAKDOWN_CSV.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(["answer_type"] + exp_cfg.SYSTEMS_ORDER)
         for answer_type in exp_cfg.ANSWER_TYPES:
             row = [answer_type]
@@ -371,15 +375,29 @@ def _load_multi_doc_question_sets() -> tuple[set[str], set[str]]:
     multi_doc_ids: set[str] = set()
     for question_id in split["eval"]:
         ref = refs_by_id[question_id]
+        tags = {str(tag) for tag in ref.get("tags", [])}
         doc_ids = {
             item.get("doc_id")
             for item in ref.get("gold_retrieval", [])
             if isinstance(item, dict) and item.get("doc_id")
         }
-        if len(doc_ids) > 1:
+        if len(doc_ids) > 1 and "multi_document" not in tags:
+            raise ValueError(
+                f"Question {question_id} has multi-document evidence but lacks the "
+                "multi_document tag"
+            )
+
+        # The semantic tag is authoritative. Negative comparative questions can
+        # have no gold evidence pages while still requiring multiple documents.
+        if "multi_document" in tags:
             multi_doc_ids.add(question_id)
         else:
             single_doc_ids.add(question_id)
+
+    if single_doc_ids & multi_doc_ids:
+        raise ValueError("Single- and multi-document question sets overlap")
+    if len(single_doc_ids | multi_doc_ids) != len(split["eval"]):
+        raise ValueError("Document-scope partition does not cover the evaluation split")
     return single_doc_ids, multi_doc_ids
 
 
@@ -427,12 +445,14 @@ def write_single_multi_breakdown() -> dict[str, dict[str, float]]:
 
     summary: dict[str, dict[str, float]] = {}
     with exp_cfg.SINGLE_MULTI_CSV.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(
             [
                 "system",
+                "single_doc_n",
                 "single_doc_q_main",
                 "single_doc_std",
+                "multi_doc_n",
                 "multi_doc_q_main",
                 "multi_doc_std",
                 "delta_multi_minus_single",
@@ -450,8 +470,10 @@ def write_single_multi_breakdown() -> dict[str, dict[str, float]]:
                 delta = multi_mean - single_mean
 
             summary[system_id] = {
+                "single_doc_n": len(single_doc_ids),
                 "single_doc_q_main": float(single_mean or 0.0),
                 "single_doc_std": float(single_std or 0.0),
+                "multi_doc_n": len(multi_doc_ids),
                 "multi_doc_q_main": float(multi_mean or 0.0),
                 "multi_doc_std": float(multi_std or 0.0),
                 "delta_multi_minus_single": float(delta or 0.0),
@@ -460,8 +482,10 @@ def write_single_multi_breakdown() -> dict[str, dict[str, float]]:
             writer.writerow(
                 [
                     system_id,
+                    len(single_doc_ids),
                     _fmt(single_mean),
                     _fmt(single_std),
+                    len(multi_doc_ids),
                     _fmt(multi_mean),
                     _fmt(multi_std),
                     _fmt(delta),
@@ -559,7 +583,7 @@ def write_report(
         "",
         "## Table 1: Unified System Metrics",
         "",
-        "| System | Class | Q_main | S_det | S_asst | G | TTFT median (ms) | Latency median (ms) | Peak infer VRAM (MB) | Offline cost (s) |",
+        "| System | Class | Q_main | S_det | S_asst | G | TTFT median (ms) | Generation median (ms) | Recorded peak VRAM (MB) | Offline cost (s) |",
         "|--------|-------|--------|-------|--------|---|------------------|---------------------|----------------------|------------------|",
     ]
 
@@ -598,7 +622,9 @@ def write_report(
         "",
         "## Table 3: Single-Doc vs Multi-Doc Q_main",
         "",
-        "| System | Single-doc | Multi-doc | Δ (multi - single) |",
+        f"| System | Single-doc (n={next(iter(single_multi.values()))['single_doc_n']}) | "
+        f"Multi-doc (n={next(iter(single_multi.values()))['multi_doc_n']}) | "
+        "Δ (multi - single) |",
         "|---|---:|---:|---:|",
     ])
 
@@ -636,6 +662,11 @@ def write_report(
         f"S3-S3-legacy {deltas['S3_vs_S3-legacy']['Q_main']:+.4f}, "
         f"while retrieval-adapted S3+R regains a large margin over legacy "
         f"({deltas['S3+R_vs_S3-legacy']['Q_main']:+.4f}, Q_main).",
+        "- Latency excludes retrieval. S1's saved 5200.5 MB process peak includes "
+        "retrieval/reranking, while the other peak values are generator-only and reset "
+        "immediately before generation.",
+        "- S7 has no directly comparable offline-cost entry because it inherits the "
+        "training effort of both source adapters.",
         "",
         "## Artifacts",
         "",

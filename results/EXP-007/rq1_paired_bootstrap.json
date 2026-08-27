@@ -1,0 +1,95 @@
+{
+  "analysis": "RQ1 paired stratified bootstrap",
+  "metric": {
+    "name": "Q_main",
+    "definition": "0.7 * mean deterministic score + 0.3 * mean free-text score"
+  },
+  "question_counts": {
+    "total": 50,
+    "deterministic": 37,
+    "free_text": 13
+  },
+  "bootstrap": {
+    "replicates": 10000,
+    "confidence_level": 0.95,
+    "interval": "percentile",
+    "random_seed": 20260825,
+    "pairing_key": "question_id",
+    "strata": [
+      "deterministic",
+      "free_text"
+    ],
+    "trained_system_score": "per-question arithmetic mean across seeds 42, 123, and 777"
+  },
+  "inferential_scope": "Question-level sampling uncertainty within the fixed 50-question holdout, conditional on the observed training runs; it does not estimate transfer to an independent benchmark or additional training seeds.",
+  "source_reports": {
+    "Base-RAG": [
+      "results/EXP-002/eval_report.json"
+    ],
+    "RAFT-RAG": [
+      "results/EXP-003/seed_42/eval_report.json",
+      "results/EXP-003/seed_123/eval_report.json",
+      "results/EXP-003/seed_777/eval_report.json"
+    ],
+    "CLM-RAG": [
+      "results/EXP-004b/seed_42/eval_report.json",
+      "results/EXP-004b/seed_123/eval_report.json",
+      "results/EXP-004b/seed_777/eval_report.json"
+    ]
+  },
+  "run_q_main": {
+    "Base-RAG": [
+      0.642484407484
+    ],
+    "RAFT-RAG": [
+      0.672668052668,
+      0.653749133749,
+      0.680405223037
+    ],
+    "CLM-RAG": [
+      0.651372141372,
+      0.693367983368,
+      0.656444906445
+    ]
+  },
+  "system_q_main": {
+    "Base-RAG": 0.642484407484,
+    "RAFT-RAG": 0.668940803151,
+    "CLM-RAG": 0.667061677062
+  },
+  "contrasts": [
+    {
+      "system_a": "RAFT-RAG",
+      "system_b": "Base-RAG",
+      "delta_q_main": 0.026456395667,
+      "ci_95": [
+        -0.074143396433,
+        0.128590837801
+      ],
+      "bootstrap_standard_error": 0.051555622942,
+      "includes_zero": true
+    },
+    {
+      "system_a": "CLM-RAG",
+      "system_b": "Base-RAG",
+      "delta_q_main": 0.024577269577,
+      "ci_95": [
+        -0.056071638947,
+        0.107945599446
+      ],
+      "bootstrap_standard_error": 0.041713535468,
+      "includes_zero": true
+    },
+    {
+      "system_a": "RAFT-RAG",
+      "system_b": "CLM-RAG",
+      "delta_q_main": 0.00187912609,
+      "ci_95": [
+        -0.085990443885,
+        0.088022923733
+      ],
+      "bootstrap_standard_error": 0.044641507969,
+      "includes_zero": true
+    }
+  ]
+}
