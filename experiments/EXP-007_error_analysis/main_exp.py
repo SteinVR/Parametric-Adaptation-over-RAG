@@ -1021,8 +1021,12 @@ def _write_deep_analysis(
         "",
         "## 5. Cost-Quality Frontier",
         "",
+        "- Only systems with comparable recorded offline costs enter this comparison. "
+        "S7 is excluded because it inherits both source adapters' training effort, "
+        "without a directly comparable cost entry.",
         f"- Pareto-optimal systems on (offline cost, Q_main): `{', '.join(pareto_systems)}`.",
-        "- Systems outside Pareto front are strictly dominated and can be deprioritized in practical deployment decisions.",
+        "- Among the comparable systems, points outside this frontier are dominated "
+        "on the recorded offline cost and Q_main.",
         "",
         "## 6. Practical Recommendations",
         "",

@@ -28,9 +28,9 @@ remain indispensable?
 - **Retrieval is the foundation.** Removing retrieval collapses quality for every adapter
   (Q_main drops from ~0.67 to below 0.27). A 2B backbone cannot internalize the corpus
   well enough to answer without external evidence.
-- **The training signal matters more than the adapter itself.** RAFT-style supervision
-  improves deterministic extraction (boolean, date, name); CLM continued pretraining
-  improves free-text explanation quality. The two gains are orthogonal.
+- **The training signals show different observed profiles.** RAFT-style supervision
+  gives higher deterministic extraction scores (boolean, date, name); CLM continued
+  pretraining gives higher free-text scores on this holdout.
 - **A post-hoc adapter merge** combines part of both profiles and gives the strongest
   multi-document reasoning, at higher seed variance. Reported as exploratory.
 
@@ -124,11 +124,11 @@ Aggregate results on the 50-question evaluation set (trained systems: mean ± st
 | | Q_main | S_det | S_asst | G | Offline (s) |
 |---|---|---|---|---|---|
 | **Headline** | | | | | |
-| Base-RAG  | 0.643          | 0.601          | 0.739          | 0.567 | — |
+| Base-RAG  | 0.642          | 0.601          | 0.738          | 0.567 | — |
 | RAFT-RAG  | 0.669 ± 0.014  | 0.648 ± 0.015  | 0.718 ± 0.018  | 0.567 | 1206 |
 | CLM-RAG   | 0.667 ± 0.023  | 0.599 ± 0.016  | 0.826 ± 0.062  | 0.567 | 581 |
 | **Post-hoc** | | | | | |
-| Merge-RAG | 0.705 ± 0.035  | 0.679 ± 0.048  | 0.764 ± 0.018  | 0.567 | n.c.* |
+| Merge-RAG | 0.705 ± 0.034  | 0.679 ± 0.048  | 0.764 ± 0.018  | 0.567 | n.c.* |
 | **Controls** | | | | | |
 | RAFT-Closed | 0.263 ± 0.005 | 0.270 | 0.246 | — | 88 |
 | CLM-Closed  | 0.185 ± 0.003 | 0.135 | 0.303 | — | 581 |
@@ -141,9 +141,15 @@ is instantaneous.
 |---|---|
 | ![Improvement over Base-RAG](assets/figures/fig02_delta_bars.png) | ![Per-type heatmap](assets/figures/fig04_per_type_heatmap.png) |
 
-RAFT-RAG raises deterministic extraction, CLM-RAG raises free-text quality, and the merge
-raises both. On the single- vs multi-document split, RAFT-style supervision and the merge
-are the most robust to multi-document composition
+The aggregate differences are small observed point estimates. Paired stratified
+bootstrap 95% intervals for RAFT-RAG vs Base-RAG, CLM-RAG vs Base-RAG, and RAFT-RAG vs
+CLM-RAG all include zero; they do not establish reliable aggregate gains on this
+holdout. See [`results/EXP-007/rq1_paired_bootstrap.json`](results/EXP-007/rq1_paired_bootstrap.json).
+
+RAFT-RAG has higher observed deterministic extraction, CLM-RAG has higher free-text
+quality, and the merge raises both relative to Base-RAG. On the document-scope split
+(41 single-document and 9 multi-document questions), RAFT-style supervision and the
+merge retain more multi-document quality
 (see [`assets/figures/fig05_singledoc_multidoc.png`](assets/figures/fig05_singledoc_multidoc.png)).
 
 Full tables, per-type breakdowns, and supplementary figures are in
@@ -170,7 +176,9 @@ by [`assets/figures/generate_figures.py`](assets/figures/generate_figures.py).
 
 **Benchmark** ([`data/goldset/goldset.benchmark.json`](data/goldset)): 200 human-authored
 QA pairs across six answer types — free_text (53), boolean (48), number (36), name (30),
-names (17), date (16). Difficulty: easy 98 / medium 71 / hard 31. Multi-document: 26 (13%).
+names (17), date (16). Difficulty: easy 98 / medium 71 / hard 31. Multi-document: 29 (14.5%),
+using the benchmark's semantic tags, including negative comparative questions with
+no gold evidence pages.
 Unanswerable: 17 (8.5%).
 
 **Split** ([`data/splits/split_v1.json`](data/splits)): a frozen 150-train / 50-eval split,
@@ -214,6 +222,7 @@ python experiments/EXP-004b_clm_retrieval/main_exp.py        # CLM-RAG (3 seeds)
 python experiments/EXP-010_adapter_merge/main_exp.py         # Merge-RAG (post-hoc)
 python experiments/EXP-006_main_comparison/main_exp.py       # aggregate tables + deltas
 python experiments/EXP-007_error_analysis/main_exp.py        # error analysis + figures
+python experiments/EXP-007_error_analysis/paired_rq1_bootstrap.py  # paired RQ1 intervals
 ```
 
 Experiment scripts use cell-like `# %%` separators for block-by-block execution.

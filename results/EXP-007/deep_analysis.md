@@ -25,5 +25,12 @@
 
 ## 5. Cost-Quality Frontier
 
-- Pareto-optimal systems on (offline cost, Q_main): `S7`.
-- Systems outside Pareto front are strictly dominated and can be deprioritized in practical deployment decisions.
+- Only systems with comparable recorded offline costs enter this comparison. S7 is excluded because it inherits both source adapters' training effort, without a directly comparable cost entry.
+- Pareto-optimal systems on (offline cost, Q_main): `S1, S2+R, S3+R`.
+- Among the comparable systems, points outside this frontier are dominated on the recorded offline cost and Q_main.
+
+## 6. Practical Recommendations
+
+- Keep S2+R and S3+R both in discussion as base hybrids; they encode different strengths and should not be collapsed into a single narrative.
+- Promote S7 as best observed post-hoc merged configuration, but preserve caveat: it is a merge-based conclusion, not independent retraining evidence.
+- Use question-level win-rate and overlap artifacts to motivate targeted ensemble/routing hypotheses in future work.
