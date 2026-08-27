@@ -1,9 +1,8 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[english,12pt,a4paper,oneside]{article}
 
-\usepackage[a4paper,top=28mm,bottom=30mm,left=30mm,right=30mm]{geometry}
+% Project-specific Pandoc wrapper for the university-formatted paper body.
+\usepackage[a4paper,margin=30mm]{geometry}
 \usepackage{fontspec}
-% Body font: TeX Gyre Termes (a free Times New Roman equivalent) to satisfy the
-% "no fancy font (usually Times or Arial)" requirement; bundled with tectonic.
 \setmainfont{texgyretermes-regular.otf}[
   BoldFont=texgyretermes-bold.otf,
   ItalicFont=texgyretermes-italic.otf,
@@ -17,14 +16,18 @@
 \setmonofont{lmmono10-regular.otf}[
   ItalicFont=lmmono10-italic.otf
 ]
+\usepackage[english]{babel}
 \usepackage{microtype}
 \usepackage{setspace}
 \setstretch{1.5}
+\usepackage[bottom]{footmisc}
+
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
+\usepackage{tabularx}
 \usepackage{calc}
 \usepackage{xcolor}
 \usepackage{caption}
@@ -35,20 +38,19 @@
 \usepackage{xurl}
 \usepackage{hyperref}
 
-% --- Page-break control (formal requirement: no heading at the bottom of a page,
-%     no orphan/widow lines) ---
+\input{config.tex}
+
+% No orphan or widow lines, and no headings stranded at the page bottom.
 \clubpenalty=10000
 \widowpenalty=10000
 \displaywidowpenalty=10000
 \brokenpenalty=10000
 \raggedbottom
-% Reserve vertical space before a heading so it never sits alone at the page bottom.
 \pretocmd{\section}{\needspace{5\baselineskip}}{}{}
 \pretocmd{\subsection}{\needspace{4\baselineskip}}{}{}
 
-% Keep verbatim code blocks (e.g. the judge prompt) inside the text block at 12pt.
+% Keep code and wide tables within the text block.
 \AtBeginEnvironment{verbatim}{\footnotesize}
-
 \makeatletter
 \define@key{Gin}{alt}{}
 \makeatother
@@ -57,20 +59,19 @@
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
-% Prefer sharing a page with surrounding text over creating a sparse float-only
-% page. A dedicated float page remains available for genuinely large figures.
 \renewcommand{\topfraction}{0.90}
 \renewcommand{\bottomfraction}{0.80}
 \renewcommand{\textfraction}{0.08}
 \renewcommand{\floatpagefraction}{0.80}
 
 \hypersetup{
-  colorlinks=true,
-  linkcolor=black,
-  citecolor=black,
-  urlcolor=blue
+  hidelinks,
+  pdftitle={$title$},
+  pdfauthor={$for(author)$$author$$sep$; $endfor$}
 }
+\urlstyle{same}
 
+% The university profile uses paragraph spacing and no paragraph indentation.
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.72em}
 \setlength{\emergencystretch}{3em}
@@ -80,7 +81,6 @@
 
 % APA 7 reference-list layout: unnumbered entries with a 0.5-inch hanging indent.
 \newcommand{\APAReferenceSetup}{%
-  \raggedright
   \setlength{\leftskip}{0.5in}%
   \setlength{\parindent}{-0.5in}%
   \setlength{\parskip}{0pt}%
@@ -96,28 +96,23 @@
 
 \renewcommand{\arraystretch}{1.08}
 \setlength{\tabcolsep}{3.2pt}
-
 \let\oldlongtable\longtable
 \let\endoldlongtable\endlongtable
 \renewenvironment{longtable}{\footnotesize\setlength{\tabcolsep}{2.4pt}\oldlongtable}{\endoldlongtable\normalsize}
 
-$if(title)$
-\title{$title$}
-$endif$
-$if(author)$
-\author{$for(author)$$author$$sep$ \and $endfor$$if(email)$\\[3pt]\normalsize\texttt{$email$}$endif$}
-$endif$
-$if(date)$
-\date{$date$}
-$else$
-\date{}
-$endif$
+% The formal requirements assign Roman page numbers to the appendix.
+\let\standardappendix\appendix
+\renewcommand{\appendix}{%
+  \clearpage
+  \pagenumbering{Roman}%
+  \setcounter{page}{1}%
+  \standardappendix
+}
 
 \begin{document}
 
-$if(title)$
-\maketitle
-$endif$
+% The university body is exported separately from the title page.
+\pagenumbering{gobble}
 
 $if(abstract)$
 \section*{Abstract}
@@ -129,10 +124,14 @@ $endif$
 $endif$
 
 $if(toc)$
-\newpage
+\clearpage
 \tableofcontents
-\newpage
 $endif$
+
+% The title page and front matter are unnumbered; Introduction starts at page 1.
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
 
 $body$
 

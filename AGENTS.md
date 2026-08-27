@@ -49,6 +49,15 @@ Legacy drafts under `.old/` are scratch history and are not active sources.
 ## Branch policy: `dev` and `main`
 
 - `dev` is the authoritative working branch. `main` is the public distribution branch and intentionally omits private working material.
-- When bringing `main` changes into `dev`, preserve `dev`-only working material unless the user explicitly requests deletion. Treat deletion on `main` as publication filtering unless evidence shows a genuine project deletion.
-- Follow real renames and relocations from `main`; update references instead of retaining stale duplicate trees.
-- Before committing or pushing an update from `main`, inspect the complete delete/rename diff against the pre-update `dev` revision and verify that the private working layer remains usable. A clean automatic merge is not sufficient validation.
+- Use the existing separate worktrees for `dev` and `main`; locate them with `git worktree list`. Publish in the `main` worktree without switching the `dev` checkout to `main`. Inspect both worktrees before transferring changes and preserve unrelated uncommitted edits.
+- Publish `dev` changes to `main` selectively: transfer only the public files or patches selected for that publication. Never copy the whole `dev` tree into `main` and then delete private material.
+- Bring fixes from `main` back into `dev` selectively as well. Cherry-pick in either direction only after checking that the entire commit diff is appropriate for the destination branch.
+- Do not merge the branches wholesale in either direction unless the user explicitly requests it. Do not use automatic mirroring that propagates deletions, such as `rsync --delete`.
+- Preserve `dev`-only working material unless the user explicitly requests deletion. Treat deletion or absence on `main` as publication filtering unless evidence shows a genuine project deletion; do not propagate publication filtering into `dev`.
+- Real project deletions, renames, and relocations are allowed when relevant to the selected change. Review them explicitly, update references, and do not retain stale duplicate trees.
+- Before transferring changes, record the destination branch revision. Before committing or pushing, inspect the complete change set against that pre-update revision, including deletions and renames. For publication, verify that only intended public material is included; for updates to `dev`, verify that the private working layer remains usable. A clean patch application or cherry-pick is not sufficient validation.
+
+## Procedure after context auto-compact
+
+- Read our thread with `read_thread` and check everything we discussed: make sure nothing was missed, there are no contradictions, and you retain details from our conversation, your work, and your mistakes.
+- This is only a gentle checkpoint: Consider whether the work is progressing reasonably and roughly according to plan. If so, or if any deviation seems modest, simply continue. Only if it appears substantially off course or the time spent feels disproportionate, consider whether changing approach or asking the user would help.

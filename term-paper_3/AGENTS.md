@@ -1,6 +1,6 @@
 # Current manuscript
 
-`Term-Paper-3.md` is the canonical manuscript source. The two root PDFs are the generated pre-paper and university-submission artifacts; `output/arxiv/` contains the arXiv package.
+`Term-Paper-3.md` is the canonical manuscript source. The generated deliverables are one pre-paper PDF plus separate university body and title-page PDFs; `output/arxiv/` contains the arXiv package. The declaration of academic integrity is user-managed and outside the project export scope.
 
 ## Editing and evidence
 
@@ -12,8 +12,9 @@
 
 ## Build and verification
 
+- Follow `output/AGENTS.md` for the canonical pre-paper and university export contracts, filenames, separation rules, and university compliance checks.
 - Run `term-paper_3/scripts/build_pdf.sh` from the repository root to regenerate the root paper PDF.
-- Run `term-paper_3/scripts/build_uni_pdf.sh` to regenerate the university-formatted root PDF with the `_uni` suffix, or `term-paper_3/scripts/build_pdfs.sh` to build both versions.
+- Use `term-paper_3/scripts/build_uni_pdf.sh` as the university build entrypoint, but consider it complete only when it emits the separate body and title-page PDFs defined in `output/AGENTS.md`. `build_pdfs.sh` must build the pre-paper plus both university artifacts.
 - Run `term-paper_3/scripts/build_arxiv.sh` to regenerate the arXiv archive under `output/arxiv/`; it must not create a third paper PDF under `output/`.
 - After a manuscript or build change, inspect the rendered PDF for page flow, figures, tables, equations, links, references, and accidental blank pages. A successful command exit does not establish layout correctness.
 - If the required Pandoc, Tectonic, LaTeX, or font dependencies are unavailable, report the build as unverified rather than altering the manuscript to work around an environment-only problem.

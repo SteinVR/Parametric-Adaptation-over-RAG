@@ -23,17 +23,23 @@ output_abs="$(cd "$(dirname "$output")" && pwd)/$(basename "$output")"
 work_dir="$(mktemp -d)"
 trap 'rm -rf "$work_dir"' EXIT
 
+prepared_raw="$work_dir/manuscript.raw.md"
 prepared="$work_dir/manuscript.md"
-python3 "$skill_dir/scripts/prepare_markdown.py" "$input_abs" "$prepared" --from-heading "$start_heading"
+python3 "$skill_dir/scripts/prepare_markdown.py" \
+  "$input_abs" \
+  "$prepared_raw" \
+  --from-heading "$start_heading" \
+  --page-break-policy backmatter
+
+# Keep the compact pre-paper build portable across TeX engines.
+sed -E 's/±/$\\pm$/g' "$prepared_raw" > "$prepared"
 
 resource_path="$(dirname "$input_abs"):$(pwd)"
 
 pandoc "$prepared" \
   --from=markdown+smart+pipe_tables+fenced_code_blocks+raw_tex+tex_math_dollars+implicit_figures \
   --pdf-engine=tectonic \
-  --template="$skill_dir/assets/arxiv-like.tex" \
-  --toc \
-  --toc-depth=2 \
+  --template="$skill_dir/assets/arxiv-submission.tex" \
   --resource-path="$resource_path" \
   --metadata=link-citations:true \
   -o "$output_abs"

@@ -37,15 +37,16 @@ The optional third argument is the first heading to include. When `"# Abstract"`
 The renderer:
 
 - extracts the first `# Abstract` section into the LaTeX abstract block;
-- drops a manual Markdown `# Table of Contents` block and lets LaTeX generate the contents;
+- drops a manual Markdown `# Table of Contents` block; the compact pre-paper has no table of contents;
 - promotes later headings by one level so `## 1. Introduction` becomes a top-level section;
 - converts `**Table N. ...**` immediately before pipe tables into Pandoc table captions;
 - combines image lines followed by italic `*Figure N. ...*` paragraphs into proper figure captions;
 - converts bullet references under `# References` into a numbered reference list.
+- inserts forced page breaks only before back matter, keeping the main text compact.
 
 ## Resources
 
 - `scripts/install-deps-macos.sh`: install `pandoc` and `tectonic` with Homebrew.
 - `scripts/prepare_markdown.py`: normalize manuscript Markdown before Pandoc.
 - `scripts/render_science_paper_pdf.sh`: run preprocessing and Pandoc.
-- `assets/arxiv-like.tex`: Pandoc LaTeX template for the target style.
+- `assets/arxiv-submission.tex`: Pandoc LaTeX template for the compact pre-paper style.

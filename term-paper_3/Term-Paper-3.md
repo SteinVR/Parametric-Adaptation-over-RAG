@@ -156,7 +156,7 @@ Seven systems occupy distinct methodological roles. Three form the headline comp
 
 **RAFT-RAG** and **CLM-RAG** are the two headline adapted systems. Both receive the same retrieved evidence as the baseline and use the same QLoRA architecture (rank 32, alpha 32, dropout 0.05, targeting q\_proj and v\_proj). Separate training recipes are used. RAFT-RAG is trained on question-answer pairs with retrieved context. CLM-RAG is trained on raw corpus text through causal language modeling. These three systems define the main thesis comparison.
 
-**Merge-RAG** (Post-hoc adapter fusion) linearly interpolates the RAFT-RAG and CLM-RAG adapters with equal weights (alpha = 0.5), pairing source adapters by matching training seed, without any additional training, and receives the same retrieved evidence. Merge-RAG inherits the prior training effort of both source adapters and is reported outside the headline branch as an exploratory result.
+**Merge-RAG** (Post-hoc adapter fusion) was added after the headline experiments. I constructed it by linearly interpolating the RAFT-RAG and CLM-RAG adapters with equal weights (alpha = 0.5), pairing source adapters by matching training seed, without any additional training. Merge-RAG receives the same retrieved evidence, inherits the prior training effort of both source adapters, and is reported outside the headline branch as an exploratory result.
 
 **RAFT-Closed** is trained separately on question-answer pairs without retrieved context. **CLM-Closed** reuses the CLM-RAG adapter and bypasses retrieval at inference time. These controls clarify the limits of parametric memory without retrieval and are not part of the main claim. **D2L-Closed** is a secondary feasibility control using a Doc-to-LoRA hypernetwork approach (Charakorn et al., 2026). The released implementation imposes a per-adapter token limit, while adaptation to the modern target model would require a bespoke hypernetwork that was not trained here. D2L-Closed therefore characterizes the released method under the evaluated resource and compatibility constraints; implementation details are reported in Appendix C.
 
@@ -243,7 +243,7 @@ RAFT-RAG achieves higher deterministic extraction scores (S\_det = 0.648 vs. 0.5
 
 Relative to the RAG baseline, RAFT-RAG improves Q\_main by +0.026 and S\_det by +0.047 while slightly reducing S\_asst by -0.021. CLM-RAG improves Q\_main by +0.025 and S\_asst by +0.087 while leaving S\_det essentially unchanged (-0.002). This descriptive pattern motivates a training-signal interpretation, while the aggregate intervals in Table 3 prevent a claim that either recipe produces a reliable overall gain.
 
-The comparison thus records a tie on Q\_main and grounding, with RAFT-RAG favored on deterministic extraction and CLM-RAG favored on assistant-style quality and offline cost.
+Q\_main differs by only 0.002, and grounding is identical. RAFT-RAG scores higher on deterministic extraction, while CLM-RAG scores higher on assistant-style quality and requires less offline training time.
 
 ![Figure 3. Judge criteria profile](../assets/figures/fig03_judge_criteria.png)
 
