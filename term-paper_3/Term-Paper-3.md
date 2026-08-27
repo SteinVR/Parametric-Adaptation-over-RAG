@@ -15,7 +15,7 @@ keywords:
 
 # Abstract
 
-The value of parameter-efficient adaptation remains unclear when Retrieval-Augmented Generation (RAG) already supplies the source documents for document-grounded legal QA. RAFT-style supervised fine-tuning and Causal Language Modeling (CLM) continued pretraining are compared on the same frozen language model using a benchmark constructed from eight DIFC legal documents and a fixed retrieval configuration.
+The value of parameter-efficient adaptation remains unclear when Retrieval-Augmented Generation (RAG) already supplies the source documents for document-grounded legal QA. This study compares RAFT-style supervised fine-tuning and Causal Language Modeling (CLM) continued pretraining on the same frozen language model, using a benchmark constructed from eight DIFC legal documents and a fixed retrieval configuration.
 
 Closed-book controls remain weak, confirming the continued need for retrieved evidence in this setup. Within the retrieval-aware systems, RAFT shows higher observed deterministic extraction and multi-document composition, while CLM shows higher observed free-text synthesis and explanation quality. Paired bootstrap intervals for both aggregate differences include zero. A post-hoc adapter merge recovers the observed deterministic difference and yields the highest aggregate and multi-document scores. Its seed variance is higher, and CLM's free-text advantage is only partially retained. Under hardware constraints, the training signal should be selected for the required answer profile. Adapter fusion remains exploratory.
 
@@ -47,7 +47,7 @@ The central question is whether adapting the generator adds value once retrieval
 
 ### 1.2 Research Questions and Scope
 
-The evaluation is conducted with one legal benchmark, one frozen language model, one hardware configuration, and one fixed retrieval design. Two research questions are addressed.
+The evaluation uses one legal benchmark, one frozen language model, one hardware configuration, and one fixed retrieval design. I address two research questions.
 
 **RQ1.** Does parametric adaptation yield gains over the RAG baseline on a compact legal benchmark under tight resource constraints, and how do RAFT-style supervised adaptation and self-supervised CLM continued pretraining differ as retrieval-conditioned generators?
 
@@ -78,7 +78,7 @@ Retrieval-augmented generation (RAG) supplies a generator with passages retrieve
 
 Full fine-tuning stores optimizer states and gradients for every parameter, exceeding the available memory in this setting. Low-Rank Adaptation (LoRA) addresses this by freezing the pretrained weights and injecting small trainable rank-decomposition matrices into selected attention layers (Hu et al., 2022). Quantized Low-Rank Adaptation (QLoRA) extends this approach by quantizing the frozen model to 4-bit NormalFloat (NF4) precision, reducing memory consumption further while preserving adaptation quality (Dettmers et al., 2023). Survey and review work describes this family of methods as a quality-versus-resource trade-off, as discussed by Han et al. (2024) and Xu et al. (2026).
 
-QLoRA makes adaptation of the shared language model feasible within the available memory. The same QLoRA architecture is used for both adapted systems. Variation is introduced through their complete training recipes.
+QLoRA makes adaptation of the shared language model feasible within the available memory. Both adapted systems share the same QLoRA architecture but use different training recipes.
 
 ### 2.3 RAFT-style Adaptation vs. CLM Continued Pretraining
 
@@ -92,9 +92,9 @@ These two paradigms represent different assumptions about how parametric adaptat
 
 ### 2.4 Research Gap and Positioning
 
-**Adjacent** parts of the problem are addressed by existing work. General legal reasoning capabilities are evaluated by LegalBench (Guha et al., 2023). Retrieval precision is evaluated in LegalBench-RAG (Pipitone & Houir Alami, 2024). Retrieval corpora, retrieval algorithms, rerankers, language models, and evaluation metrics are varied in the Legal Retrieval Augmented Generation Evaluation tool (LRAGE; Park et al., 2025) to measure whole-pipeline sensitivity.
+Existing work addresses adjacent parts of the problem. LegalBench evaluates general legal reasoning capabilities (Guha et al., 2023). LegalBench-RAG evaluates retrieval precision (Pipitone & Houir Alami, 2024). The Legal Retrieval Augmented Generation Evaluation tool (LRAGE; Park et al., 2025) measures whole-pipeline sensitivity by varying retrieval corpora, retrieval algorithms, rerankers, language models, and evaluation metrics.
 
-Retrieval-aware supervised fine-tuning is compared with base-model RAG and domain-specific supervised fine-tuning across non-legal benchmarks in the original RAFT study (Zhang et al., 2024). A matched corpus-level CLM condition is absent from that comparison. The resulting gap is addressed through a controlled comparison between RAFT-style supervision and corpus-level CLM under the same language model, PEFT architecture, retrieved evidence, and evaluation protocol. The conclusions are restricted to legal QA on the evaluated benchmark and resource-constrained hardware. Moderately higher mean scores are observed over the RAG baseline, and the quality profile depends on the selected training recipe.
+The original RAFT study (Zhang et al., 2024) compares retrieval-aware supervised fine-tuning with base-model RAG and domain-specific supervised fine-tuning across non-legal benchmarks. A matched corpus-level CLM condition is absent from that comparison. The resulting gap is addressed through a controlled comparison between RAFT-style supervision and corpus-level CLM under the same language model, PEFT architecture, retrieved evidence, and evaluation protocol. The conclusions are restricted to legal QA on the evaluated benchmark and resource-constrained hardware. Moderately higher mean scores are observed over the RAG baseline, and the quality profile depends on the selected training recipe.
 
 
 ## 3. Benchmark and Experimental Setup
@@ -109,13 +109,13 @@ The 200 questions are split into 150 training questions and 50 evaluation questi
 
 ### 3.2 Hardware, Shared Model, and Variance Policy
 
-All experiments are run on a single NVIDIA RTX 4060 with 8 GB VRAM and 32 GB system RAM. Gemma-2-2b-it (Gemma Team et al., 2024), an instruction-tuned model with approximately 2 billion parameters, is used as the shared language model and is held constant across all systems. Model architecture and deployment environment are therefore controlled in the training-recipe comparison.
+All experiments are run on a single NVIDIA RTX 4060 with 8 GB VRAM and 32 GB system RAM. All systems share Gemma-2-2b-it (Gemma Team et al., 2024), an instruction-tuned language model with approximately 2 billion parameters. Model architecture and deployment environment are therefore controlled in the training-recipe comparison.
 
 For systems that involve training (RAFT-RAG, CLM-RAG, and their no-retrieval controls), three random seeds (42, 123, 777) are used, and results are reported as mean +/- standard deviation. No cross-validation is performed. The single frozen split is shared across all evaluations, and seed-level variance captures only the stochasticity introduced by the training process. Reporting three seeds provides an initial view of training stability. Question-level sampling uncertainty for RQ1 is estimated separately through the paired bootstrap defined in Section 4.3.
 
 ### 3.3 Fixed Retrieval Configuration
 
-The retrieval configuration is held constant across all retrieval-aware systems (Base-RAG, RAFT-RAG, CLM-RAG, Merge-RAG). Five stages are included in the configuration.
+All retrieval-aware systems (Base-RAG, RAFT-RAG, CLM-RAG, Merge-RAG) use the same five-stage retrieval configuration.
 
 1. **Ingestion and hierarchical chunking.** Documents are parsed and split into five chunk families comprising page-level, section-level, clause-level, microchunks (300 tokens, 50-token overlap), and table blocks. Metadata - including entities, dates, heading paths, and BM25 terms - is extracted for each chunk.
 
@@ -162,7 +162,7 @@ Seven systems occupy distinct methodological roles. Three form the headline comp
 
 ### 4.2 Training Setups
 
-Both RAFT-RAG and CLM-RAG employ identical QLoRA architectures applied to the same frozen model. Their complete training recipes differ in objective, data, learning rate, epoch count, and maximum sequence length. The two complete recipes are therefore evaluated. An isolated effect of the training objective cannot be estimated from this design.
+Both RAFT-RAG and CLM-RAG employ identical QLoRA architectures applied to the same frozen model. Their complete training recipes differ in objective, data, learning rate, epoch count, and maximum sequence length. The comparison therefore evaluates the two complete training recipes and cannot isolate the effect of the training objective.
 
 **RAFT-RAG training.** The adapter is fine-tuned for 3 epochs on the 150 training questions in RAFT format. Each training example consists of the question, gold evidence chunks (matched to gold retrieval pages), and 2 distractor chunks from unrelated documents. The target is the reference answer. Learning rate is 2 x 10^-4 with cosine decay and 3% warmup. Maximum sequence length is 4096 tokens.
 
@@ -182,7 +182,7 @@ The evaluation protocol combines deterministic scoring for structured answer typ
 
 **Unanswerable items.** Unanswerable questions are handled differently depending on answer type. For deterministic unanswerable questions, the gold answer is null and the expected system output is the empty list `[]`. A system receives 1.0 only when it returns `[]` and 0.0 otherwise. Free-text unanswerable questions remain part of the judged free-text subset and are excluded from S\_det. They are scored through the same judge procedure as other free-text answers, with the calibration criterion rewarding an explicit statement that the requested information is absent or unsupported.
 
-**Free-text score (S\_asst).** Free-text responses are evaluated by GPT-5.4-mini (OpenAI, model id `gpt-5.4-mini`, reasoning effort = medium), held fixed across all systems and experiments. Five binary criteria are applied, covering correctness, completeness, grounding, calibration, and clarity. This procedure follows the LLM-as-judge paradigm discussed for legal RAG evaluation by Pradhan et al. (2025). The per-question score is the mean of the 5 criteria. S\_asst is the mean across all free-text questions. The judge prompt is frozen and identical for all systems (Appendix A.5). Malformed judge output is retried once. If the retry also fails, all five criteria are scored as zero for that answer. Before final interpretation, a manual audit of approximately 10% of judged free-text responses was performed, spot-checking judge scores against the rubric for systematic errors. Judge-based scoring is never used for deterministic answer types.
+**Free-text score (S\_asst).** Free-text responses are evaluated by GPT-5.4-mini (OpenAI, model id `gpt-5.4-mini`, reasoning effort = medium), held fixed across all systems and experiments. Five binary criteria are applied, covering correctness, completeness, grounding, calibration, and clarity. This procedure follows the LLM-as-judge paradigm discussed for legal RAG evaluation by Pradhan et al. (2025). The per-question score is the mean of the 5 criteria. S\_asst is the mean across all free-text questions. The judge prompt is frozen and identical for all systems (Appendix A.5). Malformed judge output is retried once. If the retry also fails, all five criteria are scored as zero for that answer. Before final interpretation, a manual audit spot-checked approximately 10% of judged free-text responses against the rubric for systematic errors. Judge-based scoring is never used for deterministic answer types.
 
 **Paired uncertainty analysis.** For each trained headline system, scores are first averaged per question across the three training seeds and then paired by question ID with Base-RAG. A paired stratified bootstrap with 10,000 replicates resamples the 37 deterministic and 13 free-text questions separately with replacement and recomputes the difference in Q\_main. The same procedure compares RAFT-RAG directly with CLM-RAG. The reported 95% percentile intervals preserve the metric's 0.7/0.3 weighting. They estimate sensitivity to the composition of this holdout conditional on the observed training runs; seed variability is reported separately, and transfer to an independent benchmark is not estimated.
 
@@ -229,7 +229,7 @@ The RAG baseline (Base-RAG) reaches Q\_main = 0.642, establishing a difficult st
 
 All three intervals include zero. The two adapters therefore have higher observed mean Q\_main than Base-RAG, but neither establishes a statistically supported aggregate gain on this holdout. The direct interval likewise supports no aggregate winner between RAFT-RAG and CLM-RAG.
 
-Merge-RAG reaches the highest observed score (0.705 +/- 0.034) through post-hoc adapter interpolation. Its higher seed variance (std = 0.034 vs. 0.014 and 0.023 for the headline adapters) and post-hoc nature warrant cautious interpretation. Partial complementarity between the two adaptation signals is suggested. The predefined headline comparison remains primary.
+Merge-RAG reaches the highest observed score (0.705 +/- 0.034) through post-hoc adapter interpolation. Its higher seed variance (std = 0.034 vs. 0.014 and 0.023 for the headline adapters) and post-hoc nature warrant cautious interpretation. This result suggests partial complementarity between the two adaptation signals. The predefined headline comparison remains primary.
 
 ![Figure 2. Improvement over Base-RAG](../assets/figures/fig02_delta_bars.png)
 
@@ -363,7 +363,7 @@ The following limitations apply.
 
 ## 7. Conclusion
 
-Generator-side adaptation was evaluated after a fixed retrieval configuration had been established. RAFT and CLM produced different observed quality profiles without a clear aggregate winner. The following four profiles are framed as hypotheses for further testing.
+This study evaluated generator-side adaptation with the retrieval configuration fixed in advance. RAFT and CLM produced different observed quality profiles without a clear aggregate winner. The following four profiles are framed as hypotheses for further testing.
 
 **RAFT-style supervision appears to specialize the generator for controlled extraction and evidence composition.** RAFT-RAG has an observed S\_det difference of +0.047 over the RAG baseline and reaches 0.385 on multi-document questions, compared with 0.279 for the baseline. Its observed S\_asst difference is -0.021. This pattern is consistent with the hypothesis that direct QA supervision with gold and distractor passages strengthens evidence discrimination and target-conforming answer production. This experiment does not isolate which part of the RAFT recipe produced the observed profile. Distractor exposure, multi-document training examples, and the balance between deterministic and free-text targets should be ablated separately.
 
@@ -517,7 +517,7 @@ Return JSON: {"correctness": 0|1, "completeness": 0|1, "grounding": 0|1,
               "calibration": 0|1, "clarity": 0|1}
 ```
 
-**Judge model:** GPT-5.4-mini (OpenAI, model id `gpt-5.4-mini`), reasoning effort = medium, held fixed across all systems and experiments. The prompt is identical for all systems. Malformed judge output is retried once. If the retry also fails, all five criteria are scored as zero for that answer. Judge-based scoring is never applied to deterministic answer types. A manual audit of approximately 10% of judged free-text responses was performed before final interpretation, spot-checking judge scores against the rubric for systematic errors.
+**Judge model:** GPT-5.4-mini (OpenAI, model id `gpt-5.4-mini`), reasoning effort = medium, held fixed across all systems and experiments. The prompt is identical for all systems. Malformed judge output is retried once. If the retry also fails, all five criteria are scored as zero for that answer. Judge-based scoring is never applied to deterministic answer types. Before final interpretation, a manual audit spot-checked approximately 10% of judged free-text responses against the rubric for systematic errors.
 
 
 ### A.6 Benchmark Source Documents
@@ -596,7 +596,7 @@ Malformed rates are negligible for the retrieval-aware adapted systems but rise 
 
 The Doc-to-LoRA (D2L) approach generates document-specific LoRA adapters via a hypernetwork, theoretically allowing a model to internalize context. Its application to RAG corpora on resource-constrained hardware exposes practical limitations.
 
-First, the D2L architecture imposes a strict token limit per generated adapter. A preliminary token-based audit suggested that the 8 documents (8.4K-20.1K D2L context tokens each, ~106K context tokens total) would fit a single-pass D2L encoding. The released implementation enforced stricter effective limits. Every document had to be split into 9-20 chunks, producing 108 chunk-adapters in total. Each chunk yielded a separate adapter, and the adapters were merged through linear interpolation. This workaround departs from the intended document-level conditioning, so its result characterizes the released implementation under the evaluated resource constraints. It also added substantial offline cost (3932 s, compared with 1206 s for RAFT-RAG training). The per-adapter token limit is tied to the target model's context window, so RAG-scale corpora exceed it on a compact, context-limited model. A wider context window would raise this ceiling, including for the model on which the released hypernetwork was trained.
+First, the D2L architecture imposes a strict token limit per generated adapter. A preliminary token-based audit suggested that the 8 documents (8.4K-20.1K D2L context tokens each, ~106K context tokens total) would fit a single-pass D2L encoding. The released implementation enforced stricter effective limits. The workaround split each document into 9-20 chunks, generated one adapter per chunk, and merged the 108 resulting adapters through linear interpolation. This workaround departs from the intended document-level conditioning, so its result characterizes the released implementation under the evaluated resource constraints. It also added substantial offline cost (3932 s, compared with 1206 s for RAFT-RAG training). The per-adapter token limit is tied to the target model's context window, so RAG-scale corpora exceed it on a compact, context-limited model. A wider context window would raise this ceiling, including for the model on which the released hypernetwork was trained.
 
 Second, applying D2L to a modern target model would require training a bespoke hypernetwork. This was not attempted here. Its cost falls outside the evaluated resource budget and remains unmeasured.
 

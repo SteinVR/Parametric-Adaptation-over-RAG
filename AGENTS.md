@@ -61,6 +61,7 @@ Legacy drafts under `.old/` are scratch history and are not active sources.
 - Real project deletions, renames, and relocations are allowed when relevant to the selected change. Review them explicitly, update references, and do not retain stale duplicate trees.
 - Before transferring changes, record the destination branch revision. Before committing or pushing, inspect the complete change set against that pre-update revision, including deletions and renames. For publication, verify the public tree, both commit parents, and the absence of a commit body; for updates to `dev`, verify that the private working layer remains usable. A clean patch application or cherry-pick is not sufficient validation.
 - Do not rewrite published history without explicit user authorization. For an authorized replacement, use `--force-with-lease` pinned to the expected remote commit rather than an unguarded force push.
+- For routine publication in the current setup, use `./scripts/publish_main.py` after committing `dev`; see `docs/publishing.md`. Preview with `--dry-run`, explicitly review new files and deletions, and keep the script and its tests on `dev`. The public paper is `Parametric-Adaptation-Methods-RAG.pdf`; the `_uni` PDF stays on `dev`.
 
 ## Procedure after context auto-compact
 
